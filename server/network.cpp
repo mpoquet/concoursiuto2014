@@ -208,8 +208,6 @@ void Network::onMessageReceived()
                     {
                         if (_regexMovePlayer.exactMatch(content))
                         {
-                            bool validMove = true;
-
                             QString scans = _regexMovePlayer.cap(1);
                             QString builds = _regexMovePlayer.cap(2);
                             QString moves = _regexMovePlayer.cap(3);

@@ -17,7 +17,7 @@ struct ShipMove
 struct ShipMovement
 {
 	ShipMove move;
-	int remainingTurn;
+	int remainingRound;
 };
 
 

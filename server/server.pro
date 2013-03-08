@@ -8,19 +8,23 @@ TEMPLATE = app
 TARGET = server
 INCLUDEPATH += .
 
+QMAKE_CXXFLAGS += -std=c++0x
+
 # Input
 SOURCES += main.cpp \
     network.cpp \
     player.cpp \
-    environment.cpp \
     planet.cpp \
-    game.cpp
+    game.cpp \
+    galaxy.cpp \
+    abstractgamemodel.cpp
 
 HEADERS += \
     network.hpp \
     struct.hpp \
     player.hpp \
-    environment.hpp \
     planet.hpp \
     game.hpp \
-    protocole.h
+    galaxy.hpp \
+    protocole.h \
+    abstractgamemodel.hpp
