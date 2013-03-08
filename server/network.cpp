@@ -94,6 +94,23 @@ void Network::sendLoginDisplayACK(QTcpSocket *socket, char value)
     socket->write(message);
 }
 
+void Network::debugDisplayMove(QVector<int> planetsToScan, QVector<BuildOrder> shipsToBuild, QVector<ShipMove> shipsToMove)
+{
+    cout << "Move:" << endl;
+    cout << "  Scans:" << endl;
+    for (int i = 0; i < planetsToScan.size(); ++i)
+        cout << "    " << planetsToScan[i] << endl;
+
+    cout << "  Build:" << endl;
+    for (int i = 0; i < shipsToBuild.size(); ++i)
+        cout << "    " << shipsToBuild[i].shipCount << " ships on planet " << shipsToBuild[i].planet << endl;
+
+    cout << "  Moves:" << endl;
+    for (int i = 0; i < shipsToMove.size(); ++i)
+        cout << "    " << shipsToMove[i].shipCount << " ships from " << shipsToMove[i].srcPlanet << " to " << shipsToMove[i].destPlanet << endl;
+    cout << endl;
+}
+
 void Network::sendInitPlayer(QTcpSocket *socket,
                              int planetCount,
                              QVector<QVector<int> > distanceMatrix,
@@ -261,6 +278,7 @@ void Network::onMessageReceived()
                                                         shipsToMove[i].shipCount = qsl[1 + 3*i + 2].toInt();
                                                     }
 
+                                                    debugDisplayMove(planetsToScan, shipsToBuild, shipsToMove);
                                                     emit movePlayer(socket, planetsToScan, shipsToBuild, shipsToMove);
                                                 }
                                                 else

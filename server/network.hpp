@@ -60,6 +60,10 @@ private:
     void sendLoginPlayerACK(QTcpSocket * socket, char value);
     void sendLoginDisplayACK(QTcpSocket * socket, char value);
 
+    void debugDisplayMove(QVector<int> planetsToScan,
+                     QVector<BuildOrder> shipsToBuild,
+                     QVector<ShipMove> shipsToMove);
+
 private slots:
     void onNewConnection();
     void onMessageReceived();
