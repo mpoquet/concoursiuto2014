@@ -10,8 +10,16 @@ INCLUDEPATH += .
 
 # Input
 SOURCES += main.cpp \
-    network.cpp
+    network.cpp \
+    player.cpp \
+    environment.cpp \
+    planet.cpp \
+    game.cpp
 
 HEADERS += \
     network.hpp \
-    struct.hpp
+    struct.hpp \
+    player.hpp \
+    environment.hpp \
+    planet.hpp \
+    game.hpp
