@@ -164,6 +164,8 @@ void Network::sendTurn(QTcpSocket *socket,
         message += QString("%1%2%1%3%1%4").arg(SSEP).arg(fightReports[i].planet).arg(
                     fightReports[i].winner).arg(fightReports[i].playerCount).arg(
                     fightReports[i].aliveShipCount).toLatin1();
+
+    socket->write(message);
 }
 
 void Network::sendFinished(QTcpSocket *socket, bool youWon)
