@@ -25,10 +25,10 @@ Network::Network(quint16 port, int maxPlayerCount, int maxDisplayCount, QObject 
 
     _regexMessage.setPattern(QString("([%1%2%3])(.*)").arg(LOGIN_PLAYER).arg(LOGIN_DISPLAY).arg(MOVE_PLAYER));
     _regexLoginPlayer.setPattern("[a-zA-Z0-9_\\-]{1,10}");
-    _regexMovePlayer.setPattern("(.*)\\t(.*)\\t(.*)");
-    _regexScans.setPattern("(\\d+)(?: \\d+)*");
-    _regexBuilds.setPattern("(\\d+)(?: \\d+ \\d+)*");
-    _regexMoves.setPattern("(\\d+)(?: \\d+ \\d+ \\d+)*");
+    _regexMovePlayer.setPattern(QString("(.*)%1(.*)%1(.*)").arg(SEP));
+    _regexScans.setPattern(QString("(\\d+)(?:%1\\d+)*").arg(SSEP));
+    _regexBuilds.setPattern(QString("(\\d+)(?:%1\\d+%1\\d+)*").arg(SSEP));
+    _regexMoves.setPattern(QString("(\\d+)(?:%1\\d+%1\\d+%1\\d+)*").arg(SSEP));
 
     Q_ASSERT(_regexMessage.isValid());
     Q_ASSERT(_regexLoginPlayer.isValid());
@@ -117,10 +117,19 @@ void Network::sendInitPlayer(QTcpSocket *socket,
                              int roundCount,
                              int scanLimit)
 {
+    QByteArray message;
 }
 
 void Network::sendFinished(QTcpSocket *socket, bool youWon)
 {
+    QByteArray message(2, '\n');
+
+    if (youWon)
+        message[0] = '1';
+    else
+        message[0] = '0';
+
+    socket->write(message);
 }
 
 void Network::onNewConnection()
@@ -223,7 +232,7 @@ void Network::onMessageReceived()
                                 if (scanCount < 0)
                                     scanCount = 0;
 
-                                QStringList qsl = scans.split(" ");
+                                QStringList qsl = scans.split(SSEP);
                                 int realScanCount = qsl.size() - 1;
 
                                 if (scanCount == realScanCount)
@@ -240,7 +249,7 @@ void Network::onMessageReceived()
                                         if (buildCount < 0)
                                             buildCount = 0;
 
-                                        qsl = builds.split(" ");
+                                        qsl = builds.split(SSEP);
                                         int realBuildCount = (qsl.size() - 1) / 2;
                                         int remainder = (qsl.size() - 1) % 2;
 
@@ -261,7 +270,7 @@ void Network::onMessageReceived()
                                                 if (moveCount < 0)
                                                     moveCount = 0;
 
-                                                qsl = moves.split(" ");
+                                                qsl = moves.split(SSEP);
                                                 int realMoveCount = (qsl.size() - 1) / 3;
                                                 remainder = (qsl.size() - 1) % 3;
 

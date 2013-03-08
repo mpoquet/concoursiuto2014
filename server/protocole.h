@@ -4,8 +4,12 @@
 #define LOGIN_PLAYER 'A'
 #define LOGIN_DISPLAY 'B'
 #define MOVE_PLAYER 'C'
+#define END_OF_GAME 'D'
 
-#define SEPARATOR '\t'
+#define SEP '#'
+#define SSEP ' '
+#define SSSEP '/'
+
 #define OK 'a'
 #define NO_MORE_ROOM 'b'
 #define INVALID_NICKNAME 'c'

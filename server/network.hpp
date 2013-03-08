@@ -35,7 +35,7 @@ public:
 
     int playerCount() const;
     int displayCount() const;
-    
+
 signals:
     void loginPlayer(QTcpSocket * socket, QString nickname);
     void loginDisplay(QTcpSocket * socket);
@@ -46,14 +46,14 @@ signals:
                     QVector<ShipMove> shipsToMove);
 
     void clientDisconnected(QTcpSocket * socket);
-    
+
 public slots:
     void sendInitPlayer(QTcpSocket * socket,
                         int planetCount,
                         QVector<QVector<int> > distanceMatrix,
                         int roundCount,
                         int scanLimit);
-    
+
     void sendFinished(QTcpSocket * socket, bool youWon);
 
 private:
@@ -61,8 +61,8 @@ private:
     void sendLoginDisplayACK(QTcpSocket * socket, char value);
 
     void debugDisplayMove(QVector<int> planetsToScan,
-                     QVector<BuildOrder> shipsToBuild,
-                     QVector<ShipMove> shipsToMove);
+                          QVector<BuildOrder> shipsToBuild,
+                          QVector<ShipMove> shipsToMove);
 
 private slots:
     void onNewConnection();
