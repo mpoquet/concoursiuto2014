@@ -94,23 +94,6 @@ void Network::sendLoginDisplayACK(QTcpSocket *socket, char value)
     socket->write(message);
 }
 
-void Network::debugDisplayMove(QVector<int> planetsToScan, QVector<BuildOrder> shipsToBuild, QVector<ShipMove> shipsToMove)
-{
-    cout << "Move:" << endl;
-    cout << "  Scans:" << endl;
-    for (int i = 0; i < planetsToScan.size(); ++i)
-        cout << "    " << planetsToScan[i] << endl;
-
-    cout << "  Build:" << endl;
-    for (int i = 0; i < shipsToBuild.size(); ++i)
-        cout << "    " << shipsToBuild[i].shipCount << " ships on planet " << shipsToBuild[i].planet << endl;
-
-    cout << "  Moves:" << endl;
-    for (int i = 0; i < shipsToMove.size(); ++i)
-        cout << "    " << shipsToMove[i].shipCount << " ships from " << shipsToMove[i].srcPlanet << " to " << shipsToMove[i].destPlanet << endl;
-    cout << endl;
-}
-
 void Network::sendInitPlayer(QTcpSocket *socket,
                              int planetCount,
                              QVector<QVector<int> > distanceMatrix,
@@ -118,6 +101,69 @@ void Network::sendInitPlayer(QTcpSocket *socket,
                              int scanLimit)
 {
     QByteArray message;
+
+    message += QString("%1%2").arg(planetCount).arg(SEP).toLatin1();
+
+    for (int y = 0; y < distanceMatrix.size(); ++y)
+        for (int x = 0; x < distanceMatrix.size(); ++x)
+            message += QString("%1%2").arg(distanceMatrix[y][x]).arg(SSEP).toLatin1();
+
+    if (distanceMatrix.size() > 0 && distanceMatrix[0].size() > 0)
+        message.chop(1);
+
+    message += SEP;
+
+    message += QString("%1%2").arg(roundCount).arg(SEP).toLatin1();
+    message += QString("%1").arg(scanLimit).toLatin1();
+
+    socket->write(message);
+}
+
+void Network::sendTurn(QTcpSocket *socket,
+                       int resources,
+                       QVector<OurShipsOnPlanets> ourShipsOnPlanet,
+                       QVector<ScanResult> scanResults,
+                       QVector<OurMovingShips> ourMovingShips,
+                       QVector<IncomingEnnemyShips> incomingEnnemies,
+                       QVector<FightReport> fightReports)
+{
+    QByteArray message;
+
+    message += QString("%1%2").arg(resources).arg(SEP).toLatin1();
+
+    message += QString("%1").arg(ourShipsOnPlanet.size()).toLatin1();
+
+    for (int i = 0; i < ourShipsOnPlanet.size(); ++i)
+        message += QString("%1%2%1%3%1%4").arg(SSEP).arg(ourShipsOnPlanet[i].planet).arg(
+                    ourShipsOnPlanet[i].planetSize).arg(ourShipsOnPlanet[i].shipCount).toLatin1();
+
+    message += QString("%1%2").arg(SEP).arg(scanResults.size()).toLatin1();
+
+    for (int i = 0; i < scanResults.size(); ++i)
+        message += QString("%1%2%1%3%1%4%1%5").arg(SSEP).arg(scanResults[i].planet).arg(
+                    scanResults[i].player).arg(scanResults[i].planetSize).arg(
+                    scanResults[i].shipCount).toLatin1();
+
+
+    message += QString("%1%2").arg(SEP).arg(ourMovingShips.size()).toLatin1();
+
+    for (int i = 0; i < ourMovingShips.size(); ++i)
+        message += QString("%1%2%1%3%1%4%1%5").arg(SSEP).arg(ourMovingShips[i].srcPlanet).arg(
+                    ourMovingShips[i].destPlanet).arg(ourMovingShips[i].shipCount).arg(
+                    ourMovingShips[i].remainingTurns).toLatin1();
+
+    message += QString("%1%2").arg(SEP).arg(incomingEnnemies.size()).toLatin1();
+
+    for (int i = 0; i < incomingEnnemies.size(); ++i)
+        message += QString("%1%2%1%3%1%4").arg(SSEP).arg(incomingEnnemies[i].srcPlanet).arg(
+                    incomingEnnemies[i].destPlanet).arg(incomingEnnemies[i].shipCount).toLatin1();
+
+    message += QString("%1%2").arg(SEP).arg(fightReports.size()).toLatin1();
+
+    for (int i = 0; i < fightReports.size(); ++i)
+        message += QString("%1%2%1%3%1%4").arg(SSEP).arg(fightReports[i].planet).arg(
+                    fightReports[i].winner).arg(fightReports[i].playerCount).arg(
+                    fightReports[i].aliveShipCount).toLatin1();
 }
 
 void Network::sendFinished(QTcpSocket *socket, bool youWon)
@@ -335,4 +381,21 @@ void Network::onDisconnected()
 
     _clients.remove(socket);
     socket->deleteLater();
+}
+
+void Network::debugDisplayMove(QVector<int> planetsToScan, QVector<BuildOrder> shipsToBuild, QVector<ShipMove> shipsToMove)
+{
+    cout << "Move:" << endl;
+    cout << "  Scans:" << endl;
+    for (int i = 0; i < planetsToScan.size(); ++i)
+        cout << "    " << planetsToScan[i] << endl;
+
+    cout << "  Build:" << endl;
+    for (int i = 0; i < shipsToBuild.size(); ++i)
+        cout << "    " << shipsToBuild[i].shipCount << " ships on planet " << shipsToBuild[i].planet << endl;
+
+    cout << "  Moves:" << endl;
+    for (int i = 0; i < shipsToMove.size(); ++i)
+        cout << "    " << shipsToMove[i].shipCount << " ships from " << shipsToMove[i].srcPlanet << " to " << shipsToMove[i].destPlanet << endl;
+    cout << endl;
 }

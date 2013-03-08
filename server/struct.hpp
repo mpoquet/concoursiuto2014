@@ -20,5 +20,43 @@ struct ShipMovement
 	int remainingRound;
 };
 
+struct OurShipsOnPlanets
+{
+    int planet;
+    int planetSize;
+    int shipCount;
+};
+
+struct ScanResult
+{
+    int planet;
+    int player;
+    int planetSize;
+    int shipCount;
+};
+
+struct OurMovingShips
+{
+    int srcPlanet;
+    int destPlanet;
+    int shipCount;
+    int remainingTurns;
+};
+
+struct IncomingEnnemyShips
+{
+    int srcPlanet;
+    int destPlanet;
+    int shipCount;
+};
+
+struct FightReport
+{
+    int planet;
+    int winner;
+    int playerCount;
+    int aliveShipCount;
+};
+
 
 #endif // STRUCT_HPP

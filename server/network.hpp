@@ -54,6 +54,14 @@ public slots:
                         int roundCount,
                         int scanLimit);
 
+    void sendTurn(QTcpSocket * socket,
+                  int resources,
+                  QVector<OurShipsOnPlanets> ourShipsOnPlanet,
+                  QVector<ScanResult> scanResults,
+                  QVector<OurMovingShips> ourMovingShips,
+                  QVector<IncomingEnnemyShips> incomingEnnemies,
+                  QVector<FightReport> fightReports);
+
     void sendFinished(QTcpSocket * socket, bool youWon);
 
 private:

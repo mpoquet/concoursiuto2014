@@ -8,7 +8,6 @@
 
 #define SEP '#'
 #define SSEP ' '
-#define SSSEP '/'
 
 #define OK 'a'
 #define NO_MORE_ROOM 'b'
