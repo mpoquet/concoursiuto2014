@@ -22,4 +22,5 @@ HEADERS += \
     player.hpp \
     environment.hpp \
     planet.hpp \
-    game.hpp
+    game.hpp \
+    protocole.h

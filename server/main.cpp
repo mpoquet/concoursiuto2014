@@ -27,7 +27,7 @@ int main(int argc, char ** argv)
         port = p;
     }
 
-    Network n(port);
+    Network n(port, 4, 1);
     n.run();
 
     return app.exec();
