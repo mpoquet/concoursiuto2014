@@ -7,4 +7,8 @@ TARGET = server
 INCLUDEPATH += .
 
 # Input
-SOURCES += main.cpp
+SOURCES += main.cpp \
+    network.cpp
+
+HEADERS += \
+    network.hpp
