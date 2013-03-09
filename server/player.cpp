@@ -73,3 +73,18 @@ QString Player::nickname()
 {
 	return m_nickname;
 }
+
+QVector<Planet*> Player::waitingScan()
+{
+	return m_waitingPlanetScan;
+}
+
+QVector<ShipMove> Player::waitingMove()
+{
+	return m_waitingShipMoves;
+}
+
+QVector<BuildOrder> Player::waitingBuild()
+{
+	return m_waitingBuildOrders;
+}

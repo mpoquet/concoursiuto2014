@@ -144,6 +144,85 @@ void Game::start()
 void Game::iteration()
 {
 	//TODO game round iteration implementation
+
+	Planet * planet;
+	Planet * planetDest;
+
+	QVector<ShipMovement*> newMovements;
+	QVector<ShipMovement*> endMovements;
+
+	// space ship creation + fleet launch
+	foreach(Player * p, m_players)
+	{
+		foreach(BuildOrder b, p->waitingBuild())
+		{
+			int totalCost = m_gameModel->getSpaceShipCost() * b.shipCount;
+			if(p->resources() >= totalCost)
+			{
+				planet = getPlanet(b.planet);
+				if(planet != nullptr && planet->owner() == p)
+				{
+					planet->setShipCount(planet->shipCount() + b.shipCount);
+					p->setResources(p->resources() - totalCost);
+				}
+			}
+		}
+
+		foreach(ShipMove m, p->waitingMove())
+		{
+			planet = getPlanet(m.srcPlanet);
+			planetDest = getPlanet(m.destPlanet);
+			if(planet != nullptr && planetDest != nullptr && planet->owner() == p)
+			{
+				if(planet->shipCount() <= m.shipCount)
+				{
+					m.shipCount = planet->shipCount()-1;
+				}
+				planet->setShipCount(planet->shipCount() - m.shipCount);
+
+				ShipMovement * move = new ShipMovement();
+				move->move = m;
+				move->remainingRound = planet->distance(planetDest);
+
+				newMovements.append(move);
+			}
+		}
+	}
+
+	for(int i = 0 ; i < m_movements.size() ; ++i)
+	{
+		m_movements[i]->remainingRound--;
+		if(m_movements[i]->remainingRound == 0)
+		{
+			endMovements.append(m_movements[i]);
+			m_movements.remove(i);
+			i--;
+		}
+	}
+
+	//TODO : voir si on le fait avant les déplacements ou non.
+	m_movements += newMovements;
+
+	//TODO combat + penser a changer le nombre de vaisseaux restants sur la planete
+
+
+	foreach(Player * p, m_players)
+	{
+		int resourceInc = 0;
+		foreach(Planet * pl, p->planets())
+		{
+			resourceInc += m_gameModel->getResourcesByRound(pl->size());
+		}
+		p->setResources(p->resources() + resourceInc);
+	}
+
+	// creation
+	// lancement
+	// avancement
+	// resolution
+	//inc resources
+	//get scan info
+
 }
 
 void Game::playerLogin(QTcpSocket *socket, QString nickname)
@@ -178,6 +257,8 @@ void Game::playerOrder(QTcpSocket *socket, QVector<int> planetsToScan, QVector<B
 
 void Game::displayLogin(QTcpSocket *socket, QString nickname)
 {
+	Q_UNUSED(socket);
+	Q_UNUSED(nickname);
 	//TODO implement display relative part.
 }
 

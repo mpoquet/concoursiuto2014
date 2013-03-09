@@ -22,40 +22,41 @@ struct ShipMovement
 
 struct OurShipsOnPlanets
 {
-    int planet;
-    int planetSize;
-    int shipCount;
+	int planet;
+	int planetSize;
+	int shipCount;
 };
 
 struct ScanResult
 {
-    int planet;
-    int player;
-    int planetSize;
-    int shipCount;
+	int planet;
+	int player;
+	int shipCount;
+	int resource;
+	int shipMaxBuild;
 };
 
 struct OurMovingShips
 {
-    int srcPlanet;
-    int destPlanet;
-    int shipCount;
-    int remainingTurns;
+	int srcPlanet;
+	int destPlanet;
+	int shipCount;
+	int remainingTurns;
 };
 
 struct IncomingEnnemyShips
 {
-    int srcPlanet;
-    int destPlanet;
-    int shipCount;
+	int srcPlanet;
+	int destPlanet;
+	int shipCount;
 };
 
 struct FightReport
 {
-    int planet;
-    int winner;
-    int playerCount;
-    int aliveShipCount;
+	int planet;
+	int winner;
+	int playerCount;
+	int aliveShipCount;
 };
 
 

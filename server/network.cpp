@@ -145,8 +145,8 @@ void Network::sendTurn(QTcpSocket *socket,
 	message += QString("%1%2").arg(SEP).arg(scanResults.size()).toLatin1();
 
 	for (int i = 0; i < scanResults.size(); ++i)
-		message += QString("%1%2%1%3%1%4%1%5").arg(SSEP).arg(scanResults[i].planet).arg(
-					scanResults[i].player).arg(scanResults[i].planetSize).arg(
+		message += QString("%1%2%1%3%1%4%1%5%1%6").arg(SSEP).arg(scanResults[i].planet).arg(
+					scanResults[i].player).arg(scanResults[i].resource).arg(scanResults[i].shipMaxBuild).arg(
 					scanResults[i].shipCount).toLatin1();
 
 

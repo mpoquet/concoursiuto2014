@@ -27,6 +27,10 @@ class Player
 		int id();
 		QString nickname();
 
+		QVector<Planet*> waitingScan();
+		QVector<ShipMove> waitingMove();
+		QVector<BuildOrder> waitingBuild();
+
 	protected:
 		QString m_nickname;
 		int m_id;
