@@ -17,7 +17,8 @@ SOURCES += main.cpp \
     planet.cpp \
     game.cpp \
     galaxy.cpp \
-    abstractgamemodel.cpp
+    abstractgamemodel.cpp \
+    basicgamemodel.cpp
 
 HEADERS += \
     network.hpp \
@@ -27,4 +28,5 @@ HEADERS += \
     game.hpp \
     galaxy.hpp \
     protocole.h \
-    abstractgamemodel.hpp
+    abstractgamemodel.hpp \
+    basicgamemodel.hpp

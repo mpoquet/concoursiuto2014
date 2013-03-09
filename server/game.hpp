@@ -50,6 +50,7 @@ class Game : public QObject
 	protected:
 		Planet * getPlanet(int id);
 		Galaxy * getGalaxy(int id);
+		Player * getPlayer(int id);
 
 		void filterBuildOrder(QVector<BuildOrder> & orders, Player * player);
 		void filterShipMove(QVector<ShipMove> & shipMoves, Player * player);
@@ -57,7 +58,10 @@ class Game : public QObject
 
 		QVector<QVector<int> > getDistanceMatrix();
 
-		void sendTurnMessage();
+		void sendTurnMessage(QMap<int, QVector<FightReport> > reports);
+		QMap<int, QVector<FightReport> > handleBattle(QVector<ShipMovement*> endMovements);
+
+		bool hasFleet(Player * p);
 
 	private:
 		int m_delayBetweenRound;
@@ -69,6 +73,9 @@ class Game : public QObject
 		QVector<ShipMovement*> m_movements;
 		QVector<Planet*> m_planets;
 		QMap<Player*, QTcpSocket *> m_clientSockets;
+
+		Player * m_neutralPlayer;
+		Player * m_nullPlayer;
 };
 
 #endif // GAME_HPP

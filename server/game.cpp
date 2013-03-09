@@ -103,16 +103,23 @@ void Game::start()
 	}
 
 	// attribution des planètes autochtones + attribution des vaisseaux sur chaque planète
-	Player * neutralPlayer = new Player("autochtone");
-	neutralPlayer->setId(0);
+	m_neutralPlayer = new Player("autochtone");
+	m_nullPlayer = new Player("null");
+	m_nullPlayer->setId(-1);
+	m_neutralPlayer->setId(0);
 	foreach(Planet * p, m_planets)
 	{
 		if(p->owner() == nullptr)
 		{
 			if(p->isNeutral())
 			{
-				p->setOwner(neutralPlayer);
+				p->setOwner(m_neutralPlayer);
 				p->setShipCount(m_gameModel->getSpaceShipForNeutral(p->size()));
+			}
+			else
+			{
+				p->setOwner(m_nullPlayer);
+				p->setShipCount(0);
 			}
 		}
 		else
@@ -143,8 +150,6 @@ void Game::start()
 
 void Game::iteration()
 {
-	//TODO game round iteration implementation
-
 	Planet * planet;
 	Planet * planetDest;
 
@@ -201,15 +206,10 @@ void Game::iteration()
 		}
 	}
 
-	//TODO : voir si on le fait avant les déplacements ou non.
+	// ajout des nouvelles flottes dans la liste de déplacement.
 	m_movements += newMovements;
 
-
-	//TODO combat
-	// les flottes en arrimage sont dans endMovements
-	// penser a changer le nombre de vaisseaux restants sur la planete
-	// + si necessaire le propriétaire de la planete
-
+	QMap<int, QVector<FightReport> > reports = handleBattle(endMovements);
 
 	foreach(Player * p, m_players)
 	{
@@ -243,7 +243,7 @@ void Game::iteration()
 		m_players.clear();
 	}
 
-	sendTurnMessage();
+	sendTurnMessage(reports);
 }
 
 void Game::playerLogin(QTcpSocket *socket, QString nickname)
@@ -303,6 +303,20 @@ Galaxy * Game::getGalaxy(int id)
 	Galaxy * g = new Galaxy(id);
 	m_galaxies.append(g);
 	return g;
+}
+
+Player * Game::getPlayer(int id)
+{
+	if(id == 0)
+		return m_neutralPlayer;
+	if(id == -1)
+		return m_nullPlayer;
+	foreach(Player * p, m_players)
+	{
+		if(p->id() == id)
+			return p;
+	}
+	return nullptr;
 }
 
 void Game::filterBuildOrder(QVector<BuildOrder> & orders, Player * player)
@@ -422,7 +436,7 @@ QVector<QVector<int> > Game::getDistanceMatrix()
 	return matrix;
 }
 
-void Game::sendTurnMessage()
+void Game::sendTurnMessage(QMap<int, QVector<FightReport> > reports)
 {
 	foreach(Player * p, m_players)
 	{
@@ -430,7 +444,6 @@ void Game::sendTurnMessage()
 		QVector<ScanResult> scanResults;
 		QVector<OurMovingShips> ourMovingShips;
 		QVector<IncomingEnnemyShips> incomingEnnemies;
-		QVector<FightReport> fightReports;
 
 
 		//scans
@@ -485,14 +498,85 @@ void Game::sendTurnMessage()
 			}
 		}
 
-		// TODO rapport de combat
-
 		emit turnSignal(m_clientSockets.value(p),
 						p->resources(),
 						ourShipsOnPlanets,
 						scanResults,
 						ourMovingShips,
 						incomingEnnemies,
-						fightReports);
+						reports[p->id()]);
 	}
+}
+
+bool Game::hasFleet(Player * p)
+{
+	foreach(ShipMovement * m, m_movements)
+	{
+		if(m->player == p->id())
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+QMap<int, QVector<FightReport> > Game::handleBattle(QVector<ShipMovement*> endMovements)
+{
+	//  <planetID, <playerId, ship count>
+	QMap<int, QMap<int, int> > m_incomingFleet;
+	QMap<int, QVector<FightReport> > reports;
+	Planet * planet;
+	QVector<Fleet> fleets;
+
+	foreach(ShipMovement * m, endMovements)
+	{
+		if(m_incomingFleet[m->move.destPlanet].contains(m->player))
+		{
+			m_incomingFleet[m->move.destPlanet][m->player] += m->move.shipCount;
+		}
+		else
+		{
+			m_incomingFleet[m->move.destPlanet][m->player] = m->move.shipCount;
+		}
+	}
+
+	foreach(int planetId, m_incomingFleet.keys())
+	{
+		planet = getPlanet(planetId);
+
+		//résolution du combat sur la planete
+		fleets.clear();
+		foreach(int playerId, m_incomingFleet[planetId].keys())
+		{
+			Fleet f;
+			f.player = playerId;
+			f.shipCount = m_incomingFleet[planetId][playerId];
+			fleets.append(f);
+		}
+
+		Fleet winner = m_gameModel->resolveBattle(fleets);
+
+		FightReport report;
+		report.planet = planetId;
+		report.playerCount = m_incomingFleet[planetId].keys().size();
+		report.aliveShipCount = winner.shipCount;
+		report.winner = winner.player;
+
+		foreach(int playerId, m_incomingFleet[planetId].keys())
+		{
+			reports[playerId].append(report);
+		}
+
+		if(planet->owner()->id() != winner.player)
+		{
+			Player * p = getPlayer(winner.player);
+
+			Q_ASSERT(p != nullptr);
+
+			planet->setOwner(p);
+		}
+		planet->setShipCount(winner.shipCount);
+	}
+
+	return reports;
 }

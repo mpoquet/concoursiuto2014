@@ -3,6 +3,9 @@
 
 #include "player.hpp"
 #include "planet.hpp"
+#include "struct.hpp"
+
+#include <QVector>
 
 class AbstractGameModel
 {
@@ -23,6 +26,7 @@ class AbstractGameModel
 
 		virtual int getDistance(Planet * p1, Planet * p2) = 0;
 
+		virtual Fleet resolveBattle(QVector<Fleet> fleets) = 0;
 };
 
 #endif // ABSTRACTGAMEMODEL_HPP

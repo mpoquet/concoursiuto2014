@@ -61,5 +61,23 @@ struct FightReport
 	int aliveShipCount;
 };
 
+struct Fleet
+{
+	int player;
+	int shipCount;
+
+	Fleet()
+	{
+		player = -1;
+		shipCount = 0;
+	}
+
+	Fleet(int _player, int _shipCount)
+	{
+		player = _player;
+		shipCount = _shipCount;
+	}
+};
+
 
 #endif // STRUCT_HPP
