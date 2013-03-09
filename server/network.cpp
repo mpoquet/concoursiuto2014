@@ -363,7 +363,7 @@ void Network::onMessageReceived()
                 }
             }
             else
-                qDebug() << "Invalid message received" << message;
+                cerr << "Invalid message received (" << message.toStdString() << ')';
         }
 
     } while (index != -1);
