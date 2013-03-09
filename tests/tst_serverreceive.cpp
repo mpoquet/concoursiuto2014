@@ -52,7 +52,6 @@ void ServerReceive::testConnection()
 
 void ServerReceive::testLogin()
 {
-
 	QByteArray response, expected, send;
 	QTcpSocket sock;
 
@@ -79,5 +78,6 @@ void ServerReceive::testLogin()
 }
 
 QTEST_GUILESS_MAIN(ServerReceive)
+
 
 #include "tst_serverreceive.moc"
