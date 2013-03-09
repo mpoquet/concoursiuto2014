@@ -35,6 +35,8 @@ public:
 
     int playerCount() const;
     int displayCount() const;
+    bool isListening() const { return _server->isListening(); }
+    int clientCount() const;
 
 signals:
     void loginPlayer(QTcpSocket * socket, QString nickname);

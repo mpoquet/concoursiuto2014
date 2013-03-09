@@ -80,6 +80,11 @@ int Network::displayCount() const
     return count;
 }
 
+int Network::clientCount() const
+{
+    return _clients.size();
+}
+
 void Network::sendLoginPlayerACK(QTcpSocket *socket, char value)
 {
     QByteArray message(2, '\n');
@@ -184,7 +189,8 @@ void Network::onNewConnection()
 {
     QTcpSocket * socket = _server->nextPendingConnection();
 
-    cout << QString("New connection from %1").arg(socket->peerAddress().toString()).toStdString() << endl;
+    cout << QString("New connection from %1:%2").arg(socket->peerAddress().toString()).arg(
+            socket->peerPort()).toStdString() << endl;
 
     connect(socket, SIGNAL(error(QAbstractSocket::SocketError)),this, SLOT(onError(QAbstractSocket::SocketError)));
     connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
