@@ -221,8 +221,29 @@ void Game::iteration()
 		p->setResources(p->resources() + resourceInc);
 	}
 
-	//TODO : verif si quelqu'un a perdu (plus de planete + plus de flottes)
+	// check if someone lost or won
+	if(m_players.size() > 1)
+	{
+		for(int i = 0 ; i < m_players.size() ; ++i)
+		{
+			Player * p = m_players[i];
+			//no more planets
+			if(p->planets().empty() && !hasFleet(p))
+			{
+				emit finishedSignal(m_clientSockets.value(p), false);
+				m_players.remove(i);
+				i--;
+			}
+		}
+	}
+	if(m_players.size() == 1)
+	{
+		Player * winner = m_players[0];
+		emit finishedSignal(m_clientSockets.value(winner), true);
+		m_players.clear();
+	}
 
+	sendTurnMessage();
 }
 
 void Game::playerLogin(QTcpSocket *socket, QString nickname)
