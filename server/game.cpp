@@ -183,6 +183,7 @@ void Game::iteration()
 				ShipMovement * move = new ShipMovement();
 				move->move = m;
 				move->remainingRound = planet->distance(planetDest);
+				move->player = p->id();
 
 				newMovements.append(move);
 			}
@@ -203,7 +204,11 @@ void Game::iteration()
 	//TODO : voir si on le fait avant les déplacements ou non.
 	m_movements += newMovements;
 
-	//TODO combat + penser a changer le nombre de vaisseaux restants sur la planete
+
+	//TODO combat
+	// les flottes en arrimage sont dans endMovements
+	// penser a changer le nombre de vaisseaux restants sur la planete
+	// + si necessaire le propriétaire de la planete
 
 
 	foreach(Player * p, m_players)
@@ -216,12 +221,7 @@ void Game::iteration()
 		p->setResources(p->resources() + resourceInc);
 	}
 
-	// creation
-	// lancement
-	// avancement
-	// resolution
-	//inc resources
-	//get scan info
+	//TODO : verif si quelqu'un a perdu (plus de planete + plus de flottes)
 
 }
 
@@ -399,4 +399,79 @@ QVector<QVector<int> > Game::getDistanceMatrix()
 		}
 	}
 	return matrix;
+}
+
+void Game::sendTurnMessage()
+{
+	foreach(Player * p, m_players)
+	{
+		QVector<OurShipsOnPlanets> ourShipsOnPlanets;
+		QVector<ScanResult> scanResults;
+		QVector<OurMovingShips> ourMovingShips;
+		QVector<IncomingEnnemyShips> incomingEnnemies;
+		QVector<FightReport> fightReports;
+
+
+		//scans
+		foreach(Planet * pl, p->waitingScan())
+		{
+			if(pl != nullptr)
+			{
+				ScanResult scan;
+				scan.planet = pl->id();
+				scan.player = pl->owner()->id();
+				scan.resourcePerRound = m_gameModel->getResourcesByRound(pl->size());
+				scan.maxBuildPerRound = m_gameModel->getMaxBuildByRound(pl->size());
+				scan.shipCount = pl->shipCount();
+				scanResults.append(scan);
+			}
+		}
+
+		//vaisseaux sur nos planete
+		foreach(Planet * pl, p->planets())
+		{
+			OurShipsOnPlanets ships;
+			ships.planet = pl->id();
+			ships.maxBuildPerRound = m_gameModel->getMaxBuildByRound(pl->size());
+			ships.resourcePerRound = m_gameModel->getResourcesByRound(pl->size());
+			ships.shipCount = pl->shipCount();
+			ourShipsOnPlanets.append(ships);
+		}
+
+		//etat de nos flottes + arrivant vers nous
+		foreach(ShipMovement * m, m_movements)
+		{
+			if(m->player == p->id())
+			{
+				OurMovingShips move;
+				move.srcPlanet = m->move.srcPlanet;
+				move.destPlanet = m->move.destPlanet;
+				move.remainingTurns = m->remainingRound;
+				move.shipCount = m->move.shipCount;
+				ourMovingShips.append(move);
+			}
+			else
+			{
+				Planet * pl = getPlanet(m->move.destPlanet);
+				if(pl != nullptr && pl->owner() == p)
+				{
+					IncomingEnnemyShips ennemy;
+					ennemy.srcPlanet = m->move.srcPlanet;
+					ennemy.destPlanet = m->move.destPlanet;
+					ennemy.shipCount = m->move.shipCount;
+					incomingEnnemies.append(ennemy);
+				}
+			}
+		}
+
+		// TODO rapport de combat
+
+		emit turnSignal(m_clientSockets.value(p),
+						p->resources(),
+						ourShipsOnPlanets,
+						scanResults,
+						ourMovingShips,
+						incomingEnnemies,
+						fightReports);
+	}
 }

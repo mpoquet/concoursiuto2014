@@ -139,14 +139,14 @@ void Network::sendTurn(QTcpSocket *socket,
 	message += QString("%1").arg(ourShipsOnPlanet.size()).toLatin1();
 
 	for (int i = 0; i < ourShipsOnPlanet.size(); ++i)
-		message += QString("%1%2%1%3%1%4").arg(SSEP).arg(ourShipsOnPlanet[i].planet).arg(
-					ourShipsOnPlanet[i].planetSize).arg(ourShipsOnPlanet[i].shipCount).toLatin1();
+		message += QString("%1%2%1%3%1%4%1%5").arg(SSEP).arg(ourShipsOnPlanet[i].planet).arg(
+					ourShipsOnPlanet[i].resourcePerRound).arg(ourShipsOnPlanet[i].maxBuildPerRound).arg(ourShipsOnPlanet[i].shipCount).toLatin1();
 
 	message += QString("%1%2").arg(SEP).arg(scanResults.size()).toLatin1();
 
 	for (int i = 0; i < scanResults.size(); ++i)
 		message += QString("%1%2%1%3%1%4%1%5%1%6").arg(SSEP).arg(scanResults[i].planet).arg(
-					scanResults[i].player).arg(scanResults[i].resource).arg(scanResults[i].shipMaxBuild).arg(
+					scanResults[i].player).arg(scanResults[i].resourcePerRound).arg(scanResults[i].maxBuildPerRound).arg(
 					scanResults[i].shipCount).toLatin1();
 
 

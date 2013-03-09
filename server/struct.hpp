@@ -17,13 +17,15 @@ struct ShipMove
 struct ShipMovement
 {
 	ShipMove move;
+	int player;
 	int remainingRound;
 };
 
 struct OurShipsOnPlanets
 {
 	int planet;
-	int planetSize;
+	int resourcePerRound;
+	int maxBuildPerRound;
 	int shipCount;
 };
 
@@ -32,8 +34,8 @@ struct ScanResult
 	int planet;
 	int player;
 	int shipCount;
-	int resource;
-	int shipMaxBuild;
+	int resourcePerRound;
+	int maxBuildPerRound;
 };
 
 struct OurMovingShips

@@ -28,7 +28,15 @@ class Game : public QObject
 							QVector<QVector<int> > distanceMatrix,
 							int roundCount,
 							int scanLimit);
+		void turnSignal(QTcpSocket * socket,
+					  int resources,
+					  QVector<OurShipsOnPlanets> ourShipsOnPlanet,
+					  QVector<ScanResult> scanResults,
+					  QVector<OurMovingShips> ourMovingShips,
+					  QVector<IncomingEnnemyShips> incomingEnnemies,
+					  QVector<FightReport> fightReports);
 
+		void finishedSignal(QTcpSocket * socket, bool youWon);
 
 
 	public slots:
@@ -48,6 +56,8 @@ class Game : public QObject
 		void filterScan(QVector<int> & scans);
 
 		QVector<QVector<int> > getDistanceMatrix();
+
+		void sendTurnMessage();
 
 	private:
 		int m_delayBetweenRound;
