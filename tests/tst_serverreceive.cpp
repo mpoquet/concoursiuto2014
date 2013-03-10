@@ -83,7 +83,7 @@ void ServerReceive::testLogin()
 
     // Simple login player
     send = QString("%1bouh\n").arg(LOGIN_PLAYER).toLatin1();
-    expected = QString("%1\n").arg(OK).toLatin1();
+    expected = QString("%1%2\n").arg(LOGIN_PLAYER_ACK).arg(OK).toLatin1();
     sockP.write(send);
 
     QTest::qWait(delay);
@@ -92,7 +92,7 @@ void ServerReceive::testLogin()
 
     // A player wants to login again as a player
     send = QString("%1bouh\n").arg(LOGIN_PLAYER).toLatin1();
-    expected = QString("%1\n").arg(ALREADY_LOGGED).toLatin1();
+    expected = QString("%1%2\n").arg(LOGIN_PLAYER_ACK).arg(ALREADY_LOGGED).toLatin1();
     sockP.write(send);
 
     QTest::qWait(delay);
@@ -101,7 +101,7 @@ void ServerReceive::testLogin()
 
     // A player wants to login as a display
     send = QString("%1bouh\n").arg(LOGIN_DISPLAY).toLatin1();
-    expected = QString("%1\n").arg(ALREADY_LOGGED).toLatin1();
+    expected = QString("%1%2\n").arg(LOGIN_DISPLAY_ACK).arg(ALREADY_LOGGED).toLatin1();
     sockP.write(send);
 
     QTest::qWait(delay);
@@ -110,7 +110,7 @@ void ServerReceive::testLogin()
 
     // Simple login display
     send = QString("%1bouh\n").arg(LOGIN_DISPLAY).toLatin1();
-    expected = QString("%1\n").arg(OK).toLatin1();
+    expected = QString("%1%2\n").arg(LOGIN_DISPLAY_ACK).arg(OK).toLatin1();
     sockD.write(send);
 
     QTest::qWait(delay);
@@ -119,7 +119,7 @@ void ServerReceive::testLogin()
 
     // A display wants to login again as a display
     send = QString("%1bouh\n").arg(LOGIN_DISPLAY).toLatin1();
-    expected = QString("%1\n").arg(ALREADY_LOGGED).toLatin1();
+    expected = QString("%1%2\n").arg(LOGIN_DISPLAY_ACK).arg(ALREADY_LOGGED).toLatin1();
     sockD.write(send);
 
     QTest::qWait(delay);
@@ -128,7 +128,7 @@ void ServerReceive::testLogin()
 
     // A display wants to login as a player
     send = QString("%1bouh\n").arg(LOGIN_PLAYER).toLatin1();
-    expected = QString("%1\n").arg(ALREADY_LOGGED).toLatin1();
+    expected = QString("%1%2\n").arg(LOGIN_PLAYER_ACK).arg(ALREADY_LOGGED).toLatin1();
     sockD.write(send);
 
     QTest::qWait(delay);
@@ -137,7 +137,7 @@ void ServerReceive::testLogin()
 
     // A second display wants to connect, but the max display count is set to 1
     send = QString("%1bouh\n").arg(LOGIN_DISPLAY).toLatin1();
-    expected = QString("%1\n").arg(NO_MORE_ROOM).toLatin1();
+    expected = QString("%1%2\n").arg(LOGIN_DISPLAY_ACK).arg(NO_MORE_ROOM).toLatin1();
     sockD2.write(send);
 
     QTest::qWait(delay);
@@ -152,7 +152,7 @@ void ServerReceive::testLogin()
     QCOMPARE(spyDisplayDisconnected.count(), 1);
 
     send = QString("%1bouh\n").arg(LOGIN_DISPLAY).toLatin1();
-    expected = QString("%1\n").arg(OK).toLatin1();
+    expected = QString("%1%2\n").arg(LOGIN_DISPLAY_ACK).arg(OK).toLatin1();
     sockD2.write(send);
 
     QTest::qWait(delay);
@@ -161,7 +161,7 @@ void ServerReceive::testLogin()
 
     // A second player logs in, might be OK
     send = QString("%1bouh\n").arg(LOGIN_PLAYER).toLatin1();
-    expected = QString("%1\n").arg(OK).toLatin1();
+    expected = QString("%1%2\n").arg(LOGIN_PLAYER_ACK).arg(OK).toLatin1();
     sockP2.write(send);
 
     QTest::qWait(delay);
@@ -170,7 +170,7 @@ void ServerReceive::testLogin()
 
     // A third player wants to log in, but the limit is 2
     send = QString("%1bouh\n").arg(LOGIN_PLAYER).toLatin1();
-    expected = QString("%1\n").arg(NO_MORE_ROOM).toLatin1();
+    expected = QString("%1%2\n").arg(LOGIN_PLAYER_ACK).arg(NO_MORE_ROOM).toLatin1();
     sockP3.write(send);
 
     QTest::qWait(delay);
@@ -185,7 +185,7 @@ void ServerReceive::testLogin()
     QCOMPARE(spyPlayerDisconnected.count(), 1);
 
     send = QString("%1bouh\n").arg(LOGIN_PLAYER).toLatin1();
-    expected = QString("%1\n").arg(OK).toLatin1();
+    expected = QString("%1%2\n").arg(LOGIN_PLAYER_ACK).arg(OK).toLatin1();
     sockP3.write(send);
 
     QTest::qWait(delay);

@@ -131,15 +131,17 @@ QVector<QTcpSocket *> Network::displays() const
 
 void Network::sendLoginPlayerACK(QTcpSocket *socket, char value)
 {
-	QByteArray message(2, '\n');
-	message[0] = value;
+    QByteArray message(3, '\n');
+    message[0] = LOGIN_PLAYER_ACK;
+    message[1] = value;
 	socket->write(message);
 }
 
 void Network::sendLoginDisplayACK(QTcpSocket *socket, char value)
 {
-	QByteArray message(2, '\n');
-	message[0] = value;
+    QByteArray message(3, '\n');
+    message[0] = LOGIN_DISPLAY_ACK;
+    message[1] = value;
 	socket->write(message);
 }
 
@@ -151,6 +153,7 @@ void Network::sendInitPlayer(QTcpSocket *socket,
 {
 	QByteArray message;
 
+    message += INIT_PLAYER;
 	message += QString("%1%2").arg(planetCount).arg(SEP).toLatin1();
 
 	for (int y = 0; y < distanceMatrix.size(); ++y)
@@ -165,21 +168,22 @@ void Network::sendInitPlayer(QTcpSocket *socket,
 	message += QString("%1%2").arg(roundCount).arg(SEP).toLatin1();
 	message += QString("%1").arg(scanLimit).toLatin1();
 
+    message += '\n';
 	socket->write(message);
 }
 
-void Network::sendTurn(QTcpSocket *socket,
-					   int resources,
-					   QVector<OurShipsOnPlanets> ourShipsOnPlanet,
-					   QVector<ScanResult> scanResults,
-					   QVector<OurMovingShips> ourMovingShips,
-					   QVector<IncomingEnnemyShips> incomingEnnemies,
-					   QVector<FightReport> fightReports)
+void Network::sendTurnPlayer(QTcpSocket *socket,
+    int resources,
+    QVector<OurShipsOnPlanets> ourShipsOnPlanet,
+    QVector<ScanResult> scanResults,
+    QVector<OurMovingShips> ourMovingShips,
+    QVector<IncomingEnnemyShips> incomingEnnemies,
+    QVector<FightReport> fightReports)
 {
 	QByteArray message;
 
-	message += QString("%1%2").arg(resources).arg(SEP).toLatin1();
-
+    message += TURN_PLAYER;
+    message += QString("%1%2").arg(resources).arg(SEP).toLatin1();
 	message += QString("%1").arg(ourShipsOnPlanet.size()).toLatin1();
 
 	for (int i = 0; i < ourShipsOnPlanet.size(); ++i)
@@ -214,6 +218,7 @@ void Network::sendTurn(QTcpSocket *socket,
 					fightReports[i].winner).arg(fightReports[i].playerCount).arg(
 					fightReports[i].aliveShipCount).toLatin1();
 
+    message += '\n';
 	socket->write(message);
 }
 
@@ -252,10 +257,9 @@ void Network::onNewConnection()
 void Network::onMessageReceived()
 {
 	QTcpSocket * socket = (QTcpSocket *) sender();
+    int index;
 
-	_clients[socket].buffer += socket->readAll();
-
-	int index;
+    _clients[socket].buffer += socket->readAll();
 
 	do
 	{
@@ -306,13 +310,13 @@ void Network::onMessageReceived()
 							_clients[socket].type = Client::DISPLAY;
 
 							emit loginDisplay(socket);
-							sendLoginPlayerACK(socket, OK);
+                            sendLoginDisplayACK(socket, OK);
 						}
 						else
-							sendLoginPlayerACK(socket, NO_MORE_ROOM);
+                            sendLoginDisplayACK(socket, NO_MORE_ROOM);
 					}
 					else
-						sendLoginPlayerACK(socket, ALREADY_LOGGED);
+                        sendLoginDisplayACK(socket, ALREADY_LOGGED);
 				} break;
 
 				case MOVE_PLAYER:
