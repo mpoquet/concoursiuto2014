@@ -13,9 +13,10 @@ public:
 	ServerReceive();
 
 private Q_SLOTS:
-	void testConnection();
 	void initTestCase();
+    void testConnection();
 	void testLogin();
+    void testFinished();
 
 private:
 	Network n;
@@ -42,7 +43,7 @@ void ServerReceive::testConnection()
 	QCOMPARE(sock.state(), QAbstractSocket::UnconnectedState);
 
     qRegisterMetaType<QTcpSocket*>("QTcpSocket*");
-    QSignalSpy spyConnected(&n, SIGNAL(clientConnected()));
+    QSignalSpy spyConnected(&n, SIGNAL(clientConnected(QTcpSocket*)));
     QSignalSpy spyDisconnected(&n, SIGNAL(unloggedClientDisconnected(QTcpSocket*)));
 
     sock.connectToHost("127.0.0.1", 4242);
@@ -67,7 +68,7 @@ void ServerReceive::testLogin()
 	QByteArray response, expected, send;
     QTcpSocket sockP, sockP2, sockP3, sockD, sockD2;
 
-    QSignalSpy spyConnected(&n, SIGNAL(clientConnected()));
+    QSignalSpy spyConnected(&n, SIGNAL(clientConnected(QTcpSocket*)));
     QSignalSpy spyPlayerDisconnected(&n, SIGNAL(playerDisconnected(QTcpSocket*)));
     QSignalSpy spyDisplayDisconnected(&n, SIGNAL(displayDisconnected(QTcpSocket*)));
 
@@ -87,7 +88,7 @@ void ServerReceive::testLogin()
 
     QTest::qWait(delay);
     response = sockP.readAll();
-	QCOMPARE(expected, response);
+    QCOMPARE(response, expected);
 
     // A player wants to login again as a player
     send = QString("%1bouh\n").arg(LOGIN_PLAYER).toLatin1();
@@ -96,7 +97,7 @@ void ServerReceive::testLogin()
 
     QTest::qWait(delay);
     response = sockP.readAll();
-    QCOMPARE(expected, response);
+    QCOMPARE(response, expected);
 
     // A player wants to login as a display
     send = QString("%1bouh\n").arg(LOGIN_DISPLAY).toLatin1();
@@ -105,7 +106,7 @@ void ServerReceive::testLogin()
 
     QTest::qWait(delay);
     response = sockP.readAll();
-    QCOMPARE(expected, response);
+    QCOMPARE(response, expected);
 
     // Simple login display
     send = QString("%1bouh\n").arg(LOGIN_DISPLAY).toLatin1();
@@ -114,7 +115,7 @@ void ServerReceive::testLogin()
 
     QTest::qWait(delay);
     response = sockD.readAll();
-    QCOMPARE(expected, response);
+    QCOMPARE(response, expected);
 
     // A display wants to login again as a display
     send = QString("%1bouh\n").arg(LOGIN_DISPLAY).toLatin1();
@@ -123,7 +124,7 @@ void ServerReceive::testLogin()
 
     QTest::qWait(delay);
     response = sockD.readAll();
-    QCOMPARE(expected, response);
+    QCOMPARE(response, expected);
 
     // A display wants to login as a player
     send = QString("%1bouh\n").arg(LOGIN_PLAYER).toLatin1();
@@ -132,7 +133,7 @@ void ServerReceive::testLogin()
 
     QTest::qWait(delay);
     response = sockD.readAll();
-    QCOMPARE(expected, response);
+    QCOMPARE(response, expected);
 
     // A second display wants to connect, but the max display count is set to 1
     send = QString("%1bouh\n").arg(LOGIN_DISPLAY).toLatin1();
@@ -141,7 +142,7 @@ void ServerReceive::testLogin()
 
     QTest::qWait(delay);
     response = sockD2.readAll();
-    QCOMPARE(expected, response);
+    QCOMPARE(response, expected);
 
     // The first display disconnects. The second one might be able to login as a display
     sockD.disconnectFromHost();
@@ -156,7 +157,7 @@ void ServerReceive::testLogin()
 
     QTest::qWait(delay);
     response = sockD2.readAll();
-    QCOMPARE(expected, response);
+    QCOMPARE(response, expected);
 
     // A second player logs in, might be OK
     send = QString("%1bouh\n").arg(LOGIN_PLAYER).toLatin1();
@@ -165,7 +166,7 @@ void ServerReceive::testLogin()
 
     QTest::qWait(delay);
     response = sockP2.readAll();
-    QCOMPARE(expected, response);
+    QCOMPARE(response, expected);
 
     // A third player wants to log in, but the limit is 2
     send = QString("%1bouh\n").arg(LOGIN_PLAYER).toLatin1();
@@ -174,7 +175,7 @@ void ServerReceive::testLogin()
 
     QTest::qWait(delay);
     response = sockP3.readAll();
-    QCOMPARE(expected, response);
+    QCOMPARE(response, expected);
 
     // The second player disconnects. The third player might now be able to log in
     sockP2.disconnectFromHost();
@@ -189,7 +190,7 @@ void ServerReceive::testLogin()
 
     QTest::qWait(delay);
     response = sockP3.readAll();
-    QCOMPARE(expected, response);
+    QCOMPARE(response, expected);
 
     // End of login test
     sockP.close();
@@ -205,6 +206,37 @@ void ServerReceive::testLogin()
     QCOMPARE(sockD.state(), QAbstractSocket::UnconnectedState);
     QCOMPARE(sockD2.state(), QAbstractSocket::UnconnectedState);
     QCOMPARE(n.clientCount(), 0);
+}
+
+void ServerReceive::testFinished()
+{
+    QTcpSocket sockc;
+    QTcpSocket * socks;
+    QByteArray response, expected;
+
+    sockc.connectToHost("127.0.0.1", 4242);
+    QTest::qWait(delay);
+
+    QCOMPARE(sockc.state(), QAbstractSocket::ConnectedState);
+    QCOMPARE(n.clientCount(), 1);
+
+    socks = n.clients().first();
+
+    // Win send
+    n.sendFinished(socks, true);
+    QTest::qWait(delay);
+
+    expected = QString("%1%2\n").arg(END_OF_GAME).arg('1').toLatin1();
+    response = sockc.readAll();
+    QCOMPARE(response, expected);
+
+    // Lose send
+    n.sendFinished(socks, false);
+    QTest::qWait(delay);
+
+    expected = QString("%1%2\n").arg(END_OF_GAME).arg('0').toLatin1();
+    response = sockc.readAll();
+    QCOMPARE(response, expected);
 }
 
 QTEST_GUILESS_MAIN(ServerReceive)

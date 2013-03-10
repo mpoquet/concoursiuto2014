@@ -35,8 +35,12 @@ public:
 
 	int playerCount() const;
 	int displayCount() const;
-	bool isListening() const { return _server->isListening(); }
 	int clientCount() const;
+    bool isListening() const { return _server->isListening(); }
+
+    QVector<QTcpSocket *> clients() const;
+    QVector<QTcpSocket *> players() const;
+    QVector<QTcpSocket *> displays() const;
 
 signals:
 	void loginPlayer(QTcpSocket * socket, QString nickname);
@@ -51,7 +55,7 @@ signals:
     void displayDisconnected(QTcpSocket * socket);
     void unloggedClientDisconnected(QTcpSocket * socket);
 
-	void clientConnected();
+    void clientConnected(QTcpSocket * socket);
 
 public slots:
 	void sendInitPlayer(QTcpSocket * socket,

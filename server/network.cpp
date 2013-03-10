@@ -51,7 +51,6 @@ int Network::playerCount() const
 	int count = 0;
 
 	QMapIterator<QTcpSocket *, Client> it(_clients);
-
 	while (it.hasNext())
 	{
 		it.next();
@@ -68,7 +67,6 @@ int Network::displayCount() const
 	int count = 0;
 
 	QMapIterator<QTcpSocket *, Client> it(_clients);
-
 	while (it.hasNext())
 	{
 		it.next();
@@ -82,7 +80,53 @@ int Network::displayCount() const
 
 int Network::clientCount() const
 {
-	return _clients.size();
+    return _clients.size();
+}
+
+QVector<QTcpSocket *> Network::clients() const
+{
+    QVector<QTcpSocket *> v(_clients.size());
+
+    QMapIterator<QTcpSocket *, Client> it(_clients);
+    for (int i = 0; it.hasNext(); ++i)
+    {
+        it.next();
+        v[i] = it.key();
+    }
+
+    return v;
+}
+
+QVector<QTcpSocket *> Network::players() const
+{
+    QVector<QTcpSocket *> v;
+
+    QMapIterator<QTcpSocket *, Client> it(_clients);
+    while (it.hasNext())
+    {
+        it.next();
+
+        if (it.value().type == Client::PLAYER)
+            v.append(it.key());
+    }
+
+    return v;
+}
+
+QVector<QTcpSocket *> Network::displays() const
+{
+    QVector<QTcpSocket *> v;
+
+    QMapIterator<QTcpSocket *, Client> it(_clients);
+    while (it.hasNext())
+    {
+        it.next();
+
+        if (it.value().type == Client::DISPLAY)
+            v.append(it.key());
+    }
+
+    return v;
 }
 
 void Network::sendLoginPlayerACK(QTcpSocket *socket, char value)
@@ -175,12 +219,13 @@ void Network::sendTurn(QTcpSocket *socket,
 
 void Network::sendFinished(QTcpSocket *socket, bool youWon)
 {
-	QByteArray message(2, '\n');
+    QByteArray message(3, '\n');
+    message[0] = END_OF_GAME;
 
 	if (youWon)
-		message[0] = '1';
+        message[1] = '1';
 	else
-		message[0] = '0';
+        message[1] = '0';
 
 	socket->write(message);
 }
@@ -201,7 +246,7 @@ void Network::onNewConnection()
 
 	_clients[socket] = Client();
 
-	emit clientConnected();
+    emit clientConnected(socket);
 }
 
 void Network::onMessageReceived()
