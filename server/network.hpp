@@ -64,7 +64,7 @@ public slots:
 						int roundCount,
 						int scanLimit);
 
-	void sendTurn(QTcpSocket * socket,
+    void sendTurnPlayer(QTcpSocket * socket,
 				  int resources,
 				  QVector<OurShipsOnPlanets> ourShipsOnPlanet,
 				  QVector<ScanResult> scanResults,
