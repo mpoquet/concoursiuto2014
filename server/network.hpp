@@ -47,7 +47,10 @@ signals:
 					QVector<BuildOrder> shipsToBuild,
 					QVector<ShipMove> shipsToMove);
 
-	void clientDisconnected(QTcpSocket * socket);
+    void playerDisconnected(QTcpSocket * socket);
+    void displayDisconnected(QTcpSocket * socket);
+    void unloggedClientDisconnected(QTcpSocket * socket);
+
 	void clientConnected();
 
 public slots:

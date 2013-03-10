@@ -389,11 +389,19 @@ void Network::onError(QAbstractSocket::SocketError error)
 void Network::onDisconnected()
 {
 	QTcpSocket * socket = (QTcpSocket *) sender();
-
 	qDebug() << "Client disconnected";
+
+    Client::ClientType type = _clients[socket].type;
 
 	_clients.remove(socket);
 	socket->deleteLater();
+
+    if (type == Client::PLAYER)
+        emit playerDisconnected(socket);
+    else if (type == Client::DISPLAY)
+        emit displayDisconnected(socket);
+    else
+        emit unloggedClientDisconnected(socket);
 }
 
 void Network::debugDisplayMove(QVector<int> planetsToScan, QVector<BuildOrder> shipsToBuild, QVector<ShipMove> shipsToMove)
