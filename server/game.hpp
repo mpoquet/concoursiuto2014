@@ -12,70 +12,73 @@
 #include <QVector>
 #include <QTcpSocket>
 #include <QString>
+#include <QTimer>
 
 class Game : public QObject
 {
-	Q_OBJECT
-	public:
-		Game(QString mapFilename, int delayBetweenRound, AbstractGameModel * gameModel, Network * network);
+    Q_OBJECT
+    public:
+        Game(QString mapFilename, int delayBetweenRound, AbstractGameModel * gameModel);
 
-		void start();
-		void iteration();
+    signals:
+        void initPlayerSignal(QTcpSocket * socket,
+                            int planetCount,
+                            QVector<QVector<int> > distanceMatrix,
+                            int roundCount,
+                            int scanLimit,
+                            int shipCost);
+        void turnSignal(QTcpSocket * socket,
+                      int resources,
+                      QVector<OurShipsOnPlanets> ourShipsOnPlanet,
+                      QVector<ScanResult> scanResults,
+                      QVector<OurMovingShips> ourMovingShips,
+                      QVector<IncomingEnnemyShips> incomingEnnemies,
+                      QVector<FightReport> fightReports);
 
-	signals:
-		void initPlayerSignal(QTcpSocket * socket,
-							int planetCount,
-							QVector<QVector<int> > distanceMatrix,
-							int roundCount,
-							int scanLimit);
-		void turnSignal(QTcpSocket * socket,
-					  int resources,
-					  QVector<OurShipsOnPlanets> ourShipsOnPlanet,
-					  QVector<ScanResult> scanResults,
-					  QVector<OurMovingShips> ourMovingShips,
-					  QVector<IncomingEnnemyShips> incomingEnnemies,
-					  QVector<FightReport> fightReports);
-
-		void finishedSignal(QTcpSocket * socket, bool youWon);
+        void finishedSignal(QTcpSocket * socket, bool youWon);
 
 
-	public slots:
-		void playerLogin(QTcpSocket * socket, QString nickname);
-		void displayLogin(QTcpSocket * socket, QString nickname);
-		void playerOrder(QTcpSocket * socket,
-						 QVector<int> planetsToScan,
-						 QVector<BuildOrder> shipsToBuild,
-						 QVector<ShipMove> shipsToMove);
+    public slots:
+        void playerLogin(QTcpSocket * socket, QString nickname);
+        void displayLogin(QTcpSocket * socket, QString nickname);
+        void playerOrder(QTcpSocket * socket,
+                         QVector<int> planetsToScan,
+                         QVector<BuildOrder> shipsToBuild,
+                         QVector<ShipMove> shipsToMove);
 
-	protected:
-		Planet * getPlanet(int id);
-		Galaxy * getGalaxy(int id);
-		Player * getPlayer(int id);
+        void start();
+        void iteration();
 
-		void filterBuildOrder(QVector<BuildOrder> & orders, Player * player);
-		void filterShipMove(QVector<ShipMove> & shipMoves, Player * player);
-		void filterScan(QVector<int> & scans);
+    protected:
+        Planet * getPlanet(int id);
+        Galaxy * getGalaxy(int id);
+        Player * getPlayer(int id);
 
-		QVector<QVector<int> > getDistanceMatrix();
+        void filterBuildOrder(QVector<BuildOrder> & orders, Player * player);
+        void filterShipMove(QVector<ShipMove> & shipMoves, Player * player);
+        void filterScan(QVector<int> & scans);
 
-		void sendTurnMessage(QMap<int, QVector<FightReport> > reports);
-		QMap<int, QVector<FightReport> > handleBattle(QVector<ShipMovement*> endMovements);
+        QVector<QVector<int> > getDistanceMatrix();
 
-		bool hasFleet(Player * p);
+        void sendTurnMessage(QMap<int, QVector<FightReport> > reports);
+        QMap<int, QVector<FightReport> > handleBattle(QVector<ShipMovement*> endMovements);
 
-	private:
-		int m_delayBetweenRound;
+        bool hasFleet(Player * p);
 
-		AbstractGameModel * m_gameModel;
-		Network * m_network;
-		QVector<Galaxy*> m_galaxies;
-		QVector<Player*> m_players;
-		QVector<ShipMovement*> m_movements;
-		QVector<Planet*> m_planets;
-		QMap<Player*, QTcpSocket *> m_clientSockets;
+    private:
+        int m_delayBetweenRound;
 
-		Player * m_neutralPlayer;
-		Player * m_nullPlayer;
+        AbstractGameModel * m_gameModel;
+        QVector<Galaxy*> m_galaxies;
+        QVector<Player*> m_players;
+        QVector<ShipMovement*> m_movements;
+        QVector<Planet*> m_planets;
+        QMap<Player*, QTcpSocket *> m_clientSockets;
+
+        QTimer * m_timer;
+
+        Player * m_neutralPlayer;
+        Player * m_nullPlayer;
 };
 
 #endif // GAME_HPP
