@@ -198,7 +198,6 @@ void Network::sendTurnPlayer(QTcpSocket *socket,
                     scanResults[i].player).arg(scanResults[i].resourcePerRound).arg(scanResults[i].maxBuildPerRound).arg(
                     scanResults[i].shipCount).toLatin1();
 
-
     message += QString("%1%2").arg(SEP).arg(ourMovingShips.size()).toLatin1();
 
     for (int i = 0; i < ourMovingShips.size(); ++i)
@@ -209,13 +208,14 @@ void Network::sendTurnPlayer(QTcpSocket *socket,
     message += QString("%1%2").arg(SEP).arg(incomingEnnemies.size()).toLatin1();
 
     for (int i = 0; i < incomingEnnemies.size(); ++i)
-        message += QString("%1%2%1%3%1%4").arg(SSEP).arg(incomingEnnemies[i].srcPlanet).arg(
-                    incomingEnnemies[i].destPlanet).arg(incomingEnnemies[i].shipCount).toLatin1();
+        message += QString("%1%2%1%3%1%4%1%5").arg(SSEP).arg(incomingEnnemies[i].srcPlanet).arg(
+                    incomingEnnemies[i].destPlanet).arg(incomingEnnemies[i].shipCount).arg(
+                    incomingEnnemies[i].remainingTurns).toLatin1();
 
     message += QString("%1%2").arg(SEP).arg(fightReports.size()).toLatin1();
 
     for (int i = 0; i < fightReports.size(); ++i)
-        message += QString("%1%2%1%3%1%4").arg(SSEP).arg(fightReports[i].planet).arg(
+        message += QString("%1%2%1%3%1%4%1%5").arg(SSEP).arg(fightReports[i].planet).arg(
                     fightReports[i].winner).arg(fightReports[i].playerCount).arg(
                     fightReports[i].aliveShipCount).toLatin1();
 

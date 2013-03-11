@@ -255,7 +255,117 @@ void ServerReceive::testTurnPlayer()
 
     socks = n.clients().first();
 
-    // Simple turn
+    // Data declaration
+    int resources;
+    QVector<OurShipsOnPlanets> ourShips;
+    QVector<ScanResult> scanResults;
+    QVector<OurMovingShips> ourMovingShips;
+    QVector<IncomingEnnemyShips> incomingEnnemies;
+    QVector<FightReport> fightReports;
+
+    // Let's do several tests
+    for (int nbTests = 0; nbTests < 50; ++nbTests)
+    {
+        // Let's fill this data with random stuff
+        resources = rand() % 500;
+        ourShips.resize(rand() % 50);
+        scanResults.resize(rand() % 50);
+        ourMovingShips.resize(rand() % 50);
+        incomingEnnemies.resize(rand() % 50);
+        fightReports.resize(rand() % 50);
+
+        for (int i = 0; i < ourShips.size(); ++i)
+        {
+            ourShips[i].planet = rand() % 50;
+            ourShips[i].resourcePerRound = rand() % 50;
+            ourShips[i].maxBuildPerRound = rand() % 50;
+            ourShips[i].shipCount = rand() % 50;
+        }
+
+        for (int i = 0; i < scanResults.size(); ++i)
+        {
+            scanResults[i].planet = rand() % 50;
+            scanResults[i].player = rand() % 50;
+            scanResults[i].shipCount = rand() % 50;
+            scanResults[i].resourcePerRound = rand() % 50;
+            scanResults[i].maxBuildPerRound = rand() % 50;
+        }
+
+        for (int i = 0; i < ourMovingShips.size(); ++i)
+        {
+            ourMovingShips[i].srcPlanet = rand() % 50;
+            ourMovingShips[i].destPlanet = rand() % 50;
+            ourMovingShips[i].shipCount = rand() % 50;
+            ourMovingShips[i].remainingTurns = rand() % 50;
+        }
+
+        for (int i = 0; i < incomingEnnemies.size(); ++i)
+        {
+            incomingEnnemies[i].srcPlanet = rand() % 50;
+            incomingEnnemies[i].destPlanet = rand() % 50;
+            incomingEnnemies[i].shipCount = rand() % 50;
+            incomingEnnemies[i].remainingTurns = rand() % 50;
+        }
+
+        for (int i = 0; i < fightReports.size(); ++i)
+        {
+            fightReports[i].planet = rand() % 50;
+            fightReports[i].winner = rand() % 50;
+            fightReports[i].playerCount = rand() % 50;
+            fightReports[i].aliveShipCount = rand() % 50;
+        }
+
+        // Let's prepare the according buffer
+        expected.clear();
+        expected += TURN_PLAYER;
+        expected += QString("%1%2").arg(resources).arg(SEP).toLatin1();
+        expected += QString("%1").arg(ourShips.size()).toLatin1();
+
+        for (int i = 0; i < ourShips.size(); ++i)
+            expected += QString("%1%2%1%3%1%4%1%5").arg(SSEP).arg(
+                        ourShips[i].planet).arg(ourShips[i].resourcePerRound).arg(
+                        ourShips[i].maxBuildPerRound).arg(ourShips[i].shipCount).toLatin1();
+
+        expected += QString("%1%2").arg(SEP).arg(scanResults.size()).toLatin1();
+
+        for (int i = 0; i < scanResults.size(); ++i)
+            expected += QString("%1%2%1%3%1%4%1%5%1%6").arg(SSEP).arg(
+                        scanResults[i].planet).arg(scanResults[i].player).arg(
+                        scanResults[i].resourcePerRound).arg(scanResults[i].maxBuildPerRound).arg(
+                        scanResults[i].shipCount).toLatin1();
+
+        expected += QString("%1%2").arg(SEP).arg(ourMovingShips.size()).toLatin1();
+
+        for (int i = 0; i < ourMovingShips.size(); ++i)
+            expected += QString("%1%2%1%3%1%4%1%5").arg(SSEP).arg(ourMovingShips[i].srcPlanet).arg(
+                        ourMovingShips[i].destPlanet).arg(ourMovingShips[i].shipCount).arg(
+                        ourMovingShips[i].remainingTurns).toLatin1();
+
+        expected += QString("%1%2").arg(SEP).arg(incomingEnnemies.size()).toLatin1();
+
+        for (int i = 0; i < incomingEnnemies.size(); ++i)
+            expected += QString("%1%2%1%3%1%4%1%5").arg(SSEP).arg(incomingEnnemies[i].srcPlanet).arg(
+                        incomingEnnemies[i].destPlanet).arg(incomingEnnemies[i].shipCount).arg(
+                        incomingEnnemies[i].remainingTurns).toLatin1();
+
+        expected += QString("%1%2").arg(SEP).arg(fightReports.size()).toLatin1();
+
+        for (int i = 0; i < fightReports.size(); ++i)
+            expected += QString("%1%2%1%3%1%4%1%5").arg(SSEP).arg(fightReports[i].planet).arg(
+                        fightReports[i].winner).arg(fightReports[i].playerCount).arg(
+                        fightReports[i].aliveShipCount).toLatin1();
+
+        expected += '\n';
+
+        n.sendTurnPlayer(socks, resources, ourShips,
+                         scanResults, ourMovingShips,
+                         incomingEnnemies, fightReports);
+
+        QTest::qWait(delay);
+
+        response = sockc.readAll();
+        QCOMPARE(response, expected);
+    }
 }
 
 QTEST_GUILESS_MAIN(ServerReceive)

@@ -33,9 +33,9 @@ struct ScanResult
 {
 	int planet;
 	int player;
-	int shipCount;
 	int resourcePerRound;
 	int maxBuildPerRound;
+    int shipCount;
 };
 
 struct OurMovingShips
@@ -51,6 +51,7 @@ struct IncomingEnnemyShips
 	int srcPlanet;
 	int destPlanet;
 	int shipCount;
+    int remainingTurns;
 };
 
 struct FightReport
