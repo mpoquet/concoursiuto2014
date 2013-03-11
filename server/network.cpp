@@ -246,10 +246,7 @@ void Network::onNewConnection()
 	connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
 	connect(socket, SIGNAL(readyRead()), this, SLOT(onMessageReceived()));
 
-	cout << QString("New connection from %1:%2").arg(socket->peerAddress().toString()).arg(
-			socket->peerPort()).toStdString() << endl;
-
-	_clients[socket] = Client();
+    _clients[socket] = Client();
 
     emit clientConnected(socket);
 }
