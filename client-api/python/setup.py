@@ -7,9 +7,6 @@ module_name = 'contest'
 module = Extension(
     '_'+module_name,
     sources=[module_name+'_wrap.cxx', module_name+'.cpp'],
-    include_dirs=['../../libnetwork/include'],
-    library_dirs=['../../libnetwork/lib'],
-    libraries=['libnetwork'],
     extra_compile_args=['-Wno-unused-but-set-variable'],
 )
 

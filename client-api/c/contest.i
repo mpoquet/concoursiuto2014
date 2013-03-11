@@ -5,11 +5,12 @@
     #include "contest.h"
 %}
 
+
 typedef struct Session
 {
     %extend
     {
-        Session(const char* host, int port);
+        Session(const char* host, int port, const char* pseudo);
         ~Session();
         
         bool isValid();
