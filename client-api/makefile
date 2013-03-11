@@ -15,7 +15,7 @@ PYFLAGS := $(call join_and_prefix, -I, $(INCLUDES_DIR)) $(call join_and_prefix, 
 
 	# General rules
 
-all: clean c java python
+all: clean c++ java python
 	rm -rf build
 
 test: clean c-test python-test java-test
@@ -26,24 +26,24 @@ clean:
 clean-all: clean
 	rm -rf bin
 
-.PHONY: test clean clean-all c c-build c-test java java-build java-test python python-build python-test
+.PHONY: test clean clean-all c++ c-build c-test java java-build java-test python python-build python-test
 
 
-	@# C language
+	@# C++ language
 
 
 c: c-build
 
-c-build: 
+c++-build: 
 	@echo "\n\tC BUILD:\n"
-	mkdir -p build/c
-	cp -R c/* build/c
-	cd build/c && $(CXX) -c *.cpp $(CXXFLAGS)
-	cd build/c && $(CXX) -shared *.o -o lib$(MODULE_NAME).so $(LDFLAGS)
-	mkdir -p bin/c
-	cp build/c/lib$(MODULE_NAME).* bin/c
+	mkdir -p build/c++
+	cp -R c++/* build/c
+	cd build/c++ && $(CXX) -c *.cpp $(CXXFLAGS)
+	cd build/c++ && $(CXX) -shared *.o -o lib$(MODULE_NAME).so $(LDFLAGS)
+	mkdir -p bin/c++
+	cp build/c++/lib$(MODULE_NAME).* bin/c++
 
-c-test: c-build
+c++-test: c-build
 	@echo "\n\tC TESTS:\n"
 	@# [...] 
 
@@ -56,8 +56,8 @@ java: java-build
 java-build:
 	@echo "\n\tJAVA BUILD:\n"
 	mkdir -p build/java
-	cd build/java && swig2.0 -c++ -outcurrentdir -java ../../c/$(MODULE_NAME).i
-	cp -R c/* build/java
+	cd build/java && swig2.0 -c++ -outcurrentdir -java ../../c++/$(MODULE_NAME).i
+	cp -R c++/* build/java
 	cp -R java/* build/java
 	cd build/java && $(CXX) -c *.cpp *.cxx -I$(JAVA_INCLUDE_DIR) $(CXXFLAGS)
 	cd build/java && $(CXX) -shared *.o -o lib$(MODULE_NAME).so $(LDFLAGS)
@@ -80,8 +80,8 @@ python: python-build
 python-build:
 	@echo "\n\tPYTHON BUILD:\n"
 	mkdir -p build/python
-	cd build/python && swig2.0 -c++ -outcurrentdir -python ../../c/$(MODULE_NAME).i
-	cp -R c/* build/python
+	cd build/python && swig2.0 -c++ -outcurrentdir -python ../../c++/$(MODULE_NAME).i
+	cp -R c++/* build/python
 	cp -R python/* build/python
 	cd build/python && python setup.py --quiet build_ext --inplace $(PYFLAGS)
 	@#cd python && python setup.py --quiet build_ext --inplace

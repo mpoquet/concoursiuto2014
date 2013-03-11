@@ -4,10 +4,11 @@
 #include <QFile>
 #include <QStringList>
 
-Game::Game(QString mapFilename, int delayBetweenRound, AbstractGameModel * gameModel)
+Game::Game(QString mapFilename, int delayBetweenRound, int nbTurn, AbstractGameModel * gameModel)
 {
 	m_delayBetweenRound = delayBetweenRound;
 	m_gameModel = gameModel;
+	m_maxTurn = nbTurn;
 
 	QFile mapFile(mapFilename);
 
@@ -77,6 +78,7 @@ void Game::start()
 	}
 	qDebug() << "Game::start()";
 
+	m_currentRound = 0;
 	// attribution des ids aux joueurs de 1 à 4
 	// 0 = autochtone
 	// -1 = personne
@@ -166,6 +168,13 @@ void Game::start()
 
 void Game::iteration()
 {
+	if(m_currentRound >= m_maxTurn)
+	{
+		m_timer->stop();
+		return;
+	}
+	m_currentRound++;
+
 	qDebug() << "Game::iteration";
 	Planet * planet;
 	Planet * planetDest;
