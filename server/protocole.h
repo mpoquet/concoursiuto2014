@@ -13,7 +13,7 @@
 #define LOGIN_DISPLAY 'B'
 #define MOVE_PLAYER 'C'
 
-// Client -> Player
+// Server -> Client
 #define LOGIN_PLAYER_ACK 'D'
 #define LOGIN_DISPLAY_ACK 'E'
 #define INIT_PLAYER 'F'

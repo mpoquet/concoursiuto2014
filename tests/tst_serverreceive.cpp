@@ -14,9 +14,11 @@ public:
 
 private Q_SLOTS:
 	void initTestCase();
+
     void testConnection();
 	void testLogin();
     void testFinished();
+    void testTurnPlayer();
 
 private:
 	Network n;
@@ -237,6 +239,23 @@ void ServerReceive::testFinished()
     expected = QString("%1%2\n").arg(END_OF_GAME).arg('0').toLatin1();
     response = sockc.readAll();
     QCOMPARE(response, expected);
+}
+
+void ServerReceive::testTurnPlayer()
+{
+    QTcpSocket sockc;
+    QTcpSocket * socks;
+    QByteArray response, expected;
+
+    sockc.connectToHost("127.0.0.1", 4242);
+    QTest::qWait(delay);
+
+    QCOMPARE(sockc.state(), QAbstractSocket::ConnectedState);
+    QCOMPARE(n.clientCount(), 1);
+
+    socks = n.clients().first();
+
+    // Simple turn
 }
 
 QTEST_GUILESS_MAIN(ServerReceive)

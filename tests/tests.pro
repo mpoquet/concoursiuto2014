@@ -14,7 +14,8 @@ CONFIG   -= app_bundle
 
 TEMPLATE = app
 
-HEADERS += ../server/network.hpp
+HEADERS += ../server/network.hpp \
+           ../server/struct.hpp
 
 SOURCES += tst_serverreceive.cpp \
            ../server/network.cpp

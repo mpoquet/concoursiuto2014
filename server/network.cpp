@@ -394,33 +394,33 @@ void Network::onMessageReceived()
 													emit movePlayer(socket, planetsToScan, shipsToBuild, shipsToMove);
 												}
 												else
-													cerr << QString("Invalid message : moves count mismatch in move (%1)").arg(moves).toStdString();
+                                                    cerr << QString("Invalid message : moves count mismatch in move (%1)").arg(moves).toStdString() << endl;
 											}
 											else
-												cerr << QString("Invalid message : invalid moves in move (%1)").arg(moves).toStdString();
+                                                cerr << QString("Invalid message : invalid moves in move (%1)").arg(moves).toStdString() << endl;
 										}
 										else
-											cerr << QString("Invalid message : build count mismatch in move (%1)").arg(builds).toStdString();
-									}
+                                            cerr << QString("Invalid message : build count mismatch in move (%1)").arg(builds).toStdString() << endl;
+                                    }
 									else
-										cerr << QString("Invalid message : invalid build in move (%1)").arg(builds).toStdString();
+                                        cerr << QString("Invalid message : invalid build in move (%1)").arg(builds).toStdString() << endl;
 								}
 								else
-									cerr << QString("Invalid message : scan count mismatch in move (%1)").arg(scans).toStdString();
+                                    cerr << QString("Invalid message : scan count mismatch in move (%1)").arg(scans).toStdString() << endl;
 							}
 							else
-								cerr << QString("Invalid message : invalid scan in move (%1)").arg(scans).toStdString();
+                                cerr << QString("Invalid message : invalid scan in move (%1)").arg(scans).toStdString() << endl;
 						}
 						else
-							cerr << QString("Invalid message : invalid move (%1)").arg(content).toStdString();
+                            cerr << QString("Invalid message : invalid move (%1)").arg(content).toStdString() << endl;
 					}
 					else
-						cerr << "Invalid message : move from a not-player client";
+                        cerr << "Invalid message : move from a not-player client" << endl;
 				} break;
 				}
 			}
 			else
-				cerr << "Invalid message received (" << message.toStdString() << ')';
+                cerr << "Invalid message received (" << message.toStdString() << ')' << endl;
 		}
 
 	} while (index != -1);
