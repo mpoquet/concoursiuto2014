@@ -11,3 +11,5 @@ Release
 *~
 moc_*
 server/server
+client-api/build
+client-api/bin
