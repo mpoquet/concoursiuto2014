@@ -1,11 +1,19 @@
-MODULE_NAME=contest
-JAVA_INCLUDE_DIR=/usr/lib/jvm/java-1.6.0-openjdk-i386/include
-CXXFLAGS=-I$(shell pwd)/libnetwork/include
-LDFLAGS=-L$(shell pwd)/libnetwork/lib -llibnetwork
+MODULE_NAME := contest
+JAVA_INCLUDE_DIR := /usr/lib/jvm/java-1.6.0-openjdk-i386/include
+INCLUDES_DIR := $(shell pwd)/libnetwork/include $(shell pwd)/../server/
+LIBS_DIR := $(shell pwd)/libnetwork/lib
+LIBS := libnetwork
+
+define join_and_prefix
+    $(addprefix $(strip $1), $(subst $() $(),:,$(strip $2)))
+endef
+
+CXXFLAGS := $(addprefix -I, $(INCLUDES_DIR))
+LDFLAGS := $(addprefix -L, $(LIBS_DIR)) $(addprefix -l, $(LIBS))
+PYFLAGS := $(call join_and_prefix, -I, $(INCLUDES_DIR)) $(call join_and_prefix, -L, $(LIBS_DIR)) $(addprefix -l, $(LIBS))
 
 
 	# General rules
-
 
 all: clean c java python
 	rm -rf build
@@ -75,7 +83,7 @@ python-build:
 	cd build/python && swig2.0 -c++ -outcurrentdir -python ../../c/$(MODULE_NAME).i
 	cp -R c/* build/python
 	cp -R python/* build/python
-	cd build/python && python setup.py --quiet build_ext --inplace
+	cd build/python && python setup.py --quiet build_ext --inplace $(PYFLAGS)
 	@#cd python && python setup.py --quiet build_ext --inplace
 	mkdir -p bin/python
 	cp build/python/$(MODULE_NAME).py build/python/_$(MODULE_NAME).* bin/python

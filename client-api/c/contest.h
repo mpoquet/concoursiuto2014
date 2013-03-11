@@ -2,7 +2,7 @@ typedef struct Session Session;
 
 
 // Alloue et initialise une session de jeu
-Session* new_Session(const char* host, int port);
+Session* new_Session(const char* host, int port, const char* pseudo);
 
 // Termine la session de jeu
 void delete_Session(Session* session);

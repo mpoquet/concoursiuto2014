@@ -1,6 +1,7 @@
 #ifndef PROTOCOLE_H
 #define PROTOCOLE_H
 
+#define MESSAGE_SEP '\n'
 #define SEP '#'
 #define SSEP ' '
 #define OK 'a'
