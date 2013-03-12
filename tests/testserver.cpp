@@ -17,10 +17,10 @@ private Q_SLOTS:
 
     void testConnection();
 	void testLogin();
-    void testFinished();
-    void testTurnPlayer();
     void testInitPlayer();
+    void testTurnPlayer();
     void testMovePlayer();
+    void testFinished();
 
 private:
 	Network n;
@@ -212,7 +212,7 @@ void TestServer::testLogin()
     QCOMPARE(n.clientCount(), 0);
 }
 
-void TestServer::testFinished()
+void TestServer::testInitPlayer()
 {
     QTcpSocket sockc;
     QTcpSocket * socks;
@@ -226,21 +226,60 @@ void TestServer::testFinished()
 
     socks = n.clients().first();
 
-    // Win send
-    n.sendFinished(socks, true);
-    QTest::qWait(delay);
+    // Data declaration
+    int planetCount;
+    QVector<QVector<int> > distanceMatrix;
+    int roundCount;
+    int scanLimit;
+    int shipCost;
+    int nbPlayers;
+    int idPlayer;
 
-    expected = QString("%1%2\n").arg(END_OF_GAME).arg('1').toLatin1();
-    response = sockc.readAll();
-    QCOMPARE(response, expected);
+    // Let's do several tests
+    for (int nbTests = 0; nbTests < 50; ++nbTests)
+    {
+        planetCount = rand() % 50;
 
-    // Lose send
-    n.sendFinished(socks, false);
-    QTest::qWait(delay);
+        distanceMatrix.resize(planetCount);
+        for (int y = 0; y < planetCount; ++y)
+        {
+            distanceMatrix[y].resize(planetCount);
 
-    expected = QString("%1%2\n").arg(END_OF_GAME).arg('0').toLatin1();
-    response = sockc.readAll();
-    QCOMPARE(response, expected);
+            for (int x = 0; x < planetCount; ++x)
+                distanceMatrix[y][x] = rand() % 50;
+        }
+
+        roundCount = rand() % 50;
+        scanLimit = rand() % 50;
+        shipCost = rand() % 50;
+        nbPlayers = rand() % 50;
+        idPlayer = rand() % 50;
+
+        expected.clear();
+        expected += INIT_PLAYER;
+        expected += QString("%1%2").arg(planetCount).arg(SEP).toLatin1();
+
+        for (int y = 0; y < planetCount; ++y)
+            for (int x = 0; x < planetCount; ++x)
+                expected += QString("%1%2").arg(distanceMatrix[y][x]).arg(SSEP).toLatin1();
+
+        if (distanceMatrix.size() > 0 && distanceMatrix[0].size() > 0)
+            expected.chop(1);
+
+        expected += SEP;
+        expected += QString("%1%2").arg(roundCount).arg(SEP).toLatin1();
+        expected += QString("%1%2").arg(scanLimit).arg(SEP).toLatin1();
+        expected += QString("%1%2").arg(shipCost).arg(SEP).toLatin1();
+        expected += QString("%1%2").arg(nbPlayers).arg(SEP).toLatin1();
+        expected += QString("%1").arg(idPlayer).toLatin1();
+        expected += '\n';
+
+        n.sendInitPlayer(socks, planetCount, distanceMatrix, roundCount, scanLimit, shipCost, nbPlayers, idPlayer);
+        QTest::qWait(delay);
+
+        response = sockc.readAll();
+        QCOMPARE(response, expected);
+    }
 }
 
 void TestServer::testTurnPlayer()
@@ -373,76 +412,6 @@ void TestServer::testTurnPlayer()
     }
 }
 
-void TestServer::testInitPlayer()
-{
-    QTcpSocket sockc;
-    QTcpSocket * socks;
-    QByteArray response, expected;
-
-    sockc.connectToHost("127.0.0.1", 4242);
-    QTest::qWait(delay);
-
-    QCOMPARE(sockc.state(), QAbstractSocket::ConnectedState);
-    QCOMPARE(n.clientCount(), 1);
-
-    socks = n.clients().first();
-
-    // Data declaration
-    int planetCount;
-    QVector<QVector<int> > distanceMatrix;
-    int roundCount;
-    int scanLimit;
-    int shipCost;
-    int nbPlayers;
-    int idPlayer;
-
-    // Let's do several tests
-    for (int nbTests = 0; nbTests < 50; ++nbTests)
-    {
-        planetCount = rand() % 50;
-
-        distanceMatrix.resize(planetCount);
-        for (int y = 0; y < planetCount; ++y)
-        {
-            distanceMatrix[y].resize(planetCount);
-
-            for (int x = 0; x < planetCount; ++x)
-                distanceMatrix[y][x] = rand() % 50;
-        }
-
-        roundCount = rand() % 50;
-        scanLimit = rand() % 50;
-        shipCost = rand() % 50;
-        nbPlayers = rand() % 50;
-        idPlayer = rand() % 50;
-
-        expected.clear();
-        expected += INIT_PLAYER;
-        expected += QString("%1%2").arg(planetCount).arg(SEP).toLatin1();
-
-        for (int y = 0; y < planetCount; ++y)
-            for (int x = 0; x < planetCount; ++x)
-                expected += QString("%1%2").arg(distanceMatrix[y][x]).arg(SSEP).toLatin1();
-
-        if (distanceMatrix.size() > 0 && distanceMatrix[0].size() > 0)
-            expected.chop(1);
-
-        expected += SEP;
-        expected += QString("%1%2").arg(roundCount).arg(SEP).toLatin1();
-        expected += QString("%1%2").arg(scanLimit).arg(SEP).toLatin1();
-        expected += QString("%1%2").arg(shipCost).arg(SEP).toLatin1();
-        expected += QString("%1%2").arg(nbPlayers).arg(SEP).toLatin1();
-        expected += QString("%1").arg(idPlayer).toLatin1();
-        expected += '\n';
-
-        n.sendInitPlayer(socks, planetCount, distanceMatrix, roundCount, scanLimit, shipCost, nbPlayers, idPlayer);
-        QTest::qWait(delay);
-
-        response = sockc.readAll();
-        QCOMPARE(response, expected);
-    }
-}
-
 void TestServer::testMovePlayer()
 {
     QTcpSocket sockc;
@@ -543,6 +512,38 @@ void TestServer::testMovePlayer()
         QCOMPARE(receivedShipsToMove, shipsToMove);
     }
 }
+
+void TestServer::testFinished()
+{
+    QTcpSocket sockc;
+    QTcpSocket * socks;
+    QByteArray response, expected;
+
+    sockc.connectToHost("127.0.0.1", 4242);
+    QTest::qWait(delay);
+
+    QCOMPARE(sockc.state(), QAbstractSocket::ConnectedState);
+    QCOMPARE(n.clientCount(), 1);
+
+    socks = n.clients().first();
+
+    // Win send
+    n.sendFinished(socks, true);
+    QTest::qWait(delay);
+
+    expected = QString("%1%2\n").arg(END_OF_GAME).arg('1').toLatin1();
+    response = sockc.readAll();
+    QCOMPARE(response, expected);
+
+    // Lose send
+    n.sendFinished(socks, false);
+    QTest::qWait(delay);
+
+    expected = QString("%1%2\n").arg(END_OF_GAME).arg('0').toLatin1();
+    response = sockc.readAll();
+    QCOMPARE(response, expected);
+}
+
 
 QTEST_GUILESS_MAIN(TestServer)
 
