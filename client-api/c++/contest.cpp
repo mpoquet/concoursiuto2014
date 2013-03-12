@@ -1,5 +1,7 @@
 #include "contest.hpp"
 
+#include <sstream>
+#include <cstdio>
 #include <protocole.h>
 #include <Network.hpp>
 
@@ -60,7 +62,7 @@ int Session::login(const string& pseudo)
     {
         sendMessage(Message(LOGIN_PLAYER, pseudo));
 
-        char res = waitMessage(string(1, LOGIN_PLAYER_ACK)).second[0];
+        const char res = waitMessage(string(1, LOGIN_PLAYER_ACK)).second[0];
 
         switch(res)
         {
@@ -83,7 +85,25 @@ bool Session::waitInit()
 {
     try
     {
-        waitMessage(string(1, INIT_PLAYER));
+        const Message msg = waitMessage(string(1, INIT_PLAYER));
+
+        const vector<string> messageParts = split(msg.second, SEP);
+
+        const int planetCount = toInt(messageParts[0]);
+        const vector<int> planetDistances = toIntArray(messageParts[1], SSEP);
+        const int roundCount = toInt(messageParts[2]);
+        const int playerCount = toInt(messageParts[3]);
+        const int playerId = toInt(messageParts[4]);
+
+        // COUT VAISSEAU ???
+        // TOURS ECOULE ???
+
+        cout << "planetCount:" << planetCount << endl;
+        cout << "size(planetDistances):" << planetDistances.size() << endl;
+        cout << "roundCount:" << roundCount << endl;
+        cout << "playerCount:" << playerCount << endl;
+        cout << "playerId:" << playerId << endl;
+
         return true;
     }
     catch(runtime_error& err)
@@ -98,12 +118,10 @@ int Session::waitRoundStarting()
 {
     try
     {
-        Message msg = waitMessage(string(1, TURN_PLAYER) + string(1, END_OF_GAME));
+        const Message msg = waitMessage(string(1, TURN_PLAYER) + string(1, END_OF_GAME));
 
         if(msg.first == TURN_PLAYER)
         {
-            const char* messageBody = msg.second.c_str();
-            
             // RECUPERATION DE DONNEES
 
             return ROUND_NORMAL;
@@ -117,6 +135,36 @@ int Session::waitRoundStarting()
         setError(string("Session::waitRoundBeginning: ") + err.what());
         return ROUND_NETWORK_ERROR;
     }
+}
+
+
+Data Session::data()
+{
+    throw runtime_error("not implemented");
+}
+
+
+void Session::orderScan(int planetId)
+{
+    throw runtime_error("not implemented");
+}
+
+
+void Session::orderMove(int planetSourceId, int planetDestinationId, int shipCount)
+{
+    throw runtime_error("not implemented");
+}
+
+
+void Session::orderBuild(int planetSourceId, int shipCount)
+{
+    throw runtime_error("not implemented");
+}
+
+
+void Session::sendOrders()
+{
+    throw runtime_error("not implemented");
 }
 
 
@@ -140,7 +188,7 @@ void Session::sendMessage(const Message& message)
 
 pair<char, string> Session::waitMessage(string expectedType)
 {
-    size_t pos = expectedType.find(_data->socket.recvChar());
+    const size_t pos = expectedType.find(_data->socket.recvChar());
 
     if(pos == string::npos)
         throw runtime_error("unexpected network message type");
@@ -154,6 +202,86 @@ pair<char, string> Session::waitMessage(string expectedType)
 void Session::setError(const std::string& error)
 {
     _data->lastError = error;
+}
+
+
+vector<int> Session::toIntArray(const string& str, char delim)
+{
+    vector<int> elems;
+    stringstream ss(str);
+    string item;
+
+    while(getline(ss, item, delim))
+        elems.push_back(toInt(item));
+    
+    return elems;
+}
+
+
+vector<string> Session::split(const string& str, char delim)
+{
+    vector<string> elems;
+    stringstream ss(str);
+    string item;
+
+    while(getline(ss, item, delim))
+        elems.push_back(item);
+    
+    return elems;
+}
+
+
+int Session::toInt(const string& str)
+{
+    return atoi(str.c_str());
+}
+
+
+Data::Data()
+{
+    
+}
+
+
+GameInfos Data::globalInformations()
+{
+    throw runtime_error("not implemented");
+}
+
+
+PlanetList Data::planets()
+{
+    throw runtime_error("not implemented");
+}
+
+
+ScanResultList Data::scanResults()
+{
+    throw runtime_error("not implemented");
+}
+
+
+FleetList Data::fleets()
+{
+    throw runtime_error("not implemented");
+}
+
+
+EnnemyList Data::enemies()
+{
+    throw runtime_error("not implemented");
+}
+
+
+FightReportList Data::reports()
+{
+    throw runtime_error("not implemented");
+}
+
+
+int Data::distance(int planetA, int planetB)
+{
+    throw runtime_error("not implemented");
 }
 
 

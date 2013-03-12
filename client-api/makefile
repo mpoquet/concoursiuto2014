@@ -90,5 +90,6 @@ python-build:
 
 python-test: python-build
 	@echo "\n\tPYTHON TESTS:\n"
-	@#cd build/python && python -c "import $(MODULE_NAME); print 'Test: Ok' if $(MODULE_NAME).fact(4).n==24 else 'Test: Error'"
+	cp python/test/test.py build/python
+	cd build/python && python test.py
 
