@@ -284,6 +284,11 @@ void Game::iteration()
 		Player * winner = m_players[0];
 		emit finishedSignal(m_clientSockets.value(winner), true);
 		m_players.clear();
+		m_timer->stop();
+	}
+	else if(m_players.size() == 0)
+	{
+		m_timer->stop();
 	}
 
 	sendTurnMessage(reports);
