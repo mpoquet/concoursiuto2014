@@ -6,11 +6,11 @@
 #include "../server/network.hpp"
 #include "../server/protocole.h"
 
-class ServerReceive : public QObject
+class TestServer : public QObject
 {
 	Q_OBJECT
 public:
-	ServerReceive();
+    TestServer();
 
 private Q_SLOTS:
 	void initTestCase();
@@ -26,19 +26,19 @@ private:
     int delay;
 };
 
-ServerReceive::ServerReceive() :
+TestServer::TestServer() :
     n(4242, 2, 1),
     delay(100)
 {
 }
 
-void ServerReceive::initTestCase()
+void TestServer::initTestCase()
 {
 	n.run();
 	QVERIFY(n.isListening());
 }
 
-void ServerReceive::testConnection()
+void TestServer::testConnection()
 {
 	QCOMPARE(n.clientCount(), 0);
 
@@ -66,7 +66,7 @@ void ServerReceive::testConnection()
     QCOMPARE(spyDisconnected.count(), 1);
 }
 
-void ServerReceive::testLogin()
+void TestServer::testLogin()
 {
 	QByteArray response, expected, send;
     QTcpSocket sockP, sockP2, sockP3, sockD, sockD2;
@@ -211,7 +211,7 @@ void ServerReceive::testLogin()
     QCOMPARE(n.clientCount(), 0);
 }
 
-void ServerReceive::testFinished()
+void TestServer::testFinished()
 {
     QTcpSocket sockc;
     QTcpSocket * socks;
@@ -242,7 +242,7 @@ void ServerReceive::testFinished()
     QCOMPARE(response, expected);
 }
 
-void ServerReceive::testTurnPlayer()
+void TestServer::testTurnPlayer()
 {
     QTcpSocket sockc;
     QTcpSocket * socks;
@@ -372,7 +372,7 @@ void ServerReceive::testTurnPlayer()
     }
 }
 
-void ServerReceive::testInitPlayer()
+void TestServer::testInitPlayer()
 {
     QTcpSocket sockc;
     QTcpSocket * socks;
@@ -442,7 +442,7 @@ void ServerReceive::testInitPlayer()
     }
 }
 
-QTEST_GUILESS_MAIN(ServerReceive)
+QTEST_GUILESS_MAIN(TestServer)
 
 
-#include "tst_serverreceive.moc"
+#include "testserver.moc"

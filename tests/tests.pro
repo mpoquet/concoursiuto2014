@@ -8,7 +8,7 @@ QT       += network testlib
 
 QT       -= gui
 
-TARGET = tst_serverreceive
+TARGET = testserver
 CONFIG   += console
 CONFIG   -= app_bundle
 
@@ -17,7 +17,8 @@ TEMPLATE = app
 HEADERS += ../server/network.hpp \
            ../server/struct.hpp
 
-SOURCES += tst_serverreceive.cpp \
-           ../server/network.cpp
+SOURCES += \
+    ../server/network.cpp \
+    testserver.cpp
 
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
