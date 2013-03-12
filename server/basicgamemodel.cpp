@@ -52,6 +52,10 @@ int BasicGameModel::getDistance(Planet * p1, Planet * p2)
 	int x = abs(p1->x() - p2->x());
 	int y = abs(p1->y() - p2->y());
 
+	/*
+	qDebug() << "Distance " << p1->id() << "(" << p1->x() << " ; " << p1->y() << ")" << " ; " << p2->id() <<
+				 "(" << p2->x() << " ; " << p2->y() << ")" << " x = " << x << " y = " << y;
+	*/
 	int distance = (int)round(sqrt(x*x+y*y) / 5);
 	return distance;
 }

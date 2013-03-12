@@ -18,7 +18,7 @@ class Game : public QObject
 {
 	Q_OBJECT
 	public:
-		Game(QString mapFilename, int delayBetweenRound, int nbTurn, AbstractGameModel * gameModel);
+		Game(QString mapFilename, int delayBetweenRound, AbstractGameModel * gameModel);
 
 	signals:
 		void initPlayerSignal(QTcpSocket * socket,
@@ -68,7 +68,6 @@ class Game : public QObject
 	private:
 		int m_delayBetweenRound;
 		int m_currentRound;
-		int m_maxTurn;
 
 		AbstractGameModel * m_gameModel;
 		QVector<Galaxy*> m_galaxies;

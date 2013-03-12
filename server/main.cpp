@@ -18,7 +18,7 @@ int main(int argc, char ** argv)
 
 	qsrand(QTime::currentTime().msec());
 
-	Game * m = new Game("../map/example.map", 500, 100, new BasicGameModel(500));
+	Game * m = new Game("../map/example.map", 500, new BasicGameModel(100));
 
 	quint16 port = 4242;
 	bool ok;

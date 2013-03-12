@@ -4,11 +4,10 @@
 #include <QFile>
 #include <QStringList>
 
-Game::Game(QString mapFilename, int delayBetweenRound, int nbTurn, AbstractGameModel * gameModel)
+Game::Game(QString mapFilename, int delayBetweenRound, AbstractGameModel * gameModel)
 {
 	m_delayBetweenRound = delayBetweenRound;
 	m_gameModel = gameModel;
-	m_maxTurn = nbTurn;
 
 	QFile mapFile(mapFilename);
 
@@ -53,7 +52,7 @@ Game::Game(QString mapFilename, int delayBetweenRound, int nbTurn, AbstractGameM
 			pSource->addDistance(pSource, 0);
 			for(int j = i+1 ; j < m_planets.size() ; ++j)
 			{
-				pDest = m_planets[i];
+				pDest = m_planets[j];
 				distance = m_gameModel->getDistance(pSource, pDest);
 				pSource->addDistance(pDest, distance);
 				pDest->addDistance(pSource, distance);
@@ -69,6 +68,7 @@ Game::Game(QString mapFilename, int delayBetweenRound, int nbTurn, AbstractGameM
 
 void Game::start()
 {
+
 	Q_ASSERT(m_players.size() > 1);
 
 	if(m_players.size() <= 1)
@@ -76,6 +76,7 @@ void Game::start()
 		qDebug() << "Game::start() : on ne lance pas de jeu avec moins de deux joueurs idiot !";
 		return;
 	}
+
 	qDebug() << "Game::start()";
 
 	m_currentRound = 0;
@@ -143,10 +144,20 @@ void Game::start()
 		p->setResources(m_gameModel->getInitialResource(p));
 	}
 
+	qDebug() << "Nombre planete : " << m_planets.size();
+	qDebug() << "nombre de tour : " << m_gameModel->getRoundCount();
+	qDebug() << "max scan : " << m_gameModel->getMaxScan();
+	qDebug() << "space ship cost : " << m_gameModel->getSpaceShipCost();
+
+
+	qDebug() << "Matrice de distance : " << getDistanceMatrix();
+
 	foreach(Player * p, m_players)
 	{
 		if(p->id() > 0)
 		{
+
+
 			emit initPlayerSignal(
 				m_clientSockets.value(p),
 				m_planets.size(),
@@ -168,7 +179,7 @@ void Game::start()
 
 void Game::iteration()
 {
-	if(m_currentRound >= m_maxTurn)
+	if(m_currentRound >= m_gameModel->getRoundCount())
 	{
 		m_timer->stop();
 		return;
