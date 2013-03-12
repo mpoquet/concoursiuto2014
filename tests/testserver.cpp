@@ -470,12 +470,19 @@ void TestServer::testMovePlayer()
     qRegisterMetaType<QVector<int> >("QVector<int>");
     qRegisterMetaType<QVector<BuildOrder> >("QVector<BuildOrder>");
     qRegisterMetaType<QVector<ShipMove> >("QVector<ShipMove>");
+
+
     QSignalSpy spy(&n, SIGNAL(movePlayer(QTcpSocket*,QVector<int>,QVector<BuildOrder>,QVector<ShipMove>)));
 
     // Data declaration
     QVector<int> planetsToScan;
     QVector<BuildOrder> shipsToBuild;
     QVector<ShipMove> shipsToMove;
+
+    QTcpSocket* receivedSocket;
+    QVector<int> receivedPlanetsToScan;
+    QVector<BuildOrder> receivedShipsToBuild;
+    QVector<ShipMove> receivedShipsToMove;
 
     // Let's do several tests
     for (int nbTests = 0; nbTests < 50; ++nbTests)
@@ -524,6 +531,16 @@ void TestServer::testMovePlayer()
         QTest::qWait(delay);
 
         QCOMPARE(spy.count(), nbTests + 1);
+
+        receivedSocket = spy.at(spy.count() - 1).at(0).value<QTcpSocket*>();
+        receivedPlanetsToScan = spy.at(spy.count() - 1).at(1).value<QVector<int> >();
+        receivedShipsToBuild = spy.at(spy.count() - 1).at(2).value<QVector<BuildOrder> >();
+        receivedShipsToMove = spy.at(spy.count() - 1).at(3).value<QVector<ShipMove> >();
+
+        QCOMPARE(receivedSocket, socks);
+        QCOMPARE(receivedPlanetsToScan, planetsToScan);
+        QCOMPARE(receivedShipsToBuild, shipsToBuild);
+        QCOMPARE(receivedShipsToMove, shipsToMove);
     }
 }
 
