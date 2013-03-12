@@ -182,6 +182,12 @@ void Game::iteration()
 	if(m_currentRound >= m_gameModel->getRoundCount())
 	{
 		m_timer->stop();
+
+		foreach(Player * p, m_players)
+		{
+			emit finishedSignal(m_clientSockets.value(p), true);
+		}
+
 		return;
 	}
 	m_currentRound++;
