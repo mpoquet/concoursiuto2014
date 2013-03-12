@@ -156,10 +156,17 @@ void Network::sendInitPlayer(QTcpSocket *socket,
 	message += INIT_PLAYER;
 	message += QString("%1%2").arg(planetCount).arg(SEP).toLatin1();
 
-	for (int y = 0; y < distanceMatrix.size(); ++y)
-		for (int x = 0; x < distanceMatrix.size(); ++x)
-			message += QString("%1%2").arg(distanceMatrix[y][x]).arg(SSEP).toLatin1();
+    Q_ASSERT(planetCount == distanceMatrix.size());
 
+	for (int y = 0; y < distanceMatrix.size(); ++y)
+    {
+        Q_ASSERT(planetCount == distanceMatrix[y].size());
+
+        for (int x = 0; x < distanceMatrix[y].size(); ++x)
+			message += QString("%1%2").arg(distanceMatrix[y][x]).arg(SSEP).toLatin1();
+    }
+
+    // Let's remove the useless SSEP if any
 	if (distanceMatrix.size() > 0 && distanceMatrix[0].size() > 0)
 		message.chop(1);
 
@@ -175,7 +182,8 @@ void Network::sendInitPlayer(QTcpSocket *socket,
 	socket->write(message);
 }
 
-void Network::sendTurnPlayer(QTcpSocket *socket, int currentRound,
+void Network::sendTurnPlayer(QTcpSocket *socket,
+    int currentRound,
 	int resources,
 	QVector<OurShipsOnPlanets> ourShipsOnPlanet,
 	QVector<ScanResult> scanResults,
