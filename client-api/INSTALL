@@ -3,3 +3,6 @@ Pour python:
 
 Pour Java:
     - Changer le chemin dans le makefile
+
+Compilation (fonctionne que sous linux):
+    make spnl all

@@ -1,8 +1,8 @@
 MODULE_NAME := contest
 JAVA_INCLUDE_DIR := /usr/lib/jvm/java-1.6.0-openjdk-i386/include
-INCLUDES_DIR := $(shell pwd)/libnetwork/include $(shell pwd)/../server/
-LIBS_DIR := $(shell pwd)/libnetwork/lib
-LIBS := libnetwork
+INCLUDES_DIR := $(shell pwd)/spnl-install/include/spnl $(shell pwd)/../server/
+LIBS_DIR := $(shell pwd)/spnl-install/lib
+LIBS := spnl
 
 define join_and_prefix
     $(addprefix $(strip $1), $(subst $() $(),:,$(strip $2)))
@@ -15,18 +15,23 @@ PYFLAGS := $(call join_and_prefix, -I, $(INCLUDES_DIR)) $(call join_and_prefix, 
 
 	# General rules
 
-all: clean c++ java python
-	rm -rf build
+all: clean c++ java python2 python3 clean
 
-test: clean c-test python-test java-test
+spnl:
+	mkdir -p build/spnl
+	cd build/spnl && cmake ../../spnl -DCMAKE_INSTALL_PREFIX:PATH=../../spnl-install
+	cd build/spnl && make install -j4 -s
+
+test: clean c-test python2-test java-test
 
 clean:
 	rm -rf build
 
 clean-all: clean
 	rm -rf bin
+	rm -rf spnl-install
 
-.PHONY: test clean clean-all c++ c-build c-test java java-build java-test python python-build python-test
+.PHONY: test spnl clean clean-all c++ c-build c-test java java-build java-test python2 python2-build python2-test python3 python3-build
 
 
 	@# C++ language
@@ -72,24 +77,41 @@ java-test: java-build
 	@# [...] javac -cp $(MODULE_NAME).jar test.java
 
 
-	@# Python language
+	@# Python 2 language
 
 
-python: python-build
+python2: python2-build
 
-python-build:
-	@echo "\n\tPYTHON BUILD:\n"
-	mkdir -p build/python
-	cd build/python && swig2.0 -c++ -outcurrentdir -python ../../c++/$(MODULE_NAME).i
-	cp -R c++/* build/python
-	cp -R python/* build/python
-	cd build/python && python setup.py --quiet build_ext --inplace $(PYFLAGS)
-	@#cd python && python setup.py --quiet build_ext --inplace
-	mkdir -p bin/python
-	cp build/python/$(MODULE_NAME).py build/python/_$(MODULE_NAME).* bin/python
+python2-build:
+	@echo "\n\tPYTHON-2 BUILD:\n"
+	mkdir -p build/python2
+	cd build/python2 && swig2.0 -c++ -outcurrentdir -python ../../c++/$(MODULE_NAME).i
+	cp -R c++/* build/python2
+	cp -R python2/* build/python2
+	cd build/python2 && python2 setup.py --quiet build_ext --inplace $(PYFLAGS)
+	mkdir -p bin/python2
+	cp build/python2/$(MODULE_NAME).py build/python2/_$(MODULE_NAME).* bin/python2
 
-python-test: python-build
-	@echo "\n\tPYTHON TESTS:\n"
-	cp python/test/test.py build/python
-	cd build/python && python test.py
+python2-test: python2-build
+	@echo "\n\tPYTHON-2 TESTS:\n"
+	cp python2/test/test.py build/python2
+	cd build/python2 && python2 test.py
 
+
+	@# Python 3 language
+
+
+python3: python3-build
+
+python3-build:
+	@echo "\n\tPYTHON-3 BUILD:\n"
+	mkdir -p build/python3
+	cd build/python3 && swig2.0 -c++ -outcurrentdir -py3 -python ../../c++/$(MODULE_NAME).i
+	cp -R c++/* build/python3
+	cp -R python3/* build/python3
+	cd build/python3 && python3 setup.py --quiet build_ext --inplace $(PYFLAGS)
+	mkdir -p bin/python3
+	cp build/python3/$(MODULE_NAME).py build/python3/_$(MODULE_NAME).* bin/python3
+
+python3-test: python3-build
+	@echo "\n\tPYTHON-3 TESTS:\n"

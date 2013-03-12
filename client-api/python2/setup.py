@@ -13,7 +13,7 @@ module = Extension(
 setup(
     name = module_name,
     version = '1.0',
-    author      = 'Zephyr',
+    author = 'Zephyr',
     description = 'Contest API',
     ext_modules = [module],
     py_modules = [module_name],

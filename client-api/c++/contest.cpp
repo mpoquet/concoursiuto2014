@@ -43,7 +43,7 @@ bool Session::connect(const string& host, int port)
         _data->socket.connect(IpEndPoint(IpAddress(host), port));
         return true;
     }
-    catch(NetworkException& err)
+    catch(runtime_error& err)
     {
         setError(string("Session::connect: ") + err.what());
         return false;
