@@ -143,7 +143,7 @@ void Game::start()
 	{
 		p->setResources(m_gameModel->getInitialResource(p));
 	}
-
+/*
 	qDebug() << "Nombre planete : " << m_planets.size();
 	qDebug() << "nombre de tour : " << m_gameModel->getRoundCount();
 	qDebug() << "max scan : " << m_gameModel->getMaxScan();
@@ -151,20 +151,20 @@ void Game::start()
 
 
 	qDebug() << "Matrice de distance : " << getDistanceMatrix();
-
+*/
 	foreach(Player * p, m_players)
 	{
 		if(p->id() > 0)
 		{
-
-
 			emit initPlayerSignal(
 				m_clientSockets.value(p),
 				m_planets.size(),
 				getDistanceMatrix(),
 				m_gameModel->getRoundCount(),
 				m_gameModel->getMaxScan(),
-				m_gameModel->getSpaceShipCost()
+				m_gameModel->getSpaceShipCost(),
+				m_players.size(),
+				p->id()
 			);
 		}
 	}
@@ -536,6 +536,7 @@ void Game::sendTurnMessage(QMap<int, QVector<FightReport> > reports)
 		}
 
 		emit turnSignal(m_clientSockets.value(p),
+						m_currentRound,
 						p->resources(),
 						ourShipsOnPlanets,
 						scanResults,

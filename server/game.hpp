@@ -26,8 +26,11 @@ class Game : public QObject
 							QVector<QVector<int> > distanceMatrix,
 							int roundCount,
 							int scanLimit,
-							int shipCost);
+							int shipCost,
+							int nbPlayers,
+							int idPlayer);
 		void turnSignal(QTcpSocket * socket,
+					  int currentRound,
 					  int resources,
 					  QVector<OurShipsOnPlanets> ourShipsOnPlanet,
 					  QVector<ScanResult> scanResults,
