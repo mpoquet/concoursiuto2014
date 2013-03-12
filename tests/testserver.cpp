@@ -20,6 +20,7 @@ private Q_SLOTS:
     void testFinished();
     void testTurnPlayer();
     void testInitPlayer();
+    void testMovePlayer();
 
 private:
 	Network n;
@@ -439,6 +440,90 @@ void TestServer::testInitPlayer()
 
         response = sockc.readAll();
         QCOMPARE(response, expected);
+    }
+}
+
+void TestServer::testMovePlayer()
+{
+    QTcpSocket sockc;
+    QTcpSocket * socks;
+    QByteArray send;
+
+    // Connect
+    sockc.connectToHost("127.0.0.1", 4242);
+    QTest::qWait(delay);
+
+    QCOMPARE(sockc.state(), QAbstractSocket::ConnectedState);
+    QCOMPARE(n.clientCount(), 1);
+
+    socks = n.clients().first();
+
+    // Login
+    sockc.write(QString("%1bouh\n").arg(LOGIN_PLAYER).toLatin1());
+    QTest::qWait(delay);
+
+    sockc.readAll();
+    QCOMPARE(n.playerCount(), 1);
+
+    // Let's test moves
+
+    qRegisterMetaType<QVector<int> >("QVector<int>");
+    qRegisterMetaType<QVector<BuildOrder> >("QVector<BuildOrder>");
+    qRegisterMetaType<QVector<ShipMove> >("QVector<ShipMove>");
+    QSignalSpy spy(&n, SIGNAL(movePlayer(QTcpSocket*,QVector<int>,QVector<BuildOrder>,QVector<ShipMove>)));
+
+    // Data declaration
+    QVector<int> planetsToScan;
+    QVector<BuildOrder> shipsToBuild;
+    QVector<ShipMove> shipsToMove;
+
+    // Let's do several tests
+    for (int nbTests = 0; nbTests < 50; ++nbTests)
+    {
+        planetsToScan.resize(rand() % 50);
+        for (int i = 0; i < planetsToScan.size(); ++i)
+            planetsToScan[i] = rand() % 50;
+
+        shipsToBuild.resize(rand() % 50);
+        for (int i = 0; i < shipsToBuild.size(); ++i)
+        {
+            shipsToBuild[i].planet = rand() % 50;
+            shipsToBuild[i].shipCount = rand() % 50;
+        }
+
+        shipsToMove.resize(rand() % 50);
+        for (int i = 0; i < shipsToMove.size(); ++i)
+        {
+            shipsToMove[i].srcPlanet = rand() % 50;
+            shipsToMove[i].destPlanet = rand() % 50;
+            shipsToMove[i].shipCount = rand() % 50;
+        }
+
+        send.clear();
+        send += MOVE_PLAYER;
+
+        send += QString("%1").arg(planetsToScan.size()).toLatin1();
+
+        for (int i = 0; i < planetsToScan.size(); ++i)
+            send += QString("%1%2").arg(SSEP).arg(planetsToScan[i]).toLatin1();
+
+        send += QString("%1%2").arg(SEP).arg(shipsToBuild.size()).toLatin1();
+
+        for (int i = 0; i < shipsToBuild.size(); ++i)
+            send += QString("%1%2%1%3").arg(SSEP).arg(shipsToBuild[i].planet).arg(shipsToBuild[i].shipCount).toLatin1();
+
+        send += QString("%1%2").arg(SEP).arg(shipsToMove.size()).toLatin1();
+
+        for (int i = 0; i < shipsToMove.size(); ++i)
+            send += QString("%1%2%1%3%1%4").arg(SSEP).arg(shipsToMove[i].srcPlanet).arg(
+                        shipsToMove[i].destPlanet).arg(shipsToMove[i].shipCount).toLatin1();
+
+        send += '\n';
+
+        sockc.write(send);
+        QTest::qWait(delay);
+
+        QCOMPARE(spy.count(), nbTests + 1);
     }
 }
 
