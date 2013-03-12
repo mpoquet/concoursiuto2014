@@ -1,6 +1,8 @@
 #ifndef STRUCT_HPP
 #define STRUCT_HPP
 
+#include <QMetaType>
+
 // To test several things, types must be declarated as a metatype
 // To do so, these structs need :
 //    - A public default constructor
