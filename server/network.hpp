@@ -16,6 +16,7 @@ class Network : public QObject
 	{
 		enum ClientType
 		{
+            DISCONNECTED,
 			UNKNOWN,
 			PLAYER,
 			DISPLAY
@@ -37,10 +38,9 @@ public:
 	int displayCount() const;
 	int clientCount() const;
 	bool isListening() const { return _server->isListening(); }
-
-	QVector<QTcpSocket *> clients() const;
-	QVector<QTcpSocket *> players() const;
-	QVector<QTcpSocket *> displays() const;
+    QVector<QTcpSocket *> clients() const;
+    QVector<QTcpSocket *> players() const;
+    QVector<QTcpSocket *> displays() const;
 
 signals:
 	void loginPlayer(QTcpSocket * socket, QString nickname);
@@ -76,7 +76,7 @@ public slots:
 				  QVector<IncomingEnnemyShips> incomingEnnemies,
 				  QVector<FightReport> fightReports);
 
-	void sendFinished(QTcpSocket * socket, bool youWon);
+    void sendFinishedPlayer(QTcpSocket * socket, bool youWon);
 
 private:
 	void sendLoginPlayerACK(QTcpSocket * socket, char value);
@@ -85,6 +85,8 @@ private:
 	void debugDisplayMove(QVector<int> planetsToScan,
 						  QVector<BuildOrder> shipsToBuild,
 						  QVector<ShipMove> shipsToMove);
+
+    Client::ClientType typeOf(QTcpSocket * socket) const;
 
 private slots:
 	void onNewConnection();
