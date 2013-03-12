@@ -256,6 +256,7 @@ void ServerReceive::testTurnPlayer()
     socks = n.clients().first();
 
     // Data declaration
+    int currentTurn;
     int resources;
     QVector<OurShipsOnPlanets> ourShips;
     QVector<ScanResult> scanResults;
@@ -267,6 +268,7 @@ void ServerReceive::testTurnPlayer()
     for (int nbTests = 0; nbTests < 50; ++nbTests)
     {
         // Let's fill this data with random stuff
+        currentTurn = rand() % 500;
         resources = rand() % 500;
         ourShips.resize(rand() % 50);
         scanResults.resize(rand() % 50);
@@ -318,6 +320,7 @@ void ServerReceive::testTurnPlayer()
         // Let's prepare the according buffer
         expected.clear();
         expected += TURN_PLAYER;
+        expected += QString("%1%2").arg(currentTurn).arg(SEP).toLatin1();
         expected += QString("%1%2").arg(resources).arg(SEP).toLatin1();
         expected += QString("%1").arg(ourShips.size()).toLatin1();
 
@@ -357,7 +360,7 @@ void ServerReceive::testTurnPlayer()
 
         expected += '\n';
 
-        n.sendTurnPlayer(socks, resources, ourShips,
+        n.sendTurnPlayer(socks, currentTurn, resources, ourShips,
                          scanResults, ourMovingShips,
                          incomingEnnemies, fightReports);
 

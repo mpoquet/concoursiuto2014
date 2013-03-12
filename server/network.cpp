@@ -175,7 +175,8 @@ void Network::sendInitPlayer(QTcpSocket *socket,
 	socket->write(message);
 }
 
-void Network::sendTurnPlayer(QTcpSocket *socket, int currentRound,
+void Network::sendTurnPlayer(QTcpSocket *socket,
+    int currentRound,
 	int resources,
 	QVector<OurShipsOnPlanets> ourShipsOnPlanet,
 	QVector<ScanResult> scanResults,
