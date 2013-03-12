@@ -528,7 +528,7 @@ void TestServer::testFinished()
     socks = n.clients().first();
 
     // Win send
-    n.sendFinished(socks, true);
+    n.sendFinishedPlayer(socks, true);
     QTest::qWait(delay);
 
     expected = QString("%1%2\n").arg(END_OF_GAME).arg('1').toLatin1();
@@ -536,7 +536,7 @@ void TestServer::testFinished()
     QCOMPARE(response, expected);
 
     // Lose send
-    n.sendFinished(socks, false);
+    n.sendFinishedPlayer(socks, false);
     QTest::qWait(delay);
 
     expected = QString("%1%2\n").arg(END_OF_GAME).arg('0').toLatin1();

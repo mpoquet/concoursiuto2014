@@ -126,11 +126,31 @@ QVector<QTcpSocket *> Network::displays() const
 			v.append(it.key());
 	}
 
-	return v;
+    return v;
+}
+
+Network::Client::ClientType Network::typeOf(QTcpSocket *socket) const
+{
+    QMapIterator<QTcpSocket *, Client> it(_clients);
+    while (it.hasNext())
+    {
+        it.next();
+
+        if (it.key() == socket)
+            return it.value().type;
+    }
+
+    return Client::DISCONNECTED;
 }
 
 void Network::sendLoginPlayerACK(QTcpSocket *socket, char value)
 {
+    if (typeOf(socket) != Client::PLAYER)
+    {
+        qDebug() << "Invalid sendLoginPlayerACK : not to a player socket";
+        return;
+    }
+
 	QByteArray message(3, '\n');
 	message[0] = LOGIN_PLAYER_ACK;
 	message[1] = value;
@@ -139,6 +159,12 @@ void Network::sendLoginPlayerACK(QTcpSocket *socket, char value)
 
 void Network::sendLoginDisplayACK(QTcpSocket *socket, char value)
 {
+    if (typeOf(socket) != Client::DISPLAY)
+    {
+        qDebug() << "Invalid sendLoginPlayerACK : not to a player socket";
+        return;
+    }
+
 	QByteArray message(3, '\n');
 	message[0] = LOGIN_DISPLAY_ACK;
 	message[1] = value;
@@ -151,6 +177,12 @@ void Network::sendInitPlayer(QTcpSocket *socket,
 							 int roundCount,
 							 int scanLimit, int shipCost, int nbPlayers, int idPlayer)
 {
+    if (typeOf(socket) != Client::PLAYER)
+    {
+        qDebug() << "Invalid sendInitPlayer : not to a player socket";
+        return;
+    }
+
 	QByteArray message;
 
 	message += INIT_PLAYER;
@@ -191,6 +223,12 @@ void Network::sendTurnPlayer(QTcpSocket *socket,
 	QVector<IncomingEnnemyShips> incomingEnnemies,
 	QVector<FightReport> fightReports)
 {
+    if (typeOf(socket) != Client::PLAYER)
+    {
+        qDebug() << "Invalid sendTurnPlayer : not to a player socket";
+        return;
+    }
+
 	QByteArray message;
 
 	message += TURN_PLAYER;
@@ -234,8 +272,14 @@ void Network::sendTurnPlayer(QTcpSocket *socket,
 	socket->write(message);
 }
 
-void Network::sendFinished(QTcpSocket *socket, bool youWon)
+void Network::sendFinishedPlayer(QTcpSocket *socket, bool youWon)
 {
+    if (typeOf(socket) != Client::PLAYER)
+    {
+        qDebug() << "Invalid sendLoginPlayerACK : not to a player socket";
+        return;
+    }
+
 	QByteArray message(3, '\n');
 	message[0] = END_OF_GAME;
 
