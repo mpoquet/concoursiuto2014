@@ -624,3 +624,16 @@ QMap<int, QVector<FightReport> > Game::handleBattle(QVector<ShipMovement*> endMo
 
 	return reports;
 }
+
+void Game::playerDisconnected(QTcpSocket * socket)
+{
+	Player * p = m_clientSockets.key(socket);
+	for(int i = 0 ; i < m_players.size() ; ++i)
+	{
+		if(p == m_players[i])
+		{
+			m_players.remove(i);
+			return;
+		}
+	}
+}

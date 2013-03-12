@@ -45,6 +45,7 @@ int main(int argc, char ** argv)
 	QObject::connect(m, SIGNAL(finishedSignal(QTcpSocket*,bool)), n, SLOT(sendFinished(QTcpSocket*,bool)));
 	QObject::connect(m, SIGNAL(initPlayerSignal(QTcpSocket*,int,QVector<QVector<int> >,int,int,int,int,int)), n, SLOT(sendInitPlayer(QTcpSocket*,int,QVector<QVector<int> >,int,int,int,int,int)));
 	QObject::connect(m, SIGNAL(turnSignal(QTcpSocket*,int,int,QVector<OurShipsOnPlanets>,QVector<ScanResult>,QVector<OurMovingShips>,QVector<IncomingEnnemyShips>,QVector<FightReport>)), n, SLOT(sendTurnPlayer(QTcpSocket*,int,int,QVector<OurShipsOnPlanets>,QVector<ScanResult>,QVector<OurMovingShips>,QVector<IncomingEnnemyShips>,QVector<FightReport>)));
+	QObject::connect(n, SIGNAL(playerDisconnected(QTcpSocket*)), m, SLOT(playerDisconnected(QTcpSocket*)));
 	QObject::connect(w, SIGNAL(start()), m, SLOT(start()));
 
 	n->run();

@@ -49,6 +49,8 @@ class Game : public QObject
 						 QVector<BuildOrder> shipsToBuild,
 						 QVector<ShipMove> shipsToMove);
 
+		void playerDisconnected(QTcpSocket * socket);
+
 		void start();
 		void iteration();
 
