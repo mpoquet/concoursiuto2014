@@ -14,6 +14,7 @@ struct SessionData
 {
     TcpSocket socket;
     string lastError;
+    GameData gameData;
 };
 
 
@@ -89,21 +90,18 @@ bool Session::waitInit()
 
         const vector<string> messageParts = split(msg.second, SEP);
 
-        const int planetCount = toInt(messageParts[0]);
-        const vector<int> planetDistances = toIntArray(messageParts[1], SSEP);
-        const int roundCount = toInt(messageParts[2]);
-        const int playerCount = toInt(messageParts[3]);
-        const int playerId = toInt(messageParts[4]);
+        const GameInfos infos = {
+                                    .playerId = toInt(messageParts[6]),
+                                    .playerCount = toInt(messageParts[5]),
+                                    .totalRoundCount = toInt(messageParts[2]),
+                                    .currentRoundId = 0,
+                                    .planetCount = toInt(messageParts[0]),
+                                    .scanCountLimit = toInt(messageParts[3]),
+                                    .shipCost = toInt(messageParts[4])
+                                };
 
-        // COUT VAISSEAU ???
-        // TOURS ECOULE ???
-
-        cout << "planetCount:" << planetCount << endl;
-        cout << "size(planetDistances):" << planetDistances.size() << endl;
-        cout << "roundCount:" << roundCount << endl;
-        cout << "playerCount:" << playerCount << endl;
-        cout << "playerId:" << playerId << endl;
-
+        _data->gameData._gameInfos = infos;
+        _data->gameData._distances = toIntArray(messageParts[1], SSEP);
         return true;
     }
     catch(runtime_error& err)
@@ -138,9 +136,9 @@ int Session::waitRoundStarting()
 }
 
 
-Data Session::data()
+GameData Session::gameData()
 {
-    throw runtime_error("not implemented");
+    return _data->gameData;
 }
 
 
@@ -188,13 +186,16 @@ void Session::sendMessage(const Message& message)
 
 pair<char, string> Session::waitMessage(string expectedType)
 {
+    if(!isConnected())
+        throw runtime_error("session closed");
+
     const size_t pos = expectedType.find(_data->socket.recvChar());
 
     if(pos == string::npos)
         throw runtime_error("unexpected network message type");
 
     ByteArray data;
-    _data->socket.recv(data, string(1, MESSAGE_SEP));
+    _data->socket.recvSep(data, MESSAGE_SEP);
     return make_pair(expectedType[pos], data.toString());
 }
 
@@ -237,51 +238,51 @@ int Session::toInt(const string& str)
 }
 
 
-Data::Data()
+GameData::GameData()
 {
     
 }
 
 
-GameInfos Data::globalInformations()
+GameInfos GameData::globalInformations()
 {
-    throw runtime_error("not implemented");
+    return _gameInfos;
 }
 
 
-PlanetList Data::planets()
+PlanetList GameData::planets()
 {
-    throw runtime_error("not implemented");
+    return _planetList;
 }
 
 
-ScanResultList Data::scanResults()
+ScanResultList GameData::scanResults()
 {
-    throw runtime_error("not implemented");
+    return _scanResultList;
 }
 
 
-FleetList Data::fleets()
+FleetList GameData::fleets()
 {
-    throw runtime_error("not implemented");
+    return _fleetList;
 }
 
 
-EnnemyList Data::enemies()
+EnnemyList GameData::enemies()
 {
-    throw runtime_error("not implemented");
+    return _ennemyList;
 }
 
 
-FightReportList Data::reports()
+FightReportList GameData::reports()
 {
-    throw runtime_error("not implemented");
+    return _fightReportList;
 }
 
 
-int Data::distance(int planetA, int planetB)
+int GameData::distance(int planetA, int planetB)
 {
-    throw runtime_error("not implemented");
+    return _distances[planetA*_gameInfos.planetCount + planetB];
 }
 
 

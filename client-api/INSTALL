@@ -1,0 +1,5 @@
+Pour python:
+    - Installer python-dev ou python3-dev
+
+Pour Java:
+    - Changer le chemin dans le makefile

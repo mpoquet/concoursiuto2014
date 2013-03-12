@@ -8,7 +8,7 @@ define join_and_prefix
     $(addprefix $(strip $1), $(subst $() $(),:,$(strip $2)))
 endef
 
-CXXFLAGS := $(addprefix -I, $(INCLUDES_DIR))
+CXXFLAGS := -fPIC $(addprefix -I, $(INCLUDES_DIR))
 LDFLAGS := $(addprefix -L, $(LIBS_DIR)) $(addprefix -l, $(LIBS))
 PYFLAGS := $(call join_and_prefix, -I, $(INCLUDES_DIR)) $(call join_and_prefix, -L, $(LIBS_DIR)) $(addprefix -l, $(LIBS))
 

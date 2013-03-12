@@ -203,17 +203,20 @@ namespace Network
 		//! readInt4, readInt2, readChar.
 		//! @param data Buffer dans lequel les données reçues sont écrites
 		//! @param len Taille des données à recevoir
-		void recv(Core::ByteArray& data, int len) throw(NetworkException, Core::ArgumentException);
+		void recvLen(Core::ByteArray& data, int len) throw(NetworkException, Core::ArgumentException);
 		
-		//! @brief Reçoit un bloc de données terminant par un separateur 
-		//! ou par une déconnexion depuis la socket. 
+		//! @brief Reçoit un bloc de données terminant par un separateur ou 
+		//! par une déconnexion depuis la socket. Le nombre d'octets lus depuis 
+		//! le réseau est le nombre d'octets jusqu'à rencontrer le séparateur.
+		//! Notez que le séparateur est lui aussi lu depuis le réseau.
 		//!
 		//! Dégage une exception NetworkException si aucune donnée n'a pu être 
 		//! lu depuis le réseau. Le buffer reçu est vidé puis redimentionné 
 		//! selon la taille des données reçus.
-		//! @param data Buffer dans lequel les données reçues sont écrites
+		//! @param data Buffer dans lequel les données reçues sont écrites.
+		//!             Le buffer extrait ne contient pas le séparateur à sa fin
 		//! @param separator Séparateur
-		void recv(Core::ByteArray& data, const Core::ByteArray& separator) throw(NetworkException, Core::ArgumentException);
+		void recvSep(Core::ByteArray& data, const Core::ByteArray& separator) throw(NetworkException, Core::ArgumentException);
 		
 		//! @brief Reçoit des données depuis la socket sans les retirer 
 		//! de la pile réseau.
