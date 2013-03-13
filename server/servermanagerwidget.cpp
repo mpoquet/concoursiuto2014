@@ -9,6 +9,9 @@ ServerManagerWidget::ServerManagerWidget(Game * gameEngine, Network * network, Q
 	m_clientId = 1;
 	m_displayId = 1;
 
+	m_log = new QTextEdit();
+	m_log->setReadOnly(true);
+
 	connect(m_network, SIGNAL(clientConnected(QTcpSocket*)), this, SLOT(clientConnected(QTcpSocket*)));
 	connect(m_network, SIGNAL(loginPlayer(QTcpSocket*,QString)), this, SLOT(playerConnected(QTcpSocket*,QString)));
 	connect(m_network, SIGNAL(loginDisplay(QTcpSocket*)), this, SLOT(displayConnected(QTcpSocket*)));
@@ -61,6 +64,7 @@ ServerManagerWidget::ServerManagerWidget(Game * gameEngine, Network * network, Q
 	QVBoxLayout * windowsLayout = new QVBoxLayout();
 
 	windowsLayout->addLayout(connectionStateLayout);
+	windowsLayout->addWidget(m_log);
 	windowsLayout->addLayout(layoutGameParameters);
 
 	this->setLayout(windowsLayout);
@@ -70,6 +74,7 @@ ServerManagerWidget::ServerManagerWidget(Game * gameEngine, Network * network, Q
 void ServerManagerWidget::clientConnected(QTcpSocket* s)
 {
 	m_clients.insert(s, QString("Anonymous_%1").arg(QString::number(m_clientId)));
+	addMessage(QString("<strong>Client connection</strong> : Anonymous_%1").arg(QString::number(m_clientId)));
 	m_clientId++;
 	refreshClient();
 }
@@ -78,6 +83,7 @@ void ServerManagerWidget::playerConnected(QTcpSocket* s, QString login)
 {
 	m_clients.remove(s);
 	m_players.insert(s, login);
+	addMessage(QString("<strong>Player connection</strong> : %1").arg(login));
 	refreshPlayer();
 	refreshClient();
 }
@@ -86,6 +92,7 @@ void ServerManagerWidget::displayConnected(QTcpSocket* s)
 {
 	m_clients.remove(s);
 	m_displays.insert(s, QString("Display_%1").arg(m_displayId));
+	addMessage(QString("<strong>Display connection</strong> : Display_%1").arg(m_displayId));
 	m_displayId++;
 	refreshDisplay();
 	refreshClient();
@@ -93,18 +100,21 @@ void ServerManagerWidget::displayConnected(QTcpSocket* s)
 
 void ServerManagerWidget::clientDisconnected(QTcpSocket * s)
 {
+	addMessage(QString("<strong>Client deconnection</strong> : %1").arg(m_clients[s]));
 	m_clients.remove(s);
 	refreshClient();
 }
 
 void ServerManagerWidget::displayDisconnected(QTcpSocket* s)
 {
+	addMessage(QString("<strong>Display deconnection</strong> : %1").arg(m_clients[s]));
 	m_displays.remove(s);
 	refreshDisplay();
 }
 
 void ServerManagerWidget::playerDisconnected(QTcpSocket* s)
 {
+	addMessage(QString("<strong>Player deconnection</strong> : %1").arg(m_clients[s]));
 	m_players.remove(s);
 	refreshPlayer();
 }
@@ -132,4 +142,9 @@ void ServerManagerWidget::refreshDisplay()
 {
 	m_displaysList->clear();
 	m_displaysList->addItems(m_displays.values());
+}
+
+void ServerManagerWidget::addMessage(QString msg)
+{
+	m_log->setHtml(m_log->toHtml() + msg);
 }

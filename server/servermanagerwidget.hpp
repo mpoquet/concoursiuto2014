@@ -42,6 +42,7 @@ class ServerManagerWidget : public QWidget
 		void refreshClient();
 		void refreshPlayer();
 		void refreshDisplay();
+		void addMessage(QString msg);
 
 	protected:
 		Game * m_gameEngine;
@@ -57,6 +58,8 @@ class ServerManagerWidget : public QWidget
 		QListWidget * m_clientsList;
 		QListWidget * m_playersList;
 		QListWidget * m_displaysList;
+
+		QTextEdit * m_log;
 
 		QSpinBox * m_roundCount;
 		QSpinBox * m_delayBetweenRound;
