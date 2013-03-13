@@ -6,3 +6,6 @@ Pour Java:
 
 Compilation (fonctionne que sous linux):
     make spnl all
+
+Penser à mettre à jour la lib quelque fois via :
+    git submodule -q foreach git pull -q origin master
