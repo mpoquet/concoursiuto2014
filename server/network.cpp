@@ -189,7 +189,6 @@ void Network::sendInitPlayer(QTcpSocket *socket,
 	message += QString("%1%2").arg(planetCount).arg(SEP).toLatin1();
 
     Q_ASSERT(planetCount == distanceMatrix.size());
-
 	for (int y = 0; y < distanceMatrix.size(); ++y)
     {
         Q_ASSERT(planetCount == distanceMatrix[y].size());
@@ -211,7 +210,59 @@ void Network::sendInitPlayer(QTcpSocket *socket,
 	message += QString("%1").arg(idPlayer).toLatin1();
 
 	message += '\n';
-	socket->write(message);
+    socket->write(message);
+}
+
+void Network::sendInitDisplay(QTcpSocket *socket,
+                              int planetCount,
+                              QVector<QVector<int> > distanceMatrix,
+                              QVector<InitDisplayPlanet> planets,
+                              QVector<QString> playerNicks,
+                              int roundCount)
+{
+    if (typeOf(socket) != Client::DISPLAY)
+    {
+        qDebug() << "Invalid sendInitDisplay : not to a display socket";
+        return;
+    }
+
+    QByteArray message;
+
+    message += INIT_DISPLAY;
+    message += QString("%1%2").arg(planetCount).arg(SEP);
+
+    Q_ASSERT(planetCount == distanceMatrix.size());
+    for (int y = 0; y < distanceMatrix.size(); ++y)
+    {
+        Q_ASSERT(planetCount == distanceMatrix[y].size());
+
+        for (int x = 0; x < distanceMatrix[y].size(); ++x)
+            message += QString("%1%2").arg(distanceMatrix[y][x]).arg(SSEP).toLatin1();
+    }
+
+    // Let's remove the useless SSEP if any
+    if (distanceMatrix.size() > 0 && distanceMatrix[0].size() > 0)
+        message.chop(1);
+
+    message += SEP;
+
+    for (int i = 0; i < planetCount; ++i)
+        message += QString("%1%2%3%2%4%2%5%2%6%2").arg(planets[i].posX).arg(SSEP).arg(
+                    planets[i].posY).arg(planets[i].playerID).arg(planets[i].shipCount).arg(
+                    planets[i].planetSize).toLatin1();
+
+    // Let's remove the useless SSEP if any
+    if (planetCount > 0)
+        message.chop(1);
+
+    message += QString("%1%2").arg(SEP).arg(playerNicks.size()).toLatin1();
+    for (int i = 0; i < playerNicks.size(); ++i)
+        message += QString("%1%2").arg(SSEP).arg(playerNicks[i]).toLatin1();
+
+    message += QString("%1%2").arg(SEP).arg(roundCount);
+
+    message += '\n';
+    socket->write(message);
 }
 
 void Network::sendTurnPlayer(QTcpSocket *socket,

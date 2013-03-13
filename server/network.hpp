@@ -67,6 +67,13 @@ public slots:
 						int nbPlayers,
 						int idPlayer);
 
+    void sendInitDisplay(QTcpSocket * socket,
+                         int planetCount,
+                         QVector<QVector<int> > distanceMatrix,
+                         QVector<InitDisplayPlanet> planets,
+                         QVector<QString> playerNicks,
+                         int roundCount);
+
 	void sendTurnPlayer(QTcpSocket * socket,
 				  int currentRound,
 				  int resources,

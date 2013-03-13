@@ -117,5 +117,16 @@ struct Fleet
     }
 };
 
+// Display
+
+struct InitDisplayPlanet
+{
+    int posX;
+    int posY;
+    int playerID;
+    int shipCount;
+    int planetSize;
+};
+
 
 #endif // STRUCT_HPP
