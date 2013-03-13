@@ -16,4 +16,6 @@ SOURCES += main.cpp\
     network.cpp
 
 HEADERS  += \
-    network.hpp
+    network.hpp \
+    ../server/struct.hpp \
+    ../server/protocole.h
