@@ -43,7 +43,41 @@ void Network::onMessageReceived()
 
         if (index != -1)
         {
+            QString message = _buffer.left(index);
+            _buffer.remove(0, index + 1);
 
+            char type = message[0].toLatin1();
+
+            switch(type)
+            {
+            case LOGIN_DISPLAY_ACK:
+            {
+                char response = message[1].toLatin1();
+
+                if (response == OK)
+                    emit logged();
+                else if (response == NO_MORE_ROOM)
+                    emit cannotLogIn();
+                else
+                    cerr << "Invalid LOGIN_DISPLAY_ACK received (" + message.toStdString() + ')' << endl;
+
+            } break;
+            case INIT_DISPLAY:
+            {
+
+            } break;
+            case TURN_DISPLAY:
+            {
+
+            } break;
+            default:
+                cerr << "Unknown message received (" + message.toStdString() + ')' << endl;
+            }
+
+            if (message[0].toLatin1() == LOGIN_DISPLAY_ACK)
+            {
+
+            }
         }
     } while (index != -1);
 }
