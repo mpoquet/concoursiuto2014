@@ -20,17 +20,24 @@ Network::Network(QObject *parent) :
 void Network::onError(QAbstractSocket::SocketError e)
 {
     if (e != QAbstractSocket::RemoteHostClosedError)
+    {
         qDebug() << e;
+        emit error();
+    }
 }
 
 void Network::onDisconnected()
 {
     cout << "Disconnected" << endl;
+
+    emit disconnected();
 }
 
 void Network::onConnected()
 {
     cout << "Connected" << endl;
+
+    emit connected();
 }
 
 void Network::onMessageReceived()
@@ -60,6 +67,8 @@ void Network::onMessageReceived()
                     emit logged();
                 else if (response == NO_MORE_ROOM)
                     emit cannotLogIn();
+                else if (response == ALREADY_LOGGED)
+                    qDebug() << "I can't log twice...";
                 else
                     cerr << "Invalid LOGIN_DISPLAY_ACK received (" + message.toStdString() + ')' << endl;
 
@@ -138,7 +147,7 @@ void Network::onMessageReceived()
     } while (index != -1);
 }
 
-void Network::connectToHost(const QString &address, quint16 port)
+void Network::connectToHost(QString address, quint16 port)
 {
     _socket.connectToHost(address, port);
 }
@@ -151,8 +160,10 @@ void Network::login()
         return;
     }
 
-    QByteArray qba;
+    QByteArray message;
 
-    qba += LOGIN_DISPLAY;
-    qba += '\n';
+    message += LOGIN_DISPLAY;
+    message += '\n';
+
+    _socket.write(message);
 }
