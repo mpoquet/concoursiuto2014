@@ -79,6 +79,7 @@ void ServerManagerWidget::playerConnected(QTcpSocket* s, QString login)
 	m_clients.remove(s);
 	m_players.insert(s, login);
 	refreshPlayer();
+	refreshClient();
 }
 
 void ServerManagerWidget::displayConnected(QTcpSocket* s)
@@ -87,6 +88,7 @@ void ServerManagerWidget::displayConnected(QTcpSocket* s)
 	m_displays.insert(s, QString("Display_%1").arg(m_displayId));
 	m_displayId++;
 	refreshDisplay();
+	refreshClient();
 }
 
 void ServerManagerWidget::clientDisconnected(QTcpSocket * s)
