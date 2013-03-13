@@ -7,7 +7,7 @@ module_name = 'contest'
 module = Extension(
     '_'+module_name,
     sources=[module_name+'_wrap.cxx', module_name+'.cpp'],
-    extra_compile_args=['-Wno-unused-but-set-variable'],
+    extra_compile_args=['-Wno-unused-but-set-variable', '-fPIC'],
 )
 
 setup(
