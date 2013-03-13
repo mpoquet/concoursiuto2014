@@ -18,6 +18,7 @@ private Q_SLOTS:
     void testConnection();
 	void testLogin();
     void testInitPlayer();
+    void testInitDisplay();
     void testTurnPlayer();
     void testMovePlayer();
     void testFinished();
@@ -275,6 +276,100 @@ void TestServer::testInitPlayer()
         expected += '\n';
 
         n.sendInitPlayer(socks, planetCount, distanceMatrix, roundCount, scanLimit, shipCost, nbPlayers, idPlayer);
+        QTest::qWait(delay);
+
+        response = sockc.readAll();
+        QCOMPARE(response, expected);
+    }
+}
+
+void TestServer::testInitDisplay()
+{
+    QTcpSocket sockc;
+    QTcpSocket * socks;
+    QByteArray response, expected;
+
+    sockc.connectToHost("127.0.0.1", 4242);
+    QTest::qWait(delay);
+
+    QCOMPARE(sockc.state(), QAbstractSocket::ConnectedState);
+    QCOMPARE(n.clientCount(), 1);
+
+    socks = n.clients().first();
+
+    // Data declaration
+    int planetCount;
+    QVector<QVector<int> > distanceMatrix;
+    QVector<InitDisplayPlanet> planets;
+    QVector<QString> playerNicks;
+    int roundCount;
+
+    // Let's do several tests
+    for (int nbTests = 0; nbTests < 50; ++nbTests)
+    {
+        planetCount = rand() % 50;
+
+        distanceMatrix.resize(planetCount);
+        planets.resize(planetCount);
+
+        for (int y = 0; y < planetCount; ++y)
+        {
+            distanceMatrix[y].resize(planetCount);
+
+            for (int x = 0; x < planetCount; ++x)
+                distanceMatrix[y][x] = rand() % 50;
+
+            planets[y].posX = rand() % 50;
+            planets[y].posY = rand() % 50;
+            planets[y].playerID = rand() % 50;
+            planets[y].shipCount = rand() % 50;
+            planets[y].planetSize = rand() % 50;
+        }
+
+        playerNicks.resize(rand() % 50);
+
+        for (int i = 0; i < playerNicks.size(); ++i)
+        {
+            playerNicks[i].clear();
+            int length = rand() % 5;
+
+            for (int j = 0; j < length; ++j)
+                playerNicks[i] += (char)('a' + rand() % 26);
+        }
+
+        roundCount = rand() % 50;
+
+        expected.clear();
+        expected += INIT_DISPLAY;
+        expected += QString("%1%2").arg(planetCount).arg(SEP).toLatin1();
+
+        for (int y = 0; y < planetCount; ++y)
+            for (int x = 0; x < planetCount; ++x)
+                expected += QString("%1%2").arg(distanceMatrix[y][x]).arg(SSEP).toLatin1();
+
+        if (distanceMatrix.size() > 0 && distanceMatrix[0].size() > 0)
+            expected.chop(1);
+
+        expected += SEP;
+
+        for (int i = 0; i < planetCount; ++i)
+            expected += QString("%1%2%3%2%4%2%5%2%6%2").arg(planets[i].posX).arg(
+                        SSEP).arg(planets[i].posY).arg(planets[i].playerID).arg(
+                        planets[i].shipCount).arg(planets[i].planetSize).toLatin1();
+
+        if (planetCount > 0)
+            expected.chop(1);
+
+        expected += QString("%1%2").arg(SEP).arg(playerNicks.size()).toLatin1();
+
+        for (int i = 0; i < playerNicks.size(); ++i)
+            expected += QString("%1%2").arg(SSEP).arg(playerNicks[i]).toLatin1();
+
+
+        expected += QString("%1%2").arg(SEP).arg(roundCount).toLatin1();
+        expected += '\n';
+
+        n.sendInitDisplay(socks, planetCount, distanceMatrix, planets, playerNicks, roundCount);
         QTest::qWait(delay);
 
         response = sockc.readAll();
