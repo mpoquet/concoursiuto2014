@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+#include <QStringList>
+
 #include "../server/protocole.h"
 
 using namespace std;
@@ -64,7 +66,66 @@ void Network::onMessageReceived()
             } break;
             case INIT_DISPLAY:
             {
+                QStringList qsl = message.split(SEP);
+                QStringList qsl2;
 
+                int planetCount;
+                QVector<QVector<int> > distanceMatrix;
+                QVector<InitDisplayPlanet> planets;
+                QVector<QString> playerNicks;
+                int roundCount;
+
+                planetCount = qsl.at(0).right(qsl.at(0).size() - 1).toInt();
+                qsl2 = qsl.at(1).split(SSEP);
+
+                if (qsl2.size() != planetCount * planetCount)
+                {
+                    cerr << "Invalid distance matrix size" << endl;
+                    continue;
+                }
+
+                distanceMatrix.resize(planetCount);
+                for (int y = 0, i = 0; y < planetCount; ++y)
+                {
+                    distanceMatrix[y].resize(planetCount);
+                    for (int x = 0; x < planetCount; ++x)
+                        distanceMatrix[y][x] = qsl2.at(i++).toInt();
+                }
+
+                qsl2 = qsl.at(2).split(SSEP);
+
+                if (qsl2.size() != planetCount * 5)
+                {
+                    cerr << "Invalid planets size" << endl;
+                    continue;
+                }
+
+                planets.resize(planetCount);
+                for (int i = 0; i < planetCount; ++i)
+                {
+                    planets[i].posX = qsl2[5*i].toInt();
+                    planets[i].posY = qsl2[5*i+1].toInt();
+                    planets[i].playerID = qsl2[5*i+2].toInt();
+                    planets[i].shipCount = qsl2[5*i+3].toInt();
+                    planets[i].planetSize = qsl2[5*i+4].toInt();
+                }
+
+                qsl2 = qsl.at(3).split(SSEP);
+
+                if (qsl2.at(0).toInt() != qsl2.size() - 1)
+                {
+                    cerr << "Invalid player nicks size" << endl;
+                    continue;
+                }
+
+                playerNicks.resize(qsl2.at(0).toInt());
+
+                for (int i = 0; i < playerNicks.size(); ++i)
+                    playerNicks[i] = qsl2.at(i+1);
+
+                roundCount = qsl.at(4).toInt();
+
+                emit initReceived(planetCount, distanceMatrix, planets, playerNicks, roundCount);
             } break;
             case TURN_DISPLAY:
             {
@@ -72,11 +133,6 @@ void Network::onMessageReceived()
             } break;
             default:
                 cerr << "Unknown message received (" + message.toStdString() + ')' << endl;
-            }
-
-            if (message[0].toLatin1() == LOGIN_DISPLAY_ACK)
-            {
-
             }
         }
     } while (index != -1);
