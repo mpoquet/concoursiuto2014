@@ -14,13 +14,17 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
     network.cpp \
-    netwidget.cpp
+    netwidget.cpp \
+    abstractviewer.cpp \
+    graphicsviewer.cpp
 
 HEADERS  += \
     network.hpp \
     ../server/struct.hpp \
     ../server/protocole.h \
-    netwidget.hpp
+    netwidget.hpp \
+    abstractviewer.hpp \
+    graphicsviewer.hpp
 
 FORMS += \
     netwidget.ui
