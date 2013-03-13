@@ -12,6 +12,7 @@ NetWidget::NetWidget(QWidget *parent) :
     ui(new Ui::NetWidget)
 {
     ui->setupUi(this);
+    setWindowTitle("NetWidget");
 
     ui->labelState->setText("Disconnected");
 

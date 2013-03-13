@@ -145,9 +145,9 @@ Network::Client::ClientType Network::typeOf(QTcpSocket *socket) const
 
 void Network::sendLoginPlayerACK(QTcpSocket *socket, char value)
 {
-    if (typeOf(socket) != Client::PLAYER)
+    if (typeOf(socket) == Client::DISCONNECTED)
     {
-        qDebug() << "Invalid sendLoginPlayerACK : not to a player socket";
+        qDebug() << "Invalid sendLoginPlayerACK : disconnected socket";
         return;
     }
 
@@ -159,9 +159,9 @@ void Network::sendLoginPlayerACK(QTcpSocket *socket, char value)
 
 void Network::sendLoginDisplayACK(QTcpSocket *socket, char value)
 {
-    if (typeOf(socket) != Client::DISPLAY)
+    if (typeOf(socket) == Client::DISCONNECTED)
     {
-        qDebug() << "Invalid sendLoginPlayerACK : not to a player socket";
+        qDebug() << "Invalid sendLoginPlayerACK : disconnected socket";
         return;
     }
 
@@ -177,9 +177,9 @@ void Network::sendInitPlayer(QTcpSocket *socket,
 							 int roundCount,
 							 int scanLimit, int shipCost, int nbPlayers, int idPlayer)
 {
-    if (typeOf(socket) != Client::PLAYER)
+    if (typeOf(socket) == Client::DISCONNECTED)
     {
-        qDebug() << "Invalid sendInitPlayer : not to a player socket";
+        qDebug() << "Invalid sendInitPlayer : disconnected socket";
         return;
     }
 
@@ -220,9 +220,9 @@ void Network::sendInitDisplay(QTcpSocket *socket,
                               QVector<QString> playerNicks,
                               int roundCount)
 {
-    if (typeOf(socket) != Client::DISPLAY)
+    if (typeOf(socket) == Client::DISCONNECTED)
     {
-        qDebug() << "Invalid sendInitDisplay : not to a display socket";
+        qDebug() << "Invalid sendInitDisplay : disconnected socket";
         return;
     }
 
@@ -274,9 +274,9 @@ void Network::sendTurnPlayer(QTcpSocket *socket,
 	QVector<IncomingEnnemyShips> incomingEnnemies,
 	QVector<FightReport> fightReports)
 {
-    if (typeOf(socket) != Client::PLAYER)
+    if (typeOf(socket) == Client::DISCONNECTED)
     {
-        qDebug() << "Invalid sendTurnPlayer : not to a player socket";
+        qDebug() << "Invalid sendTurnPlayer : disconnected socket";
         return;
     }
 
@@ -325,9 +325,9 @@ void Network::sendTurnPlayer(QTcpSocket *socket,
 
 void Network::sendFinishedPlayer(QTcpSocket *socket, bool youWon)
 {
-    if (typeOf(socket) != Client::PLAYER)
+    if (typeOf(socket) == Client::DISCONNECTED)
     {
-        qDebug() << "Invalid sendLoginPlayerACK : not to a player socket";
+        qDebug() << "Invalid sendLoginPlayerACK : disconnected socket";
         return;
     }
 
@@ -497,7 +497,7 @@ void Network::onMessageReceived()
 														shipsToMove[i].shipCount = qsl[1 + 3*i + 2].toInt();
 													}
 
-													debugDisplayMove(planetsToScan, shipsToBuild, shipsToMove);
+                                                    //debugDisplayMove(planetsToScan, shipsToBuild, shipsToMove);
 													emit movePlayer(socket, planetsToScan, shipsToBuild, shipsToMove);
 												}
 												else
