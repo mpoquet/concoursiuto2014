@@ -19,7 +19,8 @@ SOURCES += main.cpp \
 	galaxy.cpp \
 	abstractgamemodel.cpp \
 	basicgamemodel.cpp \
-	mainwidget.cpp
+	mainwidget.cpp \
+    servermanagerwidget.cpp
 
 HEADERS += \
 	network.hpp \
@@ -31,4 +32,5 @@ HEADERS += \
 	protocole.h \
 	abstractgamemodel.hpp \
 	basicgamemodel.hpp \
-	mainwidget.h
+	mainwidget.h \
+    servermanagerwidget.hpp

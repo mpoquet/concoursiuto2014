@@ -8,7 +8,7 @@
 #include "network.hpp"
 #include "game.hpp"
 #include "basicgamemodel.hpp"
-#include "mainwidget.h"
+#include "servermanagerwidget.hpp"
 
 using namespace std;
 
@@ -18,7 +18,7 @@ int main(int argc, char ** argv)
 
 	qsrand(QTime::currentTime().msec());
 
-	Game * m = new Game("../map/example.map", 500, new BasicGameModel(100));
+	Game * m = new Game("../map/example.map", 500, 100, new BasicGameModel());
 
 	quint16 port = 4242;
 	bool ok;
@@ -38,15 +38,18 @@ int main(int argc, char ** argv)
 
 	Network * n = new Network(port, 4, 1);
 
-	MainWidget * w = new MainWidget();
+
 
 	QObject::connect(n, SIGNAL(loginPlayer(QTcpSocket*,QString)), m, SLOT(playerLogin(QTcpSocket*,QString)));
 	QObject::connect(n, SIGNAL(movePlayer(QTcpSocket*,QVector<int>,QVector<BuildOrder>,QVector<ShipMove>)), m, SLOT(playerOrder(QTcpSocket*,QVector<int>,QVector<BuildOrder>,QVector<ShipMove>)));
-    QObject::connect(m, SIGNAL(finishedSignal(QTcpSocket*,bool)), n, SLOT(sendFinishedPlayer(QTcpSocket*,bool)));
+	QObject::connect(m, SIGNAL(finishedSignal(QTcpSocket*,bool)), n, SLOT(sendFinishedPlayer(QTcpSocket*,bool)));
 	QObject::connect(m, SIGNAL(initPlayerSignal(QTcpSocket*,int,QVector<QVector<int> >,int,int,int,int,int)), n, SLOT(sendInitPlayer(QTcpSocket*,int,QVector<QVector<int> >,int,int,int,int,int)));
 	QObject::connect(m, SIGNAL(turnSignal(QTcpSocket*,int,int,QVector<OurShipsOnPlanets>,QVector<ScanResult>,QVector<OurMovingShips>,QVector<IncomingEnnemyShips>,QVector<FightReport>)), n, SLOT(sendTurnPlayer(QTcpSocket*,int,int,QVector<OurShipsOnPlanets>,QVector<ScanResult>,QVector<OurMovingShips>,QVector<IncomingEnnemyShips>,QVector<FightReport>)));
 	QObject::connect(n, SIGNAL(playerDisconnected(QTcpSocket*)), m, SLOT(playerDisconnected(QTcpSocket*)));
-	QObject::connect(w, SIGNAL(start()), m, SLOT(start()));
+
+	ServerManagerWidget * w = new ServerManagerWidget(m, n);
+
+
 
 	n->run();
 	w->show();

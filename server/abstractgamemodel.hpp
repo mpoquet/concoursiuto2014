@@ -20,7 +20,6 @@ class AbstractGameModel
 		virtual int getResourcesByRound(int planetSize) = 0;
 
 		virtual int getMaxScan() = 0;
-		virtual int getRoundCount() = 0;
 
 		virtual int getSpaceShipCost() = 0;
 

@@ -6,7 +6,7 @@
 class BasicGameModel : public AbstractGameModel
 {
 	public:
-		BasicGameModel(int roundCount);
+		BasicGameModel();
 
 		virtual int getSpaceShipForPlayer(int planetSize);
 		virtual int getSpaceShipForNeutral(int planetSize);
@@ -16,7 +16,6 @@ class BasicGameModel : public AbstractGameModel
 		virtual int getResourcesByRound(int planetSize);
 
 		virtual int getMaxScan();
-		virtual int getRoundCount();
 
 		virtual int getSpaceShipCost();
 
@@ -26,9 +25,6 @@ class BasicGameModel : public AbstractGameModel
 
 	protected:
 		Fleet simulateBattle(Fleet f1, Fleet f2);
-
-	protected:
-		int m_roundCount;
 };
 
 #endif // BASICGAMEMODEL_HPP

@@ -18,7 +18,7 @@ class Game : public QObject
 {
 	Q_OBJECT
 	public:
-		Game(QString mapFilename, int delayBetweenRound, AbstractGameModel * gameModel);
+		Game(QString mapFilename, int delayBetweenRound, int roundCount, AbstractGameModel * gameModel);
 
 	signals:
 		void initPlayerSignal(QTcpSocket * socket,
@@ -40,6 +40,8 @@ class Game : public QObject
 
 		void finishedSignal(QTcpSocket * socket, bool youWon);
 
+		void gameStarted();
+		void roundStarted(int nbRound);
 
 	public slots:
 		void playerLogin(QTcpSocket * socket, QString nickname);
@@ -53,6 +55,9 @@ class Game : public QObject
 
 		void start();
 		void iteration();
+
+		void setDelayBetweenRound(int ms);
+		void setNumberOfRound(int round);
 
 	protected:
 		Planet * getPlanet(int id);
@@ -73,6 +78,7 @@ class Game : public QObject
 	private:
 		int m_delayBetweenRound;
 		int m_currentRound;
+		int m_roundCount;
 
 		AbstractGameModel * m_gameModel;
 		QVector<Galaxy*> m_galaxies;

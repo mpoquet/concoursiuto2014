@@ -1,8 +1,7 @@
 #include "basicgamemodel.hpp"
 
-BasicGameModel::BasicGameModel(int roundCount)
+BasicGameModel::BasicGameModel()
 {
-	m_roundCount = roundCount;
 }
 
 int BasicGameModel::getSpaceShipForPlayer(int planetSize)
@@ -34,11 +33,6 @@ int BasicGameModel::getResourcesByRound(int planetSize)
 int BasicGameModel::getMaxScan()
 {
 	return 10;
-}
-
-int BasicGameModel::getRoundCount()
-{
-	return m_roundCount;
 }
 
 int BasicGameModel::getSpaceShipCost()

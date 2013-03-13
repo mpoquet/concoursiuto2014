@@ -4,10 +4,11 @@
 #include <QFile>
 #include <QStringList>
 
-Game::Game(QString mapFilename, int delayBetweenRound, AbstractGameModel * gameModel)
+Game::Game(QString mapFilename, int delayBetweenRound, int roundCount, AbstractGameModel * gameModel)
 {
 	m_delayBetweenRound = delayBetweenRound;
 	m_gameModel = gameModel;
+	m_roundCount = roundCount;
 
 	QFile mapFile(mapFilename);
 
@@ -76,6 +77,8 @@ void Game::start()
 		qDebug() << "Game::start() : on ne lance pas de jeu avec moins de deux joueurs idiot !";
 		return;
 	}
+
+	emit gameStarted();
 
 	qDebug() << "Game::start()";
 
@@ -160,7 +163,7 @@ void Game::start()
 				m_clientSockets.value(p),
 				m_planets.size(),
 				getDistanceMatrix(),
-				m_gameModel->getRoundCount(),
+				m_roundCount,
 				m_gameModel->getMaxScan(),
 				m_gameModel->getSpaceShipCost(),
 				m_players.size(),
@@ -179,7 +182,7 @@ void Game::start()
 
 void Game::iteration()
 {
-	if(m_currentRound >= m_gameModel->getRoundCount())
+	if(m_currentRound >= m_roundCount)
 	{
 		m_timer->stop();
 
@@ -190,6 +193,9 @@ void Game::iteration()
 
 		return;
 	}
+
+	emit roundStarted(m_currentRound);
+
 	m_currentRound++;
 
 	qDebug() << "Game::iteration";
@@ -641,4 +647,14 @@ void Game::playerDisconnected(QTcpSocket * socket)
 			return;
 		}
 	}
+}
+
+void Game::setDelayBetweenRound(int ms)
+{
+	m_delayBetweenRound	= ms;
+}
+
+void Game::setNumberOfRound(int round)
+{
+	m_roundCount = round;
 }
