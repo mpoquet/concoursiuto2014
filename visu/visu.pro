@@ -13,9 +13,14 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-    network.cpp
+    network.cpp \
+    netwidget.cpp
 
 HEADERS  += \
     network.hpp \
     ../server/struct.hpp \
-    ../server/protocole.h
+    ../server/protocole.h \
+    netwidget.hpp
+
+FORMS += \
+    netwidget.ui

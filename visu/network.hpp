@@ -15,7 +15,9 @@ public:
 signals:
     void logged();
     void cannotLogIn();
+    void connected();
     void disconnected();
+    void error();
 
     void initReceived(int planetCount,
                       QVector<QVector<int> > distanceMatrix,
@@ -30,7 +32,7 @@ private slots:
     void onMessageReceived();
 
 public slots:
-    void connectToHost(const QString & address, quint16 port);
+    void connectToHost(QString address, quint16 port);
     void login();
 
 private:
