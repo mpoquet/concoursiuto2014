@@ -7,6 +7,7 @@
 #include <QVector>
 #include <QByteArray>
 #include <QRegExp>
+#include <QMutex>
 
 #include "struct.hpp"
 
@@ -83,6 +84,11 @@ public slots:
 				  QVector<IncomingEnnemyShips> incomingEnnemies,
 				  QVector<FightReport> fightReports);
 
+    void sendTurnDisplay(QTcpSocket * socket,
+                         QVector<int> scores,
+                         QVector<TurnDisplayPlanet> planets,
+                         QVector<ShipMovement> movements);
+
     void sendFinishedPlayer(QTcpSocket * socket, bool youWon);
 
 private:
@@ -112,6 +118,8 @@ private:
 	QRegExp _regexScans;
 	QRegExp _regexBuilds;
 	QRegExp _regexMoves;
+
+    QMutex _mutexDisconnected;
 
 	int _maxPlayerCount;
 	int _maxDisplayCount;

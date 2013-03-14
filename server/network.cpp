@@ -145,6 +145,8 @@ Network::Client::ClientType Network::typeOf(QTcpSocket *socket) const
 
 void Network::sendLoginPlayerACK(QTcpSocket *socket, char value)
 {
+    _mutexDisconnected.lock();
+
     if (typeOf(socket) == Client::DISCONNECTED)
     {
         qDebug() << "Invalid sendLoginPlayerACK : disconnected socket";
@@ -155,10 +157,14 @@ void Network::sendLoginPlayerACK(QTcpSocket *socket, char value)
 	message[0] = LOGIN_PLAYER_ACK;
 	message[1] = value;
 	socket->write(message);
+
+    _mutexDisconnected.unlock();
 }
 
 void Network::sendLoginDisplayACK(QTcpSocket *socket, char value)
 {
+    _mutexDisconnected.lock();
+
     if (typeOf(socket) == Client::DISCONNECTED)
     {
         qDebug() << "Invalid sendLoginPlayerACK : disconnected socket";
@@ -169,6 +175,8 @@ void Network::sendLoginDisplayACK(QTcpSocket *socket, char value)
 	message[0] = LOGIN_DISPLAY_ACK;
 	message[1] = value;
 	socket->write(message);
+
+    _mutexDisconnected.unlock();
 }
 
 void Network::sendInitPlayer(QTcpSocket *socket,
@@ -177,6 +185,8 @@ void Network::sendInitPlayer(QTcpSocket *socket,
 							 int roundCount,
 							 int scanLimit, int shipCost, int nbPlayers, int idPlayer)
 {
+    _mutexDisconnected.lock();
+
     if (typeOf(socket) == Client::DISCONNECTED)
     {
         qDebug() << "Invalid sendInitPlayer : disconnected socket";
@@ -211,6 +221,8 @@ void Network::sendInitPlayer(QTcpSocket *socket,
 
 	message += '\n';
     socket->write(message);
+
+    _mutexDisconnected.unlock();
 }
 
 void Network::sendInitDisplay(QTcpSocket *socket,
@@ -220,6 +232,8 @@ void Network::sendInitDisplay(QTcpSocket *socket,
                               QVector<QString> playerNicks,
                               int roundCount)
 {
+    _mutexDisconnected.lock();
+
     if (typeOf(socket) == Client::DISCONNECTED)
     {
         qDebug() << "Invalid sendInitDisplay : disconnected socket";
@@ -263,6 +277,8 @@ void Network::sendInitDisplay(QTcpSocket *socket,
 
     message += '\n';
     socket->write(message);
+
+    _mutexDisconnected.unlock();
 }
 
 void Network::sendTurnPlayer(QTcpSocket *socket,
@@ -274,6 +290,8 @@ void Network::sendTurnPlayer(QTcpSocket *socket,
 	QVector<IncomingEnnemyShips> incomingEnnemies,
 	QVector<FightReport> fightReports)
 {
+    _mutexDisconnected.lock();
+
     if (typeOf(socket) == Client::DISCONNECTED)
     {
         qDebug() << "Invalid sendTurnPlayer : disconnected socket";
@@ -320,11 +338,52 @@ void Network::sendTurnPlayer(QTcpSocket *socket,
 					fightReports[i].aliveShipCount).toLatin1();
 
 	message += '\n';
-	socket->write(message);
+    socket->write(message);
+
+    _mutexDisconnected.unlock();
+}
+
+void Network::sendTurnDisplay(QTcpSocket *socket,
+                              QVector<int> scores,
+                              QVector<TurnDisplayPlanet> planets,
+                              QVector<ShipMovement> movements)
+{
+    _mutexDisconnected.lock();
+
+    if (typeOf(socket) == Client::DISCONNECTED)
+    {
+        qDebug() << "Invalid sendTurnDisplay : disconnected socket";
+        return;
+    }
+
+    QByteArray message;
+
+    message += TURN_DISPLAY;
+
+    message += QString("%1").arg(scores.size()).toLatin1();
+    for (int i = 0; i < scores.size(); ++i)
+        message += QString("%1%2").arg(SSEP).arg(scores[i]).toLatin1();
+
+    message += QString("%1%2").arg(SEP).arg(planets.size()).toLatin1();
+    for (int i = 0; i < planets.size(); ++i)
+        message += QString("%1%2%1%3").arg(SSEP).arg(planets[i].playerID).arg(planets[i].shipCount).toLatin1();
+
+    message += QString("%1%2").arg(SEP).arg(movements.size()).toLatin1();
+    for (int i = 0; i < movements.size(); ++i)
+        message += QString("%1%2%1%3%1%4%1%5%1%6").arg(SSEP).arg(movements[i].player).arg(
+                    movements[i].move.srcPlanet).arg(movements[i].move.destPlanet).arg(
+                    movements[i].move.shipCount).arg(movements[i].remainingRound).toLatin1();
+
+    message += '\n';
+    socket->write(message);
+
+    _mutexDisconnected.unlock();
 }
 
 void Network::sendFinishedPlayer(QTcpSocket *socket, bool youWon)
 {
+    _mutexDisconnected.lock();
+
     if (typeOf(socket) == Client::DISCONNECTED)
     {
         qDebug() << "Invalid sendLoginPlayerACK : disconnected socket";
@@ -340,6 +399,8 @@ void Network::sendFinishedPlayer(QTcpSocket *socket, bool youWon)
 		message[1] = '0';
 
 	socket->write(message);
+
+    _mutexDisconnected.unlock();
 }
 
 void Network::onNewConnection()
@@ -541,6 +602,8 @@ void Network::onError(QAbstractSocket::SocketError error)
 
 void Network::onDisconnected()
 {
+    _mutexDisconnected.lock();
+
 	QTcpSocket * socket = (QTcpSocket *) sender();
 	qDebug() << "Client disconnected";
 
@@ -555,6 +618,8 @@ void Network::onDisconnected()
 		emit displayDisconnected(socket);
 	else
 		emit unloggedClientDisconnected(socket);
+
+    _mutexDisconnected.unlock();
 }
 
 void Network::debugDisplayMove(QVector<int> planetsToScan, QVector<BuildOrder> shipsToBuild, QVector<ShipMove> shipsToMove)
