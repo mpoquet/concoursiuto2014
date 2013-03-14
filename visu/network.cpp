@@ -112,10 +112,10 @@ void Network::onMessageReceived()
                 planets.resize(planetCount);
                 for (int i = 0; i < planetCount; ++i)
                 {
-                    planets[i].posX = qsl2[5*i].toInt();
-                    planets[i].posY = qsl2[5*i+1].toInt();
-                    planets[i].playerID = qsl2[5*i+2].toInt();
-                    planets[i].shipCount = qsl2[5*i+3].toInt();
+                    planets[i].posX =       qsl2[5*i].toInt();
+                    planets[i].posY =       qsl2[5*i+1].toInt();
+                    planets[i].playerID =   qsl2[5*i+2].toInt();
+                    planets[i].shipCount =  qsl2[5*i+3].toInt();
                     planets[i].planetSize = qsl2[5*i+4].toInt();
                 }
 
@@ -128,7 +128,6 @@ void Network::onMessageReceived()
                 }
 
                 playerNicks.resize(qsl2.at(0).toInt());
-
                 for (int i = 0; i < playerNicks.size(); ++i)
                     playerNicks[i] = qsl2.at(i+1);
 
@@ -138,7 +137,59 @@ void Network::onMessageReceived()
             } break;
             case TURN_DISPLAY:
             {
+                QStringList qsl = message.split(SEP);
+                QStringList qsl2;
 
+                QVector<int> scores;
+                QVector<TurnDisplayPlanet> planets;
+                QVector<ShipMovement> movements;
+
+                qsl2 = qsl.at(0).split(SSEP);
+
+                if (qsl2.size() != qsl2.at(0).toInt() + 1)
+                {
+                    qDebug() << "Invalid player nicks size";
+                    continue;
+                }
+
+                scores.resize(qsl2.at(0).toInt());
+                for (int i = 0; i < scores.size(); ++i)
+                    scores[i] = qsl2.at(i+1).toInt();
+
+                qsl2 = qsl.at(1).split(SSEP);
+
+                if (qsl2.size() != 2 * qsl2.at(0).toInt() + 1)
+                {
+                    qDebug() << "Invalid turn display planets size";
+                    continue;
+                }
+
+                planets.resize(qsl2.at(0).toInt());
+                for (int i = 0; i < planets.size(); ++i)
+                {
+                    planets[i].playerID = qsl2.at( 1 + 2*i).toInt();
+                    planets[i].shipCount = qsl2.at(1 + 2*i + 1).toInt();
+                }
+
+                qsl2 = qsl.at(2).split(SSEP);
+
+                if (qsl2.size() != qsl2.at(0).toInt() * 5 + 1)
+                {
+                    qDebug() << "Invalid turn display movements size";
+                    continue;
+                }
+
+                movements.resize(qsl2.at(0).toInt());
+                for (int i = 0; i < movements.size(); ++i)
+                {
+                    movements[i].player =          qsl2.at(1 + 5*i).toInt();
+                    movements[i].move.srcPlanet  = qsl2.at(1 + 5*i + 1).toInt();
+                    movements[i].move.destPlanet = qsl2.at(1 + 5*i + 2).toInt();
+                    movements[i].move.shipCount  = qsl2.at(1 + 5*i + 3).toInt();
+                    movements[i].remainingRound  = qsl2.at(1 + 5*i + 4).toInt();
+                }
+
+                emit turnReceived(scores, planets, movements);
             } break;
             default:
                 cerr << "Unknown message received (" + message.toStdString() + ')' << endl;

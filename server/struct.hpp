@@ -128,5 +128,11 @@ struct InitDisplayPlanet
     int planetSize;
 };
 
+struct TurnDisplayPlanet
+{
+    int playerID;
+    int shipCount;
+};
+
 
 #endif // STRUCT_HPP

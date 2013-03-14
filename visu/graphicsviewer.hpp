@@ -17,11 +17,28 @@ class GraphicsViewer : public AbstractViewer
     {
         QString nick;
         QColor color;
+        int score;
+
+        Player(const QString & n = "???", const QColor & c = Qt::black) :
+            nick(n), color(c) {}
+    };
+
+    struct Planet
+    {
+        QGraphicsItem * item;
+        int playerID;
+        int size;
+        int x;
+        int y;
+        int shipCount;
     };
 
 public:
     explicit GraphicsViewer(QWidget *parent = 0);
     
+private:
+    void setPlayersColor();
+
 signals:
     
 public slots:
@@ -31,17 +48,21 @@ public slots:
                 QVector<QString> playerNicks,
                 int roundCount);
 
-    void onTurn();
+    void onTurn(QVector<int> scores,
+                QVector<TurnDisplayPlanet> planets,
+                QVector<ShipMovement> movements);
 private:
     QHBoxLayout * _layout;
 
     QGraphicsScene * _scene;
     QGraphicsView * _view;
 
-    QVector<QGraphicsItem*> _planets;
+    QVector<Planet> _planets;
+    QVector<ShipMovement> _movements;
     QVector<QVector<int> > _distance;
     int _roundCount;
     int _currentRound;
+    int _playerCount;
 
     QHash<int, Player> _players; // playerID -> Player
 };

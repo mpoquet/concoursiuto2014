@@ -25,6 +25,10 @@ signals:
                       QVector<QString> playerNicks,
                       int roundCount);
 
+    void turnReceived(QVector<int> scores,
+                      QVector<TurnDisplayPlanet> planets,
+                      QVector<ShipMovement> movements);
+
 private slots:
     void onError(QAbstractSocket::SocketError e);
     void onDisconnected();

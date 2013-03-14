@@ -20,7 +20,9 @@ public slots:
                         QVector<QString> playerNicks,
                         int roundCount) = 0;
 
-    virtual void onTurn() = 0; // to be defined
+    virtual void onTurn(QVector<int> scores,
+                        QVector<TurnDisplayPlanet> planets,
+                        QVector<ShipMovement> movements) = 0; // to be defined
 };
 
 #endif // ABSTRACTVIEWER_HPP
