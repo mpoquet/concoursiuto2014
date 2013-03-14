@@ -17,10 +17,15 @@ private Q_SLOTS:
 
     void testConnection();
 	void testLogin();
+
     void testInitPlayer();
     void testInitDisplay();
+
     void testTurnPlayer();
+    void testTurnDisplay();
+
     void testMovePlayer();
+
     void testFinished();
 
 private:
@@ -500,6 +505,78 @@ void TestServer::testTurnPlayer()
                          scanResults, ourMovingShips,
                          incomingEnnemies, fightReports);
 
+        QTest::qWait(delay);
+
+        response = sockc.readAll();
+        QCOMPARE(response, expected);
+    }
+}
+
+void TestServer::testTurnDisplay()
+{
+    QTcpSocket sockc;
+    QTcpSocket * socks;
+    QByteArray response, expected;
+
+    sockc.connectToHost("127.0.0.1", 4242);
+    QTest::qWait(delay);
+
+    QCOMPARE(sockc.state(), QAbstractSocket::ConnectedState);
+    QCOMPARE(n.clientCount(), 1);
+
+    socks = n.clients().first();
+
+    // Data
+    QVector<int> scores;
+    QVector<TurnDisplayPlanet> planets;
+    QVector<ShipMovement> movements;
+
+    // Let's do several tests
+    for (int nbTest = 0; nbTest < 50; ++nbTest)
+    {
+        scores.resize(rand() % 50);
+        for (int i = 0; i < scores.size(); ++i)
+            scores[i] = rand() % 1000000;
+
+        planets.resize(rand() % 50);
+        for (int i = 0; i < planets.size(); ++i)
+        {
+            planets[i].playerID = rand() % 50;
+            planets[i].shipCount = rand() % 50;
+        }
+
+        movements.resize(rand() % 50);
+        for (int i = 0; i < movements.size(); ++i)
+        {
+            movements[i].player = rand() % 50;
+            movements[i].move.srcPlanet = rand() % 50;
+            movements[i].move.destPlanet = rand() % 50;
+            movements[i].move.shipCount = rand() % 50;
+            movements[i].remainingRound = rand() % 50;
+        }
+
+        expected.clear();
+        expected += TURN_DISPLAY;
+
+        expected += QString("%1").arg(scores.size()).toLatin1();
+        for (int i = 0; i < scores.size(); ++i)
+            expected += QString("%1%2").arg(SSEP).arg(scores[i]).toLatin1();
+
+        expected += QString("%1%2").arg(SEP).arg(planets.size()).toLatin1();
+        for (int i = 0; i < planets.size(); ++i)
+            expected += QString("%1%2%1%3").arg(SSEP).arg(planets[i].playerID).arg(
+                        planets[i].shipCount).toLatin1();
+
+        expected += QString("%1%2").arg(SEP).arg(movements.size()).toLatin1();
+        for (int i = 0; i < movements.size(); ++i)
+            expected += QString("%1%2%1%3%1%4%1%5%1%6").arg(SSEP).arg(
+                        movements[i].player).arg(movements[i].move.srcPlanet).arg(
+                        movements[i].move.destPlanet).arg(movements[i].move.shipCount).arg(
+                        movements[i].remainingRound).toLatin1();
+
+        expected += '\n';
+
+        n.sendTurnDisplay(socks, scores, planets, movements);
         QTest::qWait(delay);
 
         response = sockc.readAll();

@@ -407,8 +407,7 @@ void Network::onNewConnection()
 {
 	QTcpSocket * socket = _server->nextPendingConnection();
 
-	cout << QString("New connection from %1:%2").arg(socket->peerAddress().toString()).arg(
-			socket->peerPort()).toStdString() << endl;
+    //cout << QString("New connection from %1:%2").arg(socket->peerAddress().toString()).arg(socket->peerPort()).toStdString() << endl;
 
 	connect(socket, SIGNAL(error(QAbstractSocket::SocketError)),this, SLOT(onError(QAbstractSocket::SocketError)));
 	connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
@@ -605,7 +604,7 @@ void Network::onDisconnected()
     _mutexDisconnected.lock();
 
 	QTcpSocket * socket = (QTcpSocket *) sender();
-	qDebug() << "Client disconnected";
+    //qDebug() << "Client disconnected";
 
 	Client::ClientType type = _clients[socket].type;
 
