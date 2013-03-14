@@ -25,7 +25,7 @@ class GraphicsViewer : public AbstractViewer
 
     struct Planet
     {
-        QGraphicsItem * item;
+        QGraphicsEllipseItem * item;
         int playerID;
         int size;
         int x;
@@ -51,6 +51,10 @@ public slots:
     void onTurn(QVector<int> scores,
                 QVector<TurnDisplayPlanet> planets,
                 QVector<ShipMovement> movements);
+
+private slots:
+    void redraw();
+
 private:
     QHBoxLayout * _layout;
 
@@ -58,7 +62,7 @@ private:
     QGraphicsView * _view;
 
     QVector<Planet> _planets;
-    QVector<ShipMovement> _movements;
+    QVector<QGraphicsEllipseItem *> _movements;
     QVector<QVector<int> > _distance;
     int _roundCount;
     int _currentRound;

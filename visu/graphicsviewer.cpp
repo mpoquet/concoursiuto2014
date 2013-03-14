@@ -1,5 +1,7 @@
 #include "graphicsviewer.hpp"
 
+#include <QPen>
+
 GraphicsViewer::GraphicsViewer(QWidget *parent) :
     AbstractViewer(parent)
 {
@@ -52,9 +54,9 @@ void GraphicsViewer::onInit(int planetCount,
         _planets[i].playerID = planets[i].playerID;
         _planets[i].shipCount = planets[i].shipCount;
 
-        _planets[i].item = new QGraphicsEllipseItem(_planets[i].x - _planets[i].size / 2,
-                                                    _planets[i].y - _planets[i].size / 2,
-                                                    _planets[i].size / 2, _planets[i].size / 2);
+        _planets[i].item = _scene->addEllipse(_planets[i].x - _planets[i].size / 2,
+                                              _planets[i].y - _planets[i].size / 2,
+                                              _planets[i].size, _planets[i].size);
 
     }
 }
@@ -72,5 +74,39 @@ void GraphicsViewer::onTurn(QVector<int> scores,
         _planets[i].shipCount = planets[i].shipCount;
     }
 
-    _movements = movements;
+    for (int i = 0; i < _movements.size(); ++i)
+        _scene->removeItem(_movements[i]);
+
+    _movements.resize(movements.size());
+    for (int i = 0; i < movements.size(); ++i)
+    {
+        float xA,yA, xB,yB, a,b, x,y, diffX, diffY;
+
+        a = movements[i].move.srcPlanet;
+        b = movements[i].move.destPlanet;
+
+        xA = _planets[a].x;
+        yA = _planets[a].y;
+
+        xB = _planets[b].x;
+        yB = _planets[b].y;
+
+        diffX = (xB - xA) / (float) _distance[a][b];
+        diffY = (yB - yA) / (float) _distance[a][b];
+
+        x = xB + diffX * movements[i].remainingRound;
+        y = yB + diffY * movements[i].remainingRound;
+
+        _movements[i] = _scene->addEllipse(x - 2, y - 2, 4, 4, QPen(_players[movements[i].player].color));
+    }
+
+    redraw();
+}
+
+void GraphicsViewer::redraw()
+{
+    for (int i = 0; i < _planets.size(); ++i)
+        _planets[i].item->setPen(QPen(_players[_planets[i].playerID].color));
+
+
 }
