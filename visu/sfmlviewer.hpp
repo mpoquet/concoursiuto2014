@@ -3,6 +3,8 @@
 
 #include <QTimer>
 #include <QTime>
+#include <QMap>
+#include <QMutex>
 
 #include <SFML/Graphics.hpp>
 #include <QResizeEvent>
@@ -12,22 +14,43 @@
 class SFMLViewer : public AbstractViewer, public sf::RenderWindow
 {
     Q_OBJECT
+
+    struct Player
+    {
+        QString nick;
+        sf::Color color;
+        int score;
+
+        Player(const QString & n = "???", sf::Color c = sf::Color::White, int s = 0) :
+            nick(n), color(c), score(s) {}
+    };
+
+    struct Planet
+    {
+        sf::Sprite sprite;
+        int size;
+        int playerID;
+        int shipCount;
+    };
+
 public:
     explicit SFMLViewer(QWidget * parent = 0);
 
+private:
+    void test();
+
 public slots:
     void onInit(int planetCount,
-                        QVector<QVector<int> > distanceMatrix,
-                        QVector<InitDisplayPlanet> planets,
-                        QVector<QString> playerNicks,
-                        int roundCount);
+                QVector<QVector<int> > distanceMatrix,
+                QVector<InitDisplayPlanet> planets,
+                QVector<QString> playerNicks,
+                int roundCount);
 
     void onTurn(QVector<int> scores,
-                        QVector<TurnDisplayPlanet> planets,
-                        QVector<ShipMovement> movements);
+                QVector<TurnDisplayPlanet> planets,
+                QVector<ShipMovement> movements);
 
 protected:
-    int heightForWidth(int w) const;
     void resizeEvent(QResizeEvent * e);
 
 private :
@@ -41,8 +64,20 @@ private :
     QTimer _timer;
     QTime _time;
     bool _initialized;
-    sf::Texture _texture;
+
+    int _planetCount;
+    QVector<QVector<int> > _distance;
+
+    QMap<int, Player> _players; // PlayerID->Player
+    QVector<Planet> _planets;
+    QVector<sf::Sprite> _ships;
+
+    int _roundCount;
+    int _currentRound;
+
+    sf::Texture _texturePlanet;
     sf::Sprite _sprite;
+    QMutex _mutex;
 };
 
 #endif // SFMLVIEWER_HPP

@@ -11,17 +11,53 @@ SFMLViewer::SFMLViewer(QWidget *parent) :
     setAttribute(Qt::WA_OpaquePaintEvent);
     setAttribute(Qt::WA_NoSystemBackground);
 
-    QSizePolicy policy;
-    policy.setHeightForWidth(true);
-    setSizePolicy(policy);
-
     // Changement de la police de focus, pour autoriser notre widget à capter les évènements clavier
     setFocusPolicy(Qt::StrongFocus);
 
-    //QWidget::resize(1024, 768);
+    QWidget::resize(640,480);
 
     // Préparation du timer
     _timer.setInterval(50);
+}
+
+void SFMLViewer::test()
+{
+    int planetCount;
+    QVector<QVector<int> > distanceMatrix;
+    QVector<InitDisplayPlanet> planets;
+    QVector<QString> playerNicks;
+    int roundCount;
+
+    planetCount = 4;
+
+    distanceMatrix.resize(planetCount);
+    for (int i = 0; i < distanceMatrix.size(); ++i)
+        distanceMatrix.resize(planetCount);
+
+    planets.resize(planetCount);
+
+    planets[0].posX = 0;
+    planets[0].posY = 0;
+    planets[0].playerID = -1;
+
+    planets[1].posX = 50;
+    planets[1].posY = 0;
+    planets[1].playerID = 0;
+
+    planets[2].posX = 100;
+    planets[2].posY = 100;
+    planets[2].playerID = 1;
+
+    planets[3].posX = 75;
+    planets[3].posY = 75;
+    planets[3].playerID = 2;
+
+    playerNicks.resize(2);
+    playerNicks[0] = "Bouh";
+    playerNicks[1] = "Ada";
+    roundCount = 42;
+
+    onInit(planetCount, distanceMatrix, planets, playerNicks, roundCount);
 }
 
 void SFMLViewer::onTurn(QVector<int> scores,
@@ -31,21 +67,10 @@ void SFMLViewer::onTurn(QVector<int> scores,
     qDebug() << "SFML : turn received";
 }
 
-int SFMLViewer::heightForWidth(int w) const
-{
-    return w;
-}
-
 void SFMLViewer::resizeEvent(QResizeEvent *e)
 {
-//    QSize size = e->size();
-//    size.scale(size.width(), size.width() * 0.75f, Qt::IgnoreAspectRatio);
-
-//    int x = pos().x();
-//    int y = pos().y();
-//    setGeometry(x, y, size.width(), size.height());
-
     onResize();
+    e->accept();
 }
 
 void SFMLViewer::onInit(int planetCount,
@@ -54,17 +79,92 @@ void SFMLViewer::onInit(int planetCount,
                         QVector<QString> playerNicks,
                         int roundCount)
 {
+    _roundCount = roundCount;
+    _currentRound = 0;
+
+    // Let's handle players
+    _players[-1] = Player("Empty");
+    _players[0] = Player("Autochtone", sf::Color(127,127,127));
+
+    for (int i = 0; i < playerNicks.size(); ++i)
+        _players[i+1] = Player(playerNicks[i]);
+
+    // Player colors
+    QVector<QColor> colors(playerNicks.size());
+    int h = 360 / colors.size();
+
+    for (int i = 0; i < colors.size(); ++i)
+        colors[i] = QColor::fromHsl(h*i, 100, 100);
+
+    for (int i = 0; i < playerNicks.size(); ++i)
+        _players[i+1].color = sf::Color(colors[i].red(), colors[i].green(), colors[i].blue());
+
+
+    // Planets
+    _planetCount = planetCount;
+    _distance = distanceMatrix;
+
+    int minX,minY,maxX,maxY;
+    minX = minY = 2147483647; // Mouhahahaha
+    maxX = maxY = -2147483647;
+
+    for (int i = 0; i < planets.size(); ++i)
+    {
+        if (planets[i].posX < minX)
+            minX = planets[i].posX;
+
+        if (planets[i].posX > maxX)
+            maxX = planets[i].posX;
+
+        if (planets[i].posY < minY)
+            minY = planets[i].posY;
+
+        if (planets[i].posY > maxY)
+            maxY = planets[i].posY;
+    }
+
+    float radiusPX = QWidget::width() / planetCount / 2;
+    float scale = _texturePlanet.getSize().x / radiusPX;
+
+    qDebug() << "radius, scale :" << radiusPX << scale;
+
+    qDebug() << "min" << minX << minY;
+    qDebug() << "max" << maxX << maxY;
+
+    float aW, aH;
+    aW = (float) QWidget::width() / (maxX - minX);
+    aH = (float) QWidget::height() / (maxY - minY);
+
+    _mutex.lock();
+
+    _planets.resize(_planetCount);
+    for (int i = 0; i < _planets.size(); ++i)
+    {
+        _planets[i].playerID = planets[i].playerID;
+        _planets[i].shipCount = planets[i].shipCount;
+        _planets[i].size = planets[i].planetSize;
+
+        _planets[i].sprite.setTexture(_texturePlanet);
+        _planets[i].sprite.setOrigin(_texturePlanet.getSize().x/2, _texturePlanet.getSize().y/2);
+        _planets[i].sprite.setPosition(aW * (planets[i].posX - minX), aH * (planets[i].posY - minY));
+        _planets[i].sprite.setScale(0.5f, 0.5f);
+        _planets[i].sprite.setColor(_players[_planets[i].playerID].color);
+    }
+
+    _mutex.unlock();
+
     qDebug() << "SFML : init received";
 }
 
 void SFMLViewer::onDisplayInit()
 {
     _time.start();
-    _texture.loadFromFile("img/planet.png");
-    _texture.setSmooth(true);
 
-    _sprite.setTexture(_texture);
-    _sprite.setOrigin(_texture.getSize().x / 2, _texture.getSize().y / 2);
+    _texturePlanet.loadFromFile("img/planet.png");
+    _texturePlanet.setSmooth(true);
+
+    _sprite.setTexture(_texturePlanet);
+    _sprite.setOrigin(_texturePlanet.getSize().x / 2, _texturePlanet.getSize().y / 2);
     _sprite.move(size().width() / 2, size().height() / 2);
 }
 
@@ -72,34 +172,17 @@ void SFMLViewer::onDisplayUpdate()
 {
     clear();
 
-    _sprite.rotate(1.0f);
+    _mutex.lock();
+    for (int i = 0; i < _planets.size(); ++i)
+        draw(_planets[i].sprite);
+    _mutex.unlock();
 
-    static int i = 127;
-    static bool j = true;
-    int k = 5;
-
-    if (j)
-        i += k;
-    else
-        i -= k;
-
-    if (i > 255)
+    static bool first = true;
+    if (first)
     {
-        i = 255;
-        j = false;
+        test();
+        first = false;
     }
-    else if (i < 127)
-    {
-        i = 127;
-        j = true;
-    }
-
-    sf::Color color(i, i, i);
-
-    _sprite.setColor(color);
-    _sprite.setScale(i / 127.0, i / 127.0);
-
-    draw(_sprite);
 }
 
 QPaintEngine *SFMLViewer::paintEngine() const
@@ -137,10 +220,12 @@ void SFMLViewer::showEvent(QShowEvent * e)
 
         _initialized = true;
     }
+    e->accept();
 }
 
 void SFMLViewer::paintEvent(QPaintEvent *e)
 {
     onDisplayUpdate();
     display();
+    e->accept();
 }
