@@ -3,6 +3,7 @@
 #include "network.hpp"
 #include "netwidget.hpp"
 #include "graphicsviewer.hpp"
+#include "sfmlviewer.hpp"
 
 int main(int argc, char *argv[])
 {
@@ -12,7 +13,7 @@ int main(int argc, char *argv[])
     NetWidget w;
     w.show();
 
-    GraphicsViewer viewer;
+    SFMLViewer viewer;
     viewer.show();
 
     QObject::connect(&w, SIGNAL(wantToConnectToHost(QString,quint16)), &n, SLOT(connectToHost(QString,quint16)));

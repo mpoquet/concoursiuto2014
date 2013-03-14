@@ -22,7 +22,7 @@ public slots:
 
     virtual void onTurn(QVector<int> scores,
                         QVector<TurnDisplayPlanet> planets,
-                        QVector<ShipMovement> movements) = 0; // to be defined
+                        QVector<ShipMovement> movements) = 0;
 };
 
 #endif // ABSTRACTVIEWER_HPP
