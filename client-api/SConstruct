@@ -1,0 +1,62 @@
+import distutils.sysconfig
+import time
+
+
+moduleName = 'contest'
+srcDir = 'c++'
+buildDir = 'build'
+installDir = 'install'
+javaIncludeDir = '/usr/lib/jvm/java-1.6.0-openjdk-i386/include'
+
+includePath = ['../server', 'spnl-install/include/spnl']
+libPath = ['spnl-install/lib']
+libs = ['spnl']
+
+
+def make():
+    envBase = Environment(CPPPATH = includePath, LIBS = libs, LIBPATH = libPath)
+    envBase.VariantDir('build', 'c++')
+    srcFiles = Glob(buildDir+'/*.cpp')
+    objFiles = envBase.SharedObject(srcFiles)
+    Clean('.', [buildDir, installDir])
+    makeCpp(envBase, objFiles)
+    makePython(envBase, objFiles)
+    makeJava(envBase, objFiles)
+
+
+def makeCpp(envBase, objFiles):
+    envCpp = envBase.Clone()
+    libCpp = envCpp.SharedLibrary(moduleName+'-cpp', objFiles)
+    #envCpp.Install(installDir, libCpp)
+
+
+def makePython(envBase, objFiles):
+    pythonVersion = distutils.sysconfig.get_python_version().split('.')[0]
+    print 'Python', pythonVersion, 'used'
+
+    envPy = envBase.Clone()
+    envPy['SWIGFLAGS'] = ['-python', '-c++']
+    envPy['CPPPATH'] = [distutils.sysconfig.get_python_inc()]
+    envPy['SWIGCXXFILESUFFIX'] = '-python.cxx'
+    envPy['SHLIBPREFIX'] = ''
+    libPy = envPy.SharedLibrary('_'+moduleName, [buildDir+'/'+moduleName+'.i'])
+    #envPy.Install(installDir, buildDir+'/'+moduleName+'.py')
+    #envPy.Install(installDir, libPy)
+
+
+def makeJava(envBase, objFiles):
+    envJava = envBase.Clone()
+    envJava['SWIGFLAGS'] = ['-java', '-c++']
+    envJava['CPPPATH'] = [javaIncludeDir]
+    envJava['SWIGOUTDIR'] = buildDir+'/java'
+    envJava['SWIGCXXFILESUFFIX'] = '-java.cxx'
+    libJava = envJava.SharedLibrary(moduleName, [buildDir+'/'+moduleName+'.i'])
+    javaSrc = envJava.Java(buildDir+'/classes', [buildDir+'/'+moduleName+'.i'])
+    javaJar = envJava.Jar(moduleName+'.jar', javaSrc)
+    #envJava.Install(installDir, libJava)
+    #envJava.Install(installDir, javaJar)
+
+
+make()
+
+
