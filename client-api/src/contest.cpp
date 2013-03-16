@@ -91,13 +91,13 @@ bool Session::waitInit()
         const vector<string> messageParts = split(msg.second, SEP);
 
         const GameInfos infos = {
-                                    .playerId = toInt(messageParts[6]),
-                                    .playerCount = toInt(messageParts[5]),
-                                    .totalRoundCount = toInt(messageParts[2]),
-                                    .currentRoundId = 0,
-                                    .planetCount = toInt(messageParts[0]),
-                                    .scanCountLimit = toInt(messageParts[3]),
-                                    .shipCost = toInt(messageParts[4])
+                                    toInt(messageParts[6]),
+                                    toInt(messageParts[5]),
+                                    toInt(messageParts[2]),
+                                    0,
+                                    toInt(messageParts[0]),
+                                    toInt(messageParts[3]),
+                                    toInt(messageParts[4])
                                 };
 
         _data->gameData._gameInfos = infos;
