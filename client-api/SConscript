@@ -10,7 +10,7 @@ javaIncludePath = '/usr/lib/jvm/java-1.6.0-openjdk-i386/include'
 # Internal variables
 srcDir = 'src'
 spnlInstallPath = 'spnl-install'
-includePath = ['#../server', spnlInstallPath+'/include/spnl']
+includePath = ['#../server', spnlInstallPath+'/include']
 libPath = [spnlInstallPath+'/lib']
 libs = ['spnl']
 

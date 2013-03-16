@@ -3,7 +3,7 @@
 #include <sstream>
 #include <cstdio>
 #include <protocole.h>
-#include <Network.hpp>
+#include <spnl/Network.hpp>
 
 using namespace Core;
 using namespace Network;
