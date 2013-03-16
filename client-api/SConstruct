@@ -2,7 +2,7 @@ import distutils.sysconfig
 import time
 
 
-buildPath = 'build'
+buildPath = '.build'
 
 
 SConscript('SConscript', variant_dir=buildPath)

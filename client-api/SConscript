@@ -10,37 +10,50 @@ javaIncludePath = '/usr/lib/jvm/java-1.6.0-openjdk-i386/include'
 # Internal variables
 srcDir = 'src'
 spnlInstallPath = 'spnl-install'
-includePath = ['../server', spnlInstallPath+'/include/spnl']
+includePath = ['#../server', spnlInstallPath+'/include/spnl']
 libPath = [spnlInstallPath+'/lib']
 libs = ['spnl']
 
 
 def make():
-    global includePath, libPath
-    
-    includePath = ['#'+i for i in includePath]
-    libPath = ['#'+i for i in libPath]
     envBase = Environment(CPPPATH = includePath, LIBS = libs, LIBPATH = libPath)
-    
+
+    lib = makeSpnl(envBase)
+
     srcFiles = Glob(srcDir+'/*.cpp')
     objFiles = envBase.SharedObject(srcFiles)
+    envBase.Requires(objFiles, lib)
     
-    makeSpnl(envBase)
-    makeCpp(envBase, objFiles)
-    makePython(envBase, objFiles)
-    makeJava(envBase, objFiles)
+    makeCpp(envBase, objFiles, lib)
+    makePython(envBase, objFiles, lib)
+    makeJava(envBase, objFiles, lib)
 
 
 def makeSpnl(envBase):
-    None
+    currentPath = Dir('.').abspath
+    projectPath = Dir('#').abspath
+    spnlSrcDir = projectPath+'/spnl'
+    spnlBuildDir = currentPath+'/spnl-build'
+    spnlInstallDir = Dir(spnlInstallPath).abspath
+
+    commands = [Mkdir(spnlBuildDir),
+                ' && '.join(['cd '+spnlBuildDir,
+                             'cmake '+spnlSrcDir+' -DCMAKE_INSTALL_PREFIX:PATH='+spnlInstallDir,
+                             'make install -j'+str(GetOption('num_jobs'))])]
+    
+    envSpnl = envBase.Clone()
+    envSpnl['CPPPATH'] = envSpnl['LIBS'] = envSpnl['LIBPATH'] = []
+    spnlBuild = envSpnl.Command(spnlBuildDir, spnlSrcDir, [commands[0], commands[1]])
+    return envSpnl.AlwaysBuild(spnlBuild)
 
 
-def makeCpp(envBase, objFiles):
+def makeCpp(envBase, objFiles, lib):
     envCpp = envBase.Clone()
     libCpp = envCpp.SharedLibrary(moduleName+'-cpp', objFiles)
+    envCpp.Requires(libCpp, lib)
 
 
-def makePython(envBase, objFiles):
+def makePython(envBase, objFiles, lib):
     pythonVersion = distutils.sysconfig.get_python_version().split('.')[0]
     print 'Python', pythonVersion, 'used'
 
@@ -50,16 +63,18 @@ def makePython(envBase, objFiles):
     envPy['SWIGCXXFILESUFFIX'] = '-python.cxx'
     envPy['SHLIBPREFIX'] = ''
     libPy = envPy.SharedLibrary('_'+moduleName, [srcDir+'/'+moduleName+'.i'])
+    envPy.Requires(libPy, lib)
     envPy.Install('.', srcDir+'/'+moduleName+'.py')
 
 
-def makeJava(envBase, objFiles):
+def makeJava(envBase, objFiles, lib):
     envJava = envBase.Clone()
     envJava['SWIGFLAGS'] = ['-java', '-c++']
     envJava['CPPPATH'] = [javaIncludePath]
     envJava['SWIGOUTDIR'] = Dir(srcDir).abspath+'/java'
     envJava['SWIGCXXFILESUFFIX'] = '-java.cxx'
     libJava = envJava.SharedLibrary(moduleName, [srcDir+'/'+moduleName+'.i'])
+    envJava.Requires(libJava, lib)
     javaSrc = envJava.Java(srcDir+'/classes', [srcDir+'/'+moduleName+'.i'])
     javaJar = envJava.Jar(moduleName+'.jar', javaSrc)
 

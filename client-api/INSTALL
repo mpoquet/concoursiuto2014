@@ -2,10 +2,11 @@ Pour python:
     - Installer python-dev ou python3-dev
 
 Pour Java:
-    - Changer le chemin dans le makefile
+    - Changer le chemin dans le SConscript
 
 Compilation (fonctionne que sous linux):
-    make spnl all
+    python scons.py -j4
 
-Penser à mettre à jour la lib quelque fois via :
-    git submodule -q foreach git pull -q origin master
+Nettoyage:
+    python scons.py -c
+
