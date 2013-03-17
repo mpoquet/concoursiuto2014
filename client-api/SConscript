@@ -1,5 +1,5 @@
 import distutils.sysconfig
-import time
+import re
 
 
 # User variables
@@ -17,16 +17,17 @@ libs = ['spnl']
 
 def make():
     envBase = Environment(CPPPATH = includePath, LIBS = libs, LIBPATH = libPath)
+    #SetOption('implicit_cache', 1)
 
     lib = makeSpnl(envBase)
 
-    srcFiles = Glob(srcDir+'/*.cpp')
+    srcFiles = envBase.Glob(srcDir+'/*.cpp')
     objFiles = envBase.SharedObject(srcFiles)
     envBase.Requires(objFiles, lib)
     
-    makeCpp(envBase, objFiles, lib)
-    makePython(envBase, objFiles, lib)
-    makeJava(envBase, objFiles, lib)
+    #makeCpp(envBase, objFiles, lib)
+    #makePython(envBase, objFiles, lib)
+    #makeJava(envBase, objFiles, lib)
 
 
 def makeSpnl(envBase):
@@ -43,7 +44,41 @@ def makeSpnl(envBase):
     
     envSpnl = envBase.Clone()
     envSpnl['CPPPATH'] = envSpnl['LIBS'] = envSpnl['LIBPATH'] = []
-    spnlBuild = envSpnl.Command(spnlBuildDir, spnlSrcDir, [commands[0], commands[1]])
+    generatedFiles = [
+                        spnlInstallDir+'/include/spnl/Core/ArgumentException.hpp',
+                        spnlInstallDir+'/include/spnl/Core/ByteArray.hpp',
+                        spnlInstallDir+'/include/spnl/Core/Errors.hpp',
+                        spnlInstallDir+'/include/spnl/Core/Init.hpp',
+                        spnlInstallDir+'/include/spnl/Core/InitialisationException.hpp',
+                        spnlInstallDir+'/include/spnl/Events/EventArgs.hpp',
+                        spnlInstallDir+'/include/spnl/Events/EventHandlerBase.hpp',
+                        spnlInstallDir+'/include/spnl/Events/EventHandler.hpp',
+                        spnlInstallDir+'/include/spnl/Events/Event.hpp',
+                        spnlInstallDir+'/include/spnl/Network/Dns.hpp',
+                        spnlInstallDir+'/include/spnl/Network/Errors.hpp',
+                        spnlInstallDir+'/include/spnl/Network/IpAddress.hpp',
+                        spnlInstallDir+'/include/spnl/Network/IpEndPoint.hpp',
+                        spnlInstallDir+'/include/spnl/Network/NetworkException.hpp',
+                        spnlInstallDir+'/include/spnl/Network/Socket.hpp',
+                        spnlInstallDir+'/include/spnl/Network/SocketSet.hpp',
+                        spnlInstallDir+'/include/spnl/Network/TcpSocket.hpp',
+                        spnlInstallDir+'/include/spnl/Network/UdpSocket.hpp',
+                        spnlInstallDir+'/include/spnl/System/Mutex.hpp',
+                        spnlInstallDir+'/include/spnl/System/Semaphore.hpp',
+                        spnlInstallDir+'/include/spnl/System/ThreadException.hpp',
+                        spnlInstallDir+'/include/spnl/System/Thread.hpp',
+                        spnlInstallDir+'/include/spnl/Text/Group.hpp',
+                        spnlInstallDir+'/include/spnl/Text/Match.hpp',
+                        spnlInstallDir+'/include/spnl/Text/Regex.hpp',
+                        spnlInstallDir+'/include/spnl/Network.hpp',
+                        spnlInstallDir+'/lib/libspnl.a',
+                     ]
+
+
+    spnlBuild = envSpnl.Command(generatedFiles, 'spnl', commands)
+    #tmp = Glob(spnlSrcDir+'/include/spnl/*/*.hpp')+Glob(spnlSrcDir+'/include/spnl/*.hpp')+Glob(spnlSrcDir+'/lib/*.a')
+    #generatedFiles = [re.sub('^'+re.escape(spnlSrcDir), spnlInstallDir, i) for i in tmp]
+    #print spnlSrcDir+'/include/spnl/*/*.hpp'
     return envSpnl.AlwaysBuild(spnlBuild)
 
 
