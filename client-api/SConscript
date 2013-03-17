@@ -17,7 +17,6 @@ libs = ['spnl']
 
 def make():
     envBase = Environment(CPPPATH = includePath, LIBS = libs, LIBPATH = libPath)
-    #SetOption('implicit_cache', 1)
 
     lib = makeSpnl(envBase)
 
@@ -25,9 +24,9 @@ def make():
     objFiles = envBase.SharedObject(srcFiles)
     envBase.Requires(objFiles, lib)
     
-    #makeCpp(envBase, objFiles, lib)
-    #makePython(envBase, objFiles, lib)
-    #makeJava(envBase, objFiles, lib)
+    makeCpp(envBase, objFiles, lib)
+    makePython(envBase, objFiles, lib)
+    makeJava(envBase, objFiles, lib)
 
 
 def makeSpnl(envBase):
