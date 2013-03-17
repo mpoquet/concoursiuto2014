@@ -33,13 +33,10 @@ def makeSpnl(envBase):
     currentPath = Dir('.').abspath
     projectPath = Dir('#').abspath
     spnlSrcDir = projectPath+'/spnl'
-    spnlBuildDir = currentPath+'/spnl-build'
     spnlInstallDir = Dir(spnlInstallPath).abspath
+    sconsScript = projectPath+'/scons.py'
 
-    commands = [Mkdir(spnlBuildDir),
-                ' && '.join(['cd '+spnlBuildDir,
-                             'cmake '+spnlSrcDir+' -DCMAKE_INSTALL_PREFIX:PATH='+spnlInstallDir,
-                             'make install -j'+str(GetOption('num_jobs'))])]
+    commands = ['cd '+spnlSrcDir+' && python '+sconsScript+' install prefix='+spnlInstallDir]
     
     envSpnl = envBase.Clone()
     envSpnl['CPPPATH'] = envSpnl['LIBS'] = envSpnl['LIBPATH'] = []
