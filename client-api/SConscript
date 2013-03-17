@@ -21,6 +21,32 @@ if platform.system() == 'Windows':
     libs += ['ws2_32']
 
 
+def getPythonLibPath():
+    pythonPath = distutils.sysconfig.PREFIX
+
+    if platform.system() == 'Windows':
+        return os.path.join(pythonPath, 'libs')
+    return os.path.join(pythonPath, 'lib')
+
+
+def getPythonLibName():
+    pythonVersion = distutils.sysconfig.get_python_version()
+
+    pythonPath = distutils.sysconfig.PREFIX
+
+    if platform.system() == 'Windows':
+        return 'python'+''.join(pythonVersion.split('.'))
+    return 'python'+pythonVersion
+
+
+def getPythonBinPath():
+    pythonPath = distutils.sysconfig.EXEC_PREFIX
+
+    if platform.system() == 'Windows':
+        return pythonPath
+    return os.path.join(pythonPath, 'bin')
+
+
 def make():
     envBase = Environment(CPPPATH = includePath, LIBS = libs, LIBPATH = libPath, ENV = {'PATH' : os.environ['PATH']})
 
@@ -41,7 +67,7 @@ def makeSpnl(envBase):
     spnlSrcDir = os.path.join(projectPath, 'spnl')
     spnlInstallDir = Dir(spnlInstallPath).abspath
     sconsScript = os.path.join(projectPath, 'scons.py')
-    pythonExec = os.path.join(distutils.sysconfig.EXEC_PREFIX, 'python')
+    pythonExec = os.path.join(getPythonBinPath(), 'python')
 
     commands = ['cd '+spnlSrcDir+' && '+pythonExec+' '+sconsScript+' install prefix='+spnlInstallDir+' -Qs']
     
@@ -95,18 +121,15 @@ def makePython(envBase, objFiles, lib):
     pythonVersion = distutils.sysconfig.get_python_version()
     print 'Python', pythonVersion, 'used'
 
-    pythonPath = distutils.sysconfig.PREFIX
-    pythonExec = distutils.sysconfig.EXEC_PREFIX
     pythonIncludePath = distutils.sysconfig.get_python_inc()
-    pythonLibPath = os.path.join(pythonPath, 'libs')
-    pythonLibFile = 'python'+''.join(pythonVersion.split('.'))
+    pythonLibFile = getPythonLibName()
     swigFile = os.path.join(srcDir, moduleName+'.i')
     pyFile = os.path.join(srcDir, moduleName+'.py')
     dynLibFileExt = distutils.sysconfig.get_config_vars('SO')
 
     envPy = envBase.Clone()
     envPy['SWIGFLAGS'] = ['-python', '-c++']
-    envPy['LIBPATH'] += [pythonLibPath]
+    envPy['LIBPATH'] += [getPythonLibPath()]
     envPy['LIBS'] += [pythonLibFile]
     envPy['CPPPATH'] += [pythonIncludePath]
     envPy['SWIGCXXFILESUFFIX'] = '-python.cxx'
