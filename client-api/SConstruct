@@ -4,9 +4,12 @@ import multiprocessing
 buildPath = '.build'
 
 
-cpuCount = multiprocessing.cpu_count()
-print 'Compilation using', cpuCount, 'processors'
-SetOption('num_jobs', cpuCount)
+try:
+    cpuCount = multiprocessing.cpu_count()
+    print 'Compilation using', cpuCount, 'processors'
+    SetOption('num_jobs', cpuCount)
+except:
+    print 'Unable to detect processors count, only 1 processor will be used by default'
 
 
 SConscript('SConscript', variant_dir=buildPath)

@@ -1,4 +1,6 @@
 import distutils.sysconfig
+import platform
+import os
 import re
 
 
@@ -15,12 +17,16 @@ libPath = [spnlInstallPath+'/lib']
 libs = ['spnl']
 
 
+if platform.system() == 'Windows':
+    libs += ['ws2_32']
+
+
 def make():
-    envBase = Environment(CPPPATH = includePath, LIBS = libs, LIBPATH = libPath)
+    envBase = Environment(CPPPATH = includePath, LIBS = libs, LIBPATH = libPath, ENV = {'PATH' : os.environ['PATH']})
 
     lib = makeSpnl(envBase)
 
-    srcFiles = envBase.Glob(srcDir+'/*.cpp')
+    srcFiles = envBase.Glob(os.path.join(srcDir, '*.cpp'))
     objFiles = envBase.SharedObject(srcFiles)
     envBase.Requires(objFiles, lib)
     
@@ -32,11 +38,12 @@ def make():
 def makeSpnl(envBase):
     currentPath = Dir('.').abspath
     projectPath = Dir('#').abspath
-    spnlSrcDir = projectPath+'/spnl'
+    spnlSrcDir = os.path.join(projectPath, 'spnl')
     spnlInstallDir = Dir(spnlInstallPath).abspath
-    sconsScript = projectPath+'/scons.py'
+    sconsScript = os.path.join(projectPath, 'scons.py')
+    pythonExec = os.path.join(distutils.sysconfig.EXEC_PREFIX, 'python')
 
-    commands = ['cd '+spnlSrcDir+' && python '+sconsScript+' install prefix='+spnlInstallDir]
+    commands = ['cd '+spnlSrcDir+' && '+pythonExec+' '+sconsScript+' install prefix='+spnlInstallDir+' -Qs']
     
     envSpnl = envBase.Clone()
     envSpnl['CPPPATH'] = envSpnl['LIBS'] = envSpnl['LIBPATH'] = []
@@ -85,28 +92,44 @@ def makeCpp(envBase, objFiles, lib):
 
 
 def makePython(envBase, objFiles, lib):
-    pythonVersion = distutils.sysconfig.get_python_version().split('.')[0]
+    pythonVersion = distutils.sysconfig.get_python_version()
     print 'Python', pythonVersion, 'used'
+
+    pythonPath = distutils.sysconfig.PREFIX
+    pythonExec = distutils.sysconfig.EXEC_PREFIX
+    pythonIncludePath = distutils.sysconfig.get_python_inc()
+    pythonLibPath = os.path.join(pythonPath, 'libs')
+    pythonLibFile = 'python'+''.join(pythonVersion.split('.'))
+    swigFile = os.path.join(srcDir, moduleName+'.i')
+    pyFile = os.path.join(srcDir, moduleName+'.py')
+    dynLibFileExt = distutils.sysconfig.get_config_vars('SO')
 
     envPy = envBase.Clone()
     envPy['SWIGFLAGS'] = ['-python', '-c++']
-    envPy['CPPPATH'] = [distutils.sysconfig.get_python_inc()]
+    envPy['LIBPATH'] += [pythonLibPath]
+    envPy['LIBS'] += [pythonLibFile]
+    envPy['CPPPATH'] += [pythonIncludePath]
     envPy['SWIGCXXFILESUFFIX'] = '-python.cxx'
     envPy['SHLIBPREFIX'] = ''
-    libPy = envPy.SharedLibrary('_'+moduleName, [srcDir+'/'+moduleName+'.i'])
+    envPy['SHLIBSUFFIX'] = dynLibFileExt
+
+    libPy = envPy.SharedLibrary('_'+moduleName, objFiles+[swigFile])
     envPy.Requires(libPy, lib)
-    envPy.Install('.', srcDir+'/'+moduleName+'.py')
+    envPy.Install('.', pyFile)
 
 
 def makeJava(envBase, objFiles, lib):
+    swigFile = os.path.join(srcDir, moduleName+'.i')
+
     envJava = envBase.Clone()
     envJava['SWIGFLAGS'] = ['-java', '-c++']
-    envJava['CPPPATH'] = [javaIncludePath]
+    envJava['CPPPATH'] += [javaIncludePath]
     envJava['SWIGOUTDIR'] = Dir(srcDir).abspath+'/java'
     envJava['SWIGCXXFILESUFFIX'] = '-java.cxx'
-    libJava = envJava.SharedLibrary(moduleName, [srcDir+'/'+moduleName+'.i'])
+
+    libJava = envJava.SharedLibrary(moduleName, objFiles+[swigFile])
     envJava.Requires(libJava, lib)
-    javaSrc = envJava.Java(srcDir+'/classes', [srcDir+'/'+moduleName+'.i'])
+    javaSrc = envJava.Java(os.path.join(srcDir, 'classes'), swigFile)
     javaJar = envJava.Jar(moduleName+'.jar', javaSrc)
 
 
