@@ -13,3 +13,6 @@ moc_*
 server/server
 client-api/build
 client-api/bin
+*.pyc
+.build
+.sconsign.dblite

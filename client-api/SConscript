@@ -1,0 +1,161 @@
+import distutils.sysconfig
+import platform
+import os
+import re
+
+
+# User variables
+moduleName = 'contest'
+installPath = 'install'
+javaIncludePath = '/usr/lib/jvm/java-1.6.0-openjdk-i386/include'
+
+# Internal variables
+srcDir = 'src'
+spnlInstallPath = 'spnl-install'
+includePath = ['#../server', spnlInstallPath+'/include']
+libPath = [spnlInstallPath+'/lib']
+libs = ['spnl']
+
+
+if platform.system() == 'Windows':
+    libs += ['ws2_32']
+
+
+def getPythonLibPath():
+    pythonPath = distutils.sysconfig.PREFIX
+
+    if platform.system() == 'Windows':
+        return os.path.join(pythonPath, 'libs')
+    return os.path.join(pythonPath, 'lib')
+
+
+def getPythonLibName():
+    pythonVersion = distutils.sysconfig.get_python_version()
+
+    pythonPath = distutils.sysconfig.PREFIX
+
+    if platform.system() == 'Windows':
+        return 'python'+''.join(pythonVersion.split('.'))
+    return 'python'+pythonVersion
+
+
+def getPythonBinPath():
+    pythonPath = distutils.sysconfig.EXEC_PREFIX
+
+    if platform.system() == 'Windows':
+        return pythonPath
+    return os.path.join(pythonPath, 'bin')
+
+
+def make():
+    envBase = Environment(CPPPATH = includePath, LIBS = libs, LIBPATH = libPath, ENV = {'PATH' : os.environ['PATH']})
+
+    lib = makeSpnl(envBase)
+
+    srcFiles = envBase.Glob(os.path.join(srcDir, '*.cpp'))
+    objFiles = envBase.SharedObject(srcFiles)
+    envBase.Requires(objFiles, lib)
+    
+    makeCpp(envBase, objFiles, lib)
+    makePython(envBase, objFiles, lib)
+    makeJava(envBase, objFiles, lib)
+
+
+def makeSpnl(envBase):
+    currentPath = Dir('.').abspath
+    projectPath = Dir('#').abspath
+    spnlSrcDir = os.path.join(projectPath, 'spnl')
+    spnlInstallDir = Dir(spnlInstallPath).abspath
+    sconsScript = os.path.join(projectPath, 'scons.py')
+    pythonExec = os.path.join(getPythonBinPath(), 'python')
+
+    commands = ['cd '+spnlSrcDir+' && '+pythonExec+' '+sconsScript+' install prefix='+spnlInstallDir+' -Qs']
+    
+    envSpnl = envBase.Clone()
+    envSpnl['CPPPATH'] = envSpnl['LIBS'] = envSpnl['LIBPATH'] = []
+    generatedFiles = [
+                        spnlInstallDir+'/include/spnl/Core/ArgumentException.hpp',
+                        spnlInstallDir+'/include/spnl/Core/ByteArray.hpp',
+                        spnlInstallDir+'/include/spnl/Core/Errors.hpp',
+                        spnlInstallDir+'/include/spnl/Core/Init.hpp',
+                        spnlInstallDir+'/include/spnl/Core/InitialisationException.hpp',
+                        spnlInstallDir+'/include/spnl/Events/EventArgs.hpp',
+                        spnlInstallDir+'/include/spnl/Events/EventHandlerBase.hpp',
+                        spnlInstallDir+'/include/spnl/Events/EventHandler.hpp',
+                        spnlInstallDir+'/include/spnl/Events/Event.hpp',
+                        spnlInstallDir+'/include/spnl/Network/Dns.hpp',
+                        spnlInstallDir+'/include/spnl/Network/Errors.hpp',
+                        spnlInstallDir+'/include/spnl/Network/IpAddress.hpp',
+                        spnlInstallDir+'/include/spnl/Network/IpEndPoint.hpp',
+                        spnlInstallDir+'/include/spnl/Network/NetworkException.hpp',
+                        spnlInstallDir+'/include/spnl/Network/Socket.hpp',
+                        spnlInstallDir+'/include/spnl/Network/SocketSet.hpp',
+                        spnlInstallDir+'/include/spnl/Network/TcpSocket.hpp',
+                        spnlInstallDir+'/include/spnl/Network/UdpSocket.hpp',
+                        spnlInstallDir+'/include/spnl/System/Mutex.hpp',
+                        spnlInstallDir+'/include/spnl/System/Semaphore.hpp',
+                        spnlInstallDir+'/include/spnl/System/ThreadException.hpp',
+                        spnlInstallDir+'/include/spnl/System/Thread.hpp',
+                        spnlInstallDir+'/include/spnl/Text/Group.hpp',
+                        spnlInstallDir+'/include/spnl/Text/Match.hpp',
+                        spnlInstallDir+'/include/spnl/Text/Regex.hpp',
+                        spnlInstallDir+'/include/spnl/Network.hpp',
+                        spnlInstallDir+'/lib/libspnl.a',
+                     ]
+
+
+    spnlBuild = envSpnl.Command(generatedFiles, 'spnl', commands)
+    #tmp = Glob(spnlSrcDir+'/include/spnl/*/*.hpp')+Glob(spnlSrcDir+'/include/spnl/*.hpp')+Glob(spnlSrcDir+'/lib/*.a')
+    #generatedFiles = [re.sub('^'+re.escape(spnlSrcDir), spnlInstallDir, i) for i in tmp]
+    #print spnlSrcDir+'/include/spnl/*/*.hpp'
+    return envSpnl.AlwaysBuild(spnlBuild)
+
+
+def makeCpp(envBase, objFiles, lib):
+    envCpp = envBase.Clone()
+    libCpp = envCpp.SharedLibrary(moduleName+'-cpp', objFiles)
+    envCpp.Requires(libCpp, lib)
+
+
+def makePython(envBase, objFiles, lib):
+    pythonVersion = distutils.sysconfig.get_python_version()
+    print 'Python', pythonVersion, 'used'
+
+    pythonIncludePath = distutils.sysconfig.get_python_inc()
+    pythonLibFile = getPythonLibName()
+    swigFile = os.path.join(srcDir, moduleName+'.i')
+    pyFile = os.path.join(srcDir, moduleName+'.py')
+    dynLibFileExt = distutils.sysconfig.get_config_vars('SO')
+
+    envPy = envBase.Clone()
+    envPy['SWIGFLAGS'] = ['-python', '-c++']
+    envPy['LIBPATH'] += [getPythonLibPath()]
+    envPy['LIBS'] += [pythonLibFile]
+    envPy['CPPPATH'] += [pythonIncludePath]
+    envPy['SWIGCXXFILESUFFIX'] = '-python.cxx'
+    envPy['SHLIBPREFIX'] = ''
+    envPy['SHLIBSUFFIX'] = dynLibFileExt
+
+    libPy = envPy.SharedLibrary('_'+moduleName, objFiles+[swigFile])
+    envPy.Requires(libPy, lib)
+    envPy.Install('.', pyFile)
+
+
+def makeJava(envBase, objFiles, lib):
+    swigFile = os.path.join(srcDir, moduleName+'.i')
+
+    envJava = envBase.Clone()
+    envJava['SWIGFLAGS'] = ['-java', '-c++']
+    envJava['CPPPATH'] += [javaIncludePath]
+    envJava['SWIGOUTDIR'] = Dir(srcDir).abspath+'/java'
+    envJava['SWIGCXXFILESUFFIX'] = '-java.cxx'
+
+    libJava = envJava.SharedLibrary(moduleName, objFiles+[swigFile])
+    envJava.Requires(libJava, lib)
+    javaSrc = envJava.Java(os.path.join(srcDir, 'classes'), swigFile)
+    javaJar = envJava.Jar(moduleName+'.jar', javaSrc)
+
+
+make()
+
+
