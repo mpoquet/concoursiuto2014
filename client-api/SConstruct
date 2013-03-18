@@ -21,7 +21,7 @@ def make():
     Clean('.', [buildDir, installDir])
     makeCpp(envBase, objFiles)
     makePython(envBase, objFiles)
-    makeJava(envBase, objFiles)
+    #makeJava(envBase, objFiles)
 
 
 def makeCpp(envBase, objFiles):

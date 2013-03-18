@@ -131,6 +131,9 @@ void SFMLViewer::onInit(int planetCount,
     qDebug() << "min" << minX << minY;
     qDebug() << "max" << maxX << maxY;
 
+    maxX += radiusPX/2;
+    maxY += radiusPX/2;
+
     float aW, aH;
     aW = (float) QWidget::width() / (maxX - minX);
     aH = (float) QWidget::height() / (maxY - minY);
@@ -146,8 +149,11 @@ void SFMLViewer::onInit(int planetCount,
 
         _planets[i].sprite.setTexture(_texturePlanet);
         _planets[i].sprite.setOrigin(_texturePlanet.getSize().x/2, _texturePlanet.getSize().y/2);
-        _planets[i].sprite.setPosition(aW * (planets[i].posX - minX), aH * (planets[i].posY - minY));
-        _planets[i].sprite.setScale(0.5f, 0.5f);
+        _planets[i].sprite.setPosition(radiusPX + aW * (planets[i].posX - minX),
+                                       radiusPX + aH * (planets[i].posY - minY));
+        _planets[i].sprite.setScale(radiusPX / _planets[i].sprite.getTexture()->getSize().x,
+                                    radiusPX / _planets[i].sprite.getTexture()->getSize().y);
+        // ça fait w. On veut que ça fasse x. w * x/w = x
         _planets[i].sprite.setColor(_players[_planets[i].playerID].color);
     }
 
