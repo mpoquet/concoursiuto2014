@@ -52,23 +52,23 @@ namespace std
     %extend GameData {
         %pythoncode %{
             def planets(self):
-                vect = self.__wrap_planets__()
+                vect = self._wrap_planets()
                 return [i for i in vect]
 
             def scanResults(self):
-                vect = self.__wrap_scanResults__()
+                vect = self._wrap_scanResults()
                 return [i for i in vect]
 
             def fleets(self):
-                vect = self.__wrap_fleets__()
+                vect = self._wrap_fleets()
                 return [i for i in vect]
 
             def enemies(self):
-                vect = self.__wrap_enemies__()
+                vect = self._wrap_enemies()
                 return [i for i in vect]
 
             def reports(self):
-                vect = self.__wrap_reports__()
+                vect = self._wrap_reports()
                 return [i for i in vect]
         %}
     }
