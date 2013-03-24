@@ -1,12 +1,16 @@
-Pour python:
+Préliminaires:
     - Installer python-dev ou python3-dev
+    - Installer Swig
+    - Changer le chemin de Java le SConscript pour compiler la partie Java
 
-Pour Java:
-    - Changer le chemin dans le SConscript
+    Note pour windows : 
+        - Mettre Python et Swig dans le path
+        - L'execution marche pas encore bien suite a une fonction non implémenté dans MinGW
+        - Il faut installer le SDK Java complet contenant les .h sur Windows pour compiler la partie Java
 
-Compilation (fonctionne que sous linux):
-    python scons.py -j4
+Compilation:
+    Commande: python scons.py
 
 Nettoyage:
-    python scons.py -c
+    Commande: python scons.py -c
 

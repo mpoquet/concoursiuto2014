@@ -15,12 +15,19 @@ struct SessionData
     TcpSocket socket;
     string lastError;
     GameData gameData;
+    int scansOrdersCount;
+    int moveOrdersCount;
+    int buildOrdersCount;
+    string scansOrders;
+    string buildOrders;
+    string moveOrders;
+    bool gameStarted;
 };
 
 
 Session::Session() : _data(new SessionData())
 {
-    
+    _data->gameStarted = false;
 }
 
 
@@ -53,11 +60,18 @@ bool Session::connect(const string& host, int port)
 
 void Session::disconnect()
 {
-    _data->socket.finish();
+    try
+    {
+        _data->socket.finish();
+    }
+    catch(runtime_error& err)
+    {
+
+    }
 }
 
 
-int Session::login(const string& pseudo)
+LoginResult Session::login(const string& pseudo)
 {
     try
     {
@@ -96,12 +110,16 @@ bool Session::waitInit()
                                     toInt(messageParts[2]),
                                     0,
                                     toInt(messageParts[0]),
+                                    0,
                                     toInt(messageParts[3]),
                                     toInt(messageParts[4])
                                 };
 
         _data->gameData._gameInfos = infos;
         _data->gameData._distances = toIntArray(messageParts[1], SSEP);
+
+        _data->gameStarted = true;
+        clearOrders();
         return true;
     }
     catch(runtime_error& err)
@@ -112,7 +130,7 @@ bool Session::waitInit()
 }
 
 
-int Session::waitRoundStarting()
+RoundState Session::waitRoundStarting()
 {
     try
     {
@@ -121,10 +139,94 @@ int Session::waitRoundStarting()
         if(msg.first == TURN_PLAYER)
         {
             // RECUPERATION DE DONNEES
+            GameData& gameData = _data->gameData;
+            
+            const vector<string> msgBody = split(msg.second, SEP);
+            gameData._gameInfos.currentRoundId = toInt(msgBody[0]);
+            gameData._gameInfos.resources = toInt(msgBody[1]);
+
+            const vector<string> planetList = split(msgBody[2], SSEP);
+            const int planetListCount = toInt(planetList[0]);
+            gameData._planetList.resize(planetListCount);
+
+            for(int i=0 ; i<planetListCount ; ++i)
+            {
+                const Planet planet =   {
+                                            toInt(planetList[i*4+1]),
+                                            toInt(planetList[i*4+2]),
+                                            toInt(planetList[i*4+3]),
+                                            toInt(planetList[i*4+4])
+                                        };
+                gameData._planetList[i] = planet;
+            }
+
+            const vector<string> scanResultList = split(msgBody[3], SSEP);
+            const int scanResultListCount = toInt(scanResultList[0]);
+            gameData._scanResultList.resize(scanResultListCount);
+
+            for(int i=0 ; i<scanResultListCount ; ++i)
+            {
+                const ScanResult scanResult =   {
+                                                    toInt(scanResultList[i*5+1]),
+                                                    toInt(scanResultList[i*5+2]),
+                                                    toInt(scanResultList[i*5+3]),
+                                                    toInt(scanResultList[i*5+4]),
+                                                    toInt(scanResultList[i*5+5])
+                                                };
+                gameData._scanResultList[i] = scanResult;
+            }
+            
+            const vector<string> fleetList = split(msgBody[4], SSEP);
+            const int fleetListCount = toInt(fleetList[0]);
+            gameData._fleetList.resize(fleetListCount);
+
+            for(int i=0 ; i<fleetListCount ; ++i)
+            {
+                const Fleet fleet = {
+                                        toInt(fleetList[i*4+1]),
+                                        toInt(fleetList[i*4+2]),
+                                        toInt(fleetList[i*4+3]),
+                                        toInt(fleetList[i*4+4])
+                                    };
+                gameData._fleetList[i] = fleet;
+            }
+            
+            const vector<string> ennemyList = split(msgBody[5], SSEP);
+            const int ennemyListCount = toInt(ennemyList[0]);
+            gameData._ennemyList.resize(ennemyListCount);
+
+            for(int i=0 ; i<ennemyListCount ; ++i)
+            {
+                const Ennemy ennemy = {
+                                        toInt(ennemyList[i*4+1]),
+                                        toInt(ennemyList[i*4+2]),
+                                        toInt(ennemyList[i*4+3]),
+                                        toInt(ennemyList[i*4+4])
+                                    };
+                gameData._ennemyList[i] = ennemy;
+            }
+            
+            const vector<string> fightReportList = split(msgBody[6], SSEP);
+            const int fightReportListCount = toInt(fightReportList[0]);
+            gameData._fightReportList.resize(fightReportListCount);
+
+            for(int i=0 ; i<fightReportListCount ; ++i)
+            {
+                const FightReport fightReport = {
+                                        toInt(fightReportList[i*4+1]),
+                                        toInt(fightReportList[i*4+2]),
+                                        toInt(fightReportList[i*4+3]),
+                                        toInt(fightReportList[i*4+4])
+                                    };
+                gameData._fightReportList[i] = fightReport;
+            }
+
+            cout << "DEBUG:" << this->gameData().planets()[0].planetId << endl;
 
             return ROUND_NORMAL;
         }
 
+        _data->gameStarted = false;
         _data->socket.finish();
         return ROUND_END_OF_GAME;
     }
@@ -144,25 +246,61 @@ GameData Session::gameData()
 
 void Session::orderScan(int planetId)
 {
-    throw runtime_error("not implemented");
-}
+    if(!_data->gameStarted)
+        return;
 
-
-void Session::orderMove(int planetSourceId, int planetDestinationId, int shipCount)
-{
-    throw runtime_error("not implemented");
+    ostringstream os;
+    os << SSEP << planetId;
+    _data->scansOrders += os.str();
+    _data->scansOrdersCount++;
 }
 
 
 void Session::orderBuild(int planetSourceId, int shipCount)
 {
-    throw runtime_error("not implemented");
+    if(!_data->gameStarted)
+        return;
+
+    ostringstream os;
+    os << SSEP << planetSourceId << SSEP << shipCount;
+    _data->buildOrders += os.str();
+    _data->buildOrdersCount++;
+}
+
+
+void Session::orderMove(int planetSourceId, int planetDestinationId, int shipCount)
+{
+    if(!_data->gameStarted)
+        return;
+
+    ostringstream os;
+    os << SSEP << planetSourceId << SSEP << planetDestinationId << SSEP << shipCount;
+    _data->moveOrders += os.str();
+    _data->moveOrdersCount++;
 }
 
 
 void Session::sendOrders()
 {
-    throw runtime_error("not implemented");
+    if(!_data->gameStarted)
+        return;
+    
+    ostringstream os;
+    os << _data->scansOrdersCount << _data->scansOrders << SEP;
+    os << _data->buildOrdersCount << _data->buildOrders << SEP;
+    os << _data->moveOrdersCount << _data->moveOrders;
+    sendMessage(Message(MOVE_PLAYER, os.str()));
+}
+
+
+void Session::clearOrders()
+{
+    _data->scansOrdersCount = 0;
+    _data->buildOrdersCount = 0;
+    _data->moveOrdersCount = 0;
+    _data->scansOrders = "";
+    _data->buildOrders = "";
+    _data->moveOrders = "";
 }
 
 
@@ -282,6 +420,12 @@ FightReportList GameData::reports()
 
 int GameData::distance(int planetA, int planetB)
 {
+    if(planetA >= _gameInfos.planetCount || planetA < 0)
+        return -1;
+
+    if(planetB >= _gameInfos.planetCount || planetB < 0)
+        return -1;
+
     return _distances[planetA*_gameInfos.planetCount + planetB];
 }
 

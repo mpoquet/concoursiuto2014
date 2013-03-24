@@ -1,0 +1,3 @@
+Copie de structures par référence en Java et Python.
+Pour copier les structures il faut appeler le constructeur de copie explicitement.
+

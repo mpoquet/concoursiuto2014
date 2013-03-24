@@ -30,10 +30,11 @@ enum RoundState
 struct GameInfos
 {
     int playerId;               // Id du joueur courant
-    int playerCount;            // Nombre de joueurs
+    int playerCount;            // Nombre de joueurs audébut de partie
     int totalRoundCount;        // Nombre max de tours
-    int currentRoundId;         // Id du tour avectuel entre 1 et totalRoundCount
-    int planetCount;            // Nombre total de planètes
+    int currentRoundId;         // Id du tour actuel entre 1 et totalRoundCount (0 lors de l'initialisation)
+    int planetCount;            // Nombre total de planètes dans la partie
+    int resources;              // Ressources globales actuelles (0 lors de l'initialisation)
 
     int scanCountLimit;         // Nombre maximal de scans autorisés par tour
     int shipCost;               // Coût en ressources d’un vaisseaux
@@ -77,7 +78,7 @@ struct Ennemy
 {
     int sourcePlanetId;         // Planête de laquelle les vaisseaux proviennent
     int destinationPlanetId;    // Planête vers laquelle les vaisseaux se dirigent
-    int shipCount;              // Nombre de vaisseaux présents dans la flotte
+    int shipCount;              // Nombre de vaisseaux présents dans la flotte (ce nombre est une estimation)
     int remainingRound;         // Nombre de tour restant avant l'arrivée des vaisseaux
 };
 
@@ -87,8 +88,8 @@ struct FightReport
 {
     int planetId;               // Planête sur laquelle les vaisseaux ont combattus
     int winnerPlayerId;         // Id du joueur qui à gagné la bataille
-    int remainingShip;          // Nombre de vaisseaux restant du joueur survivant
     int playerCount;            // Nombre de joueurs présents dans la bataille
+    int remainingShip;          // Nombre de vaisseaux restant du joueur survivant
 };
 
 
@@ -166,13 +167,15 @@ class Session
     void disconnect();
 
     // Définie un login pour le client
-    int login(const std::string& pseudo);
+    LoginResult login(const std::string& pseudo);
 
     // Attend l'initialisation du jeu
+    // Les ordres peuvent seulement être données après l'appel de cette fonction
+    // Avant l'appel, tous les ordres donnés ne sont pas pris en compte
     bool waitInit();
 
     // Attend le début d'un tour
-    int waitRoundStarting();
+    RoundState waitRoundStarting();
 
     // Récupère une classe permettant d'obtenir de nombreuses informations sur le jeux.
     GameData gameData();
@@ -180,14 +183,17 @@ class Session
     // Ordonne un scan sur la plaète ayant l’id idPlanet.
     void orderScan(int planetId);
 
-    // Ordonne un mouvement de troupe de idSource à idDest et de nombre de vaisseaux.
-    void orderMove(int planetSourceId, int planetDestinationId, int shipCount);
-
     // Ordonne la construction de nbVaisseaux sur la planète idSource.
     void orderBuild(int planetSourceId, int shipCount);
 
+    // Ordonne un mouvement de troupe de idSource à idDest et de nombre de vaisseaux.
+    void orderMove(int planetSourceId, int planetDestinationId, int shipCount);
+
     // Envoie d’un coup au serveur tous les ordre précédemment émis.
     void sendOrders();
+
+    // Efface tout les ordres donnés qui n'ont pas encore été envoyés
+    void clearOrders();
 
     // Permet de savoir si on est connecté au serveur
     bool isConnected();

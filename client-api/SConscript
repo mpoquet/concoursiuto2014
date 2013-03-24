@@ -143,11 +143,12 @@ def makePython(envBase, objFiles, lib):
 
 def makeJava(envBase, objFiles, lib):
     swigFile = os.path.join(srcDir, moduleName+'.i')
+    javaFilesPath = Dir(srcDir).abspath+'/java'
 
     envJava = envBase.Clone()
     envJava['SWIGFLAGS'] = ['-java', '-c++']
     envJava['CPPPATH'] += [javaIncludePath]
-    envJava['SWIGOUTDIR'] = Dir(srcDir).abspath+'/java'
+    envJava['SWIGOUTDIR'] = javaFilesPath
     envJava['SWIGCXXFILESUFFIX'] = '-java.cxx'
 
     libJava = envJava.SharedLibrary(moduleName, objFiles+[swigFile])
