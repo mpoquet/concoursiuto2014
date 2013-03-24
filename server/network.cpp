@@ -150,6 +150,7 @@ void Network::sendLoginPlayerACK(QTcpSocket *socket, char value)
     if (typeOf(socket) == Client::DISCONNECTED)
     {
         qDebug() << "Invalid sendLoginPlayerACK : disconnected socket";
+        _mutexDisconnected.unlock();
         return;
     }
 
@@ -168,6 +169,7 @@ void Network::sendLoginDisplayACK(QTcpSocket *socket, char value)
     if (typeOf(socket) == Client::DISCONNECTED)
     {
         qDebug() << "Invalid sendLoginPlayerACK : disconnected socket";
+        _mutexDisconnected.unlock();
         return;
     }
 
@@ -190,6 +192,7 @@ void Network::sendInitPlayer(QTcpSocket *socket,
     if (typeOf(socket) == Client::DISCONNECTED)
     {
         qDebug() << "Invalid sendInitPlayer : disconnected socket";
+        _mutexDisconnected.unlock();
         return;
     }
 
@@ -237,6 +240,7 @@ void Network::sendInitDisplay(QTcpSocket *socket,
     if (typeOf(socket) == Client::DISCONNECTED)
     {
         qDebug() << "Invalid sendInitDisplay : disconnected socket";
+        _mutexDisconnected.unlock();
         return;
     }
 
@@ -295,6 +299,7 @@ void Network::sendTurnPlayer(QTcpSocket *socket,
     if (typeOf(socket) == Client::DISCONNECTED)
     {
         qDebug() << "Invalid sendTurnPlayer : disconnected socket";
+        _mutexDisconnected.unlock();
         return;
     }
 
@@ -353,6 +358,7 @@ void Network::sendTurnDisplay(QTcpSocket *socket,
     if (typeOf(socket) == Client::DISCONNECTED)
     {
         qDebug() << "Invalid sendTurnDisplay : disconnected socket";
+        _mutexDisconnected.unlock();
         return;
     }
 
@@ -387,6 +393,7 @@ void Network::sendFinishedPlayer(QTcpSocket *socket, bool youWon)
     if (typeOf(socket) == Client::DISCONNECTED)
     {
         qDebug() << "Invalid sendLoginPlayerACK : disconnected socket";
+        _mutexDisconnected.unlock();
         return;
     }
 
