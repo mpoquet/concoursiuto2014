@@ -221,8 +221,6 @@ RoundState Session::waitRoundStarting()
                 gameData._fightReportList[i] = fightReport;
             }
 
-            cout << "DEBUG:" << this->gameData().planets()[0].planetId << endl;
-
             return ROUND_NORMAL;
         }
 
