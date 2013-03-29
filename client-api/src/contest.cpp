@@ -7,6 +7,7 @@
 
 using namespace Core;
 using namespace Network;
+using namespace System;
 using namespace std;
 
 
@@ -25,8 +26,16 @@ struct SessionData
 };
 
 
+Mutex libLoadingMutex;
+
+
 Session::Session() : _data(new SessionData())
 {
+    // Uniquement utile pour Windows en pratique
+    libLoadingMutex.lock();
+    load();
+    libLoadingMutex.unlock();
+
     _data->gameStarted = false;
 }
 
