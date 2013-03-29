@@ -6,10 +6,11 @@ buildPath = '.build'
 
 try:
     cpuCount = multiprocessing.cpu_count()
-    print 'Compilation using', cpuCount, 'processors'
+    if not GetOption('silent'):
+        print 'infos: compilation using', cpuCount, 'processors'
     SetOption('num_jobs', cpuCount)
 except:
-    print 'Unable to detect processors count, only 1 processor will be used by default'
+    print 'warning: unable to detect processors count, only 1 processor will be used by default'
 
 
 SConscript('SConscript', variant_dir=buildPath)

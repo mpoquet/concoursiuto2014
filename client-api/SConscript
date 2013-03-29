@@ -48,7 +48,21 @@ def getPythonBinPath():
 
 
 def make():
-    envBase = Environment(CPPPATH = includePath, LIBS = libs, LIBPATH = libPath, ENV = {'PATH' : os.environ['PATH']})
+    envBase = Environment()
+    envBase['CPPPATH'] = includePath
+    envBase['LIBS'] = libs
+    envBase['LIBPATH'] = libPath
+    envBase['ENV'] = {'PATH' : os.environ['PATH']}
+    #envBase['CXXFLAGS'] = '-O2'
+    envBase['CXXCOMSTR'] = envBase['CCCOMSTR'] = 'Compiling "${SOURCE}"...'
+    envBase['SHCCCOMSTR'] = envBase['SHCXXCOMSTR'] = 'Compiling "${SOURCE}"...'
+    envBase['PCHCOMSTR'] = 'Precompiling "${SOURCE}"...'
+    envBase['JAVACCOMSTR'] = 'Jcompiling "${SOURCE}"...'
+    envBase['JARCOMSTR'] = 'Jarchiving "${TARGET}"...'
+    envBase['LINKCOMSTR'] = 'Linking "${TARGET}"...'
+    envBase['ARCOMSTR'] = envBase['SHLINKCOMSTR'] = envBase['LDMODULECOMSTR'] = 'Linking "${TARGET}"...'
+    envBase['RANLIBCOMSTR'] = 'Indexing "${TARGET}"...'
+    envBase['SWIGCOMSTR'] = 'Swiging "${SOURCE}"...'
 
     lib = makeSpnl(envBase)
 
@@ -118,8 +132,9 @@ def makeCpp(envBase, objFiles, lib):
 
 
 def makePython(envBase, objFiles, lib):
-    pythonVersion = distutils.sysconfig.get_python_version()
-    print 'Python', pythonVersion, 'used'
+    if not GetOption('silent'):
+        pythonVersion = distutils.sysconfig.get_python_version()
+        print 'infos: python', pythonVersion, 'used'
 
     pythonIncludePath = distutils.sysconfig.get_python_inc()
     pythonLibFile = getPythonLibName()
