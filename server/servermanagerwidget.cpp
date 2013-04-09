@@ -75,7 +75,7 @@ ServerManagerWidget::ServerManagerWidget(Game * gameEngine, Network * network, Q
 
 void ServerManagerWidget::clientConnected(QTcpSocket* s)
 {
-	m_clients.insert(s, QString("Anonymous_%1").arg(QString::number(m_clientId)));
+    m_clients.insert(s, QString("Anonymous_%1").arg(QString::number(m_clientId)));
 	addMessage(QString("<strong>Client connection</strong> : Anonymous_%1").arg(QString::number(m_clientId)));
 	m_clientId++;
 	refreshClient();
@@ -138,6 +138,13 @@ void ServerManagerWidget::startClicked()
 void ServerManagerWidget::refreshClient()
 {
 	m_clientsList->clear();
+
+    QList<QTcpSocket*> keys = m_clients.keys();
+
+    for (int i = 0; i < keys.size(); ++i)
+        if (m_clients[keys[i]].isEmpty())
+            m_clients.remove(keys[i]);
+
 	m_clientsList->addItems(m_clients.values());
 }
 
