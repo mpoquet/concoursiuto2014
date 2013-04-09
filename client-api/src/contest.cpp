@@ -297,6 +297,7 @@ void Session::sendOrders()
     os << _data->buildOrdersCount << _data->buildOrders << SEP;
     os << _data->moveOrdersCount << _data->moveOrders;
     sendMessage(Message(MOVE_PLAYER, os.str()));
+    clearOrders();
 }
 
 
