@@ -253,36 +253,39 @@ GameData Session::gameData()
 
 void Session::orderScan(int planetId)
 {
+    char buff[128];
+
     if(!_data->gameStarted)
         return;
 
-    ostringstream os;
-    os << SSEP << planetId;
-    _data->scansOrders += os.str();
+    sprintf(buff, "%c%d", SSEP, planetId);
+    _data->scansOrders += buff;
     _data->scansOrdersCount++;
 }
 
 
 void Session::orderBuild(int planetSourceId, int shipCount)
 {
+    char buff[128];
+
     if(!_data->gameStarted)
         return;
 
-    ostringstream os;
-    os << SSEP << planetSourceId << SSEP << shipCount;
-    _data->buildOrders += os.str();
+    sprintf(buff, "%c%d%c%d", SSEP, planetSourceId, SSEP, shipCount);
+    _data->buildOrders += buff;
     _data->buildOrdersCount++;
 }
 
 
 void Session::orderMove(int planetSourceId, int planetDestinationId, int shipCount)
 {
+    char buff[128];
+
     if(!_data->gameStarted)
         return;
 
-    ostringstream os;
-    os << SSEP << planetSourceId << SSEP << planetDestinationId << SSEP << shipCount;
-    _data->moveOrders += os.str();
+    sprintf(buff, "%c%d%c%d%c%d", SSEP, planetSourceId, SSEP, planetDestinationId, SSEP, shipCount);
+    _data->moveOrders += buff;
     _data->moveOrdersCount++;
 }
 

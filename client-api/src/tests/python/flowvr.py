@@ -55,7 +55,7 @@ def gameRound(session):
 
 
 def game():
-    session = gameInit("observer")
+    session = gameInit("flowvr")
 
     # pré-calculs
 
