@@ -317,6 +317,18 @@ void Game::playerOrder(QTcpSocket *socket, QVector<int> planetsToScan, QVector<B
 	filterShipMove(shipsToMove, p);
 	filterScan(planetsToScan);
 
+	qDebug() << "Order received from player " << p->id() << " (" << p->nickname() << ")";
+	qDebug() << "===> Spaceship build";
+	foreach(BuildOrder b, shipsToBuild)
+	{
+		qDebug() << "Planet : " << b.planet << " numbers : " << b.shipCount;
+	}
+	qDebug() << "===> Move";
+	foreach(ShipMove m, shipsToMove)
+	{
+		qDebug() << "From " << m.srcPlanet << " To " << m.destPlanet << " with " << m.shipCount;
+	}
+
 	p->setBuildOrder(shipsToBuild);
 	p->setShipMove(shipsToMove);
 	QVector<Planet*> scan;
