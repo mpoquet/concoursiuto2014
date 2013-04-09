@@ -1,5 +1,7 @@
 #include "servermanagerwidget.hpp"
 
+#include <QMessageBox>
+
 ServerManagerWidget::ServerManagerWidget(Game * gameEngine, Network * network, QWidget * parent) :
 	QWidget(parent)
 {
@@ -50,16 +52,16 @@ ServerManagerWidget::ServerManagerWidget(Game * gameEngine, Network * network, Q
 	m_roundCount->setValue(250);
 	m_delayBetweenRound->setValue(500);
 
-	QPushButton * startButton = new QPushButton("Start");
+    m_startButton = new QPushButton("Start");
 
 	QHBoxLayout * layoutGameParameters = new QHBoxLayout();
 	layoutGameParameters->addWidget(new QLabel("Nombre de tours de jeu : "));
 	layoutGameParameters->addWidget(m_roundCount);
 	layoutGameParameters->addWidget(new QLabel("Temps entre les tours (ms) : "));
 	layoutGameParameters->addWidget(m_delayBetweenRound);
-	layoutGameParameters->addWidget(startButton);
+    layoutGameParameters->addWidget(m_startButton);
 
-	connect(startButton, SIGNAL(clicked()), this, SLOT(startClicked()));
+    connect(m_startButton, SIGNAL(clicked()), this, SLOT(startClicked()));
 
 	QVBoxLayout * windowsLayout = new QVBoxLayout();
 
@@ -121,9 +123,16 @@ void ServerManagerWidget::playerDisconnected(QTcpSocket* s)
 
 void ServerManagerWidget::startClicked()
 {
-	m_gameEngine->setDelayBetweenRound(m_delayBetweenRound->value());
-	m_gameEngine->setNumberOfRound(m_roundCount->value());
-	m_gameEngine->start();
+    if (m_players.size() < 2)
+        QMessageBox::information(this, "Information", "You can't start a game without at least 2 players");
+    else
+    {
+        m_gameEngine->setDelayBetweenRound(m_delayBetweenRound->value());
+        m_gameEngine->setNumberOfRound(m_roundCount->value());
+        m_gameEngine->start();
+
+        m_startButton->setEnabled(false);
+    }
 }
 
 void ServerManagerWidget::refreshClient()

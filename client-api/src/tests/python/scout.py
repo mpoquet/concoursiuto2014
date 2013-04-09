@@ -41,6 +41,7 @@ def gameRound(session):
 
     darkPlanets = list(set(range(infos.planetCount))-set([p.planetId for p in planets]))
 
+    print
     print "Avancement:", infos.currentRoundId, "/", infos.totalRoundCount, "tours"
     print "Contrôle:", len(planets), "/", infos.planetCount, "planètes:", [i.planetId for i in planets]
     print "Ressources:", infos.resources

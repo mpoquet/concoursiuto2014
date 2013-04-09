@@ -63,6 +63,8 @@ class ServerManagerWidget : public QWidget
 
 		QSpinBox * m_roundCount;
 		QSpinBox * m_delayBetweenRound;
+
+        QPushButton * m_startButton;
 };
 
 #endif // SERVERMANAGERWIDGET_HPP

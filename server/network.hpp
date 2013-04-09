@@ -18,6 +18,7 @@ class Network : public QObject
 		enum ClientType
 		{
             DISCONNECTED,
+            IGNORED,
 			UNKNOWN,
 			PLAYER,
 			DISPLAY

@@ -432,6 +432,12 @@ void Network::onMessageReceived()
 
 	_clients[socket].buffer += socket->readAll();
 
+    if (_clients[socket].type == Client::IGNORED)
+    {
+        _clients[socket].buffer.clear();
+        return;
+    }
+
 	do
 	{
 		index = _clients[socket].buffer.indexOf('\n');
@@ -596,6 +602,14 @@ void Network::onMessageReceived()
 			else
 				cerr << "Invalid message received (" << message.toStdString() << ')' << endl;
 		}
+        else if (_clients[socket].buffer.size() > 50000000) // Buffer size > 50 Mo
+        {
+            cerr << "The buffer of one client exceeded 50 Mo. This client is now ignored" << endl;
+            _clients[socket].type = Client::IGNORED;
+            _clients[socket].buffer.clear();
+
+            return;
+        }
 
 	} while (index != -1);
 }
@@ -622,7 +636,7 @@ void Network::onDisconnected()
 		emit playerDisconnected(socket);
 	else if (type == Client::DISPLAY)
 		emit displayDisconnected(socket);
-	else
+    else
 		emit unloggedClientDisconnected(socket);
 
     _mutexDisconnected.unlock();
