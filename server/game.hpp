@@ -20,6 +20,8 @@ class Game : public QObject
 	public:
 		Game(QString mapFilename, int delayBetweenRound, int roundCount, AbstractGameModel * gameModel);
 
+        int currentRound() const { return m_currentRound; }
+
 	signals:
 		void initPlayerSignal(QTcpSocket * socket,
 							int planetCount,

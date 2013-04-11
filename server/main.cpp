@@ -36,7 +36,7 @@ int main(int argc, char ** argv)
 		port = p;
 	}
 
-	Network * n = new Network(port, 4, 1);
+    Network * n = new Network(port, 4, 1, m);
 
 
 

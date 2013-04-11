@@ -5,15 +5,17 @@
 #include <QStringList>
 
 #include "protocole.h"
+#include "game.hpp"
 
 using namespace std;
 
-Network::Network(quint16 port, int maxPlayerCount, int maxDisplayCount, QObject *parent) :
+Network::Network(quint16 port, int maxPlayerCount, int maxDisplayCount, Game *game, QObject *parent) :
 	QObject(parent),
 	_server(new QTcpServer(this)),
-	_port(port),
+    _port(port),
 	_maxPlayerCount(maxPlayerCount),
-	_maxDisplayCount(maxDisplayCount)
+    _maxDisplayCount(maxDisplayCount),
+    _game(game)
 {
 	if (_maxPlayerCount < 0)
 		_maxPlayerCount = 0;
@@ -40,10 +42,10 @@ Network::Network(quint16 port, int maxPlayerCount, int maxDisplayCount, QObject 
 
 void Network::run()
 {
-	if (!_server->listen(QHostAddress::Any, _port))
-		cerr << "Cannot listen port " << _port << endl;
-	else
-		cout << "Listening port " << _port << endl;
+    if (!_server->listen(QHostAddress::Any, _port))
+        cerr << "Cannot listen port " << _port << endl;
+    else
+        cout << "Listening port " << _port << endl;
 }
 
 int Network::playerCount() const
@@ -438,13 +440,13 @@ void Network::onNewConnection()
 
     //cout << QString("New connection from %1:%2").arg(socket->peerAddress().toString()).arg(socket->peerPort()).toStdString() << endl;
 
-	connect(socket, SIGNAL(error(QAbstractSocket::SocketError)),this, SLOT(onError(QAbstractSocket::SocketError)));
-	connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
-	connect(socket, SIGNAL(readyRead()), this, SLOT(onMessageReceived()));
+    connect(socket, SIGNAL(error(QAbstractSocket::SocketError)),this, SLOT(onError(QAbstractSocket::SocketError)));
+    connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
+    connect(socket, SIGNAL(readyRead()), this, SLOT(onMessageReceived()));
 
-	_clients[socket] = Client();
+    _clients[socket] = Client();
 
-	emit clientConnected(socket);
+    emit clientConnected(socket);
 }
 
 void Network::onMessageReceived()
@@ -462,6 +464,15 @@ void Network::onMessageReceived()
 		{
 			QString message = _clients[socket].buffer.left(index);
 			_clients[socket].buffer.remove(0, index+1);
+            _clients[socket].receivedMessageCount++;
+
+            if (_clients[socket].receivedMessageCount > (_game->currentRound() * 2 + 3))
+            {
+                cerr << "A client is sending way too many messages. This client is about to be kicked" << endl;
+                socket->close();
+
+                return;
+            }
 
 			if (_regexMessage.exactMatch(message))
 			{
@@ -616,11 +627,11 @@ void Network::onMessageReceived()
 				}
 			}
 			else
-				cerr << "Invalid message received (" << message.toStdString() << ')' << endl;
+                cerr << "Invalid message received ('" << message.toStdString() << "')" << endl;
 		}
         else if (_clients[socket].buffer.size() > 20000000) // Buffer size > 20 Mo
         {
-            cerr << "The buffer of one client exceeded 20 Mo. This client is now kicked" << endl;
+            cerr << "The buffer of one client exceeded 20 Mo. This client is about to be kicked" << endl;
             _clients[socket].buffer.clear();
             socket->close();
 

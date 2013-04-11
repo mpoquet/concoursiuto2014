@@ -11,6 +11,8 @@
 
 #include "struct.hpp"
 
+class Game;
+
 class Network : public QObject
 {
 	struct Client
@@ -23,15 +25,16 @@ class Network : public QObject
 			DISPLAY
 		};
 
+        int receivedMessageCount;
 		ClientType type;
 		QByteArray buffer;
 
-		Client() : type(UNKNOWN) {}
+        Client() : receivedMessageCount(0), type(UNKNOWN) {}
 	};
 
 	Q_OBJECT
 public:
-	explicit Network(quint16 port, int maxPlayerCount, int maxDisplayCount, QObject *parent = 0);
+    explicit Network(quint16 port, int maxPlayerCount, int maxDisplayCount, Game * game, QObject *parent = 0);
 
 	void run();
 
@@ -120,9 +123,12 @@ private:
 	QRegExp _regexMoves;
 
     QMutex _mutexDisconnected;
+    bool _isListening;
 
 	int _maxPlayerCount;
 	int _maxDisplayCount;
+
+    Game * _game;
 };
 
 #endif // NETWORK_HPP

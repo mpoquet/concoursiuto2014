@@ -195,11 +195,11 @@ void Game::iteration()
 		return;
 	}
 
-	emit roundStarted(m_currentRound);
+    emit roundStarted(m_currentRound);
 
 	m_currentRound++;
 
-    qDebug() << QDateTime::currentDateTime().toString("[hh:mm:ss]") << "Game::iteration";
+    qDebug() << QDateTime::currentDateTime().toString("[hh:mm:ss]") << "Game::iteration" << m_currentRound;
 	Planet * planet;
 	Planet * planetDest;
 
@@ -683,15 +683,25 @@ QMap<int, QVector<FightReport> > Game::handleBattle(QVector<ShipMovement*> endMo
 
 void Game::playerDisconnected(QTcpSocket * socket)
 {
-	Player * p = m_clientSockets.key(socket);
+    (void) socket;
+
+    /*
+     * Le code ci-dessous est commenté car il fait planter les
+     * combats suivants (lors de l'assertion p != nullptr)
+     * avec le joueur déconnecté
+     *
+     * Puisque le code est commenté, le jeu ne sait pas qu'il n'y a plus qu'un joueur vivant
+     *
+
+    Player * p = m_clientSockets.key(socket);
 	for(int i = 0 ; i < m_players.size() ; ++i)
 	{
 		if(p == m_players[i])
 		{
 			m_players.remove(i);
-			return;
+            return;
 		}
-	}
+    }*/
 }
 
 void Game::setDelayBetweenRound(int ms)
