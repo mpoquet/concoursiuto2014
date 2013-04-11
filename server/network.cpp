@@ -189,6 +189,28 @@ void Network::sendInitPlayer(QTcpSocket *socket,
 {
     _mutexDisconnected.lock();
 
+    // This is the first sendInitPlayer
+    if (_server->isListening())
+    {
+        // Stop listening pending connections
+        _server->close();
+
+        _mutexDisconnected.unlock();
+
+        // Let's close every unlogged socket
+        QMapIterator<QTcpSocket*, Client> it(_clients);
+        while (it.hasNext())
+        {
+            it.next();
+
+            if (it.value().type != Client::PLAYER && it.value().type != Client::DISPLAY)
+                it.key()->close();
+        }
+
+        _mutexDisconnected.lock();
+    }
+
+
     if (typeOf(socket) == Client::DISCONNECTED)
     {
         qDebug() << "Invalid sendInitPlayer : disconnected socket";
@@ -432,12 +454,6 @@ void Network::onMessageReceived()
 
 	_clients[socket].buffer += socket->readAll();
 
-    if (_clients[socket].type == Client::IGNORED)
-    {
-        _clients[socket].buffer.clear();
-        return;
-    }
-
 	do
 	{
 		index = _clients[socket].buffer.indexOf('\n');
@@ -602,11 +618,11 @@ void Network::onMessageReceived()
 			else
 				cerr << "Invalid message received (" << message.toStdString() << ')' << endl;
 		}
-        else if (_clients[socket].buffer.size() > 50000000) // Buffer size > 50 Mo
+        else if (_clients[socket].buffer.size() > 20000000) // Buffer size > 20 Mo
         {
-            cerr << "The buffer of one client exceeded 50 Mo. This client is now ignored" << endl;
-            _clients[socket].type = Client::IGNORED;
+            cerr << "The buffer of one client exceeded 20 Mo. This client is now kicked" << endl;
             _clients[socket].buffer.clear();
+            socket->close();
 
             return;
         }

@@ -3,6 +3,7 @@
 #include <QDebug>
 #include <QFile>
 #include <QStringList>
+#include <QDateTime>
 
 Game::Game(QString mapFilename, int delayBetweenRound, int roundCount, AbstractGameModel * gameModel)
 {
@@ -198,7 +199,7 @@ void Game::iteration()
 
 	m_currentRound++;
 
-	qDebug() << "Game::iteration";
+    qDebug() << QDateTime::currentDateTime().toString("[hh:mm:ss]") << "Game::iteration";
 	Planet * planet;
 	Planet * planetDest;
 
