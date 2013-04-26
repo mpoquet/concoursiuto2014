@@ -1,5 +1,5 @@
 Préliminaires:
-    - Installer python-dev ou python3-dev
+    - Installer python-dev (ou python3-dev si la version de scons utilisé le gère)
     - Installer Swig
     - Changer le chemin de Java le SConscript pour compiler la partie Java
 
@@ -14,3 +14,4 @@ Compilation:
 Nettoyage:
     Commande: python scons.py -c
 
+Les fichiers de sortie sont dans le dossier .build
