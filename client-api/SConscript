@@ -32,10 +32,16 @@ def getPythonLibPath():
 def getPythonLibName():
     pythonVersion = distutils.sysconfig.get_python_version()
 
-    pythonPath = distutils.sysconfig.PREFIX
-
     if platform.system() == 'Windows':
         return 'python'+''.join(pythonVersion.split('.'))
+    return 'python'+pythonVersion
+
+
+def getPythonExecName():
+    if platform.system() == 'Windows':
+        return 'python'
+
+    pythonVersion = distutils.sysconfig.get_python_version()
     return 'python'+pythonVersion
 
 
@@ -81,7 +87,7 @@ def makeSpnl(envBase):
     spnlSrcDir = os.path.join(projectPath, 'spnl')
     spnlInstallDir = Dir(spnlInstallPath).abspath
     sconsScript = os.path.join(projectPath, 'scons.py')
-    pythonExec = os.path.join(getPythonBinPath(), 'python')
+    pythonExec = os.path.join(getPythonBinPath(), getPythonExecName())
 
     commands = ['cd '+spnlSrcDir+' && '+pythonExec+' '+sconsScript+' install prefix='+spnlInstallDir+' -Qs']
     
