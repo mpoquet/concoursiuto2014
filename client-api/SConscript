@@ -1,5 +1,6 @@
 import distutils.sysconfig
 import platform
+import subprocess
 import os
 import re
 
@@ -177,6 +178,33 @@ def makeJava(envBase, objFiles, lib):
     javaSrc = envJava.Java(os.path.join(srcDir, 'classes'), swigFile)
     javaJar = envJava.Jar(moduleName+'.jar', javaSrc)
 
+
+def check():
+    if not Dir('#spnl').exists():
+        print "Error: the spnl directory does not exist, try to get it !"
+        return False
+
+    if not Dir('#spnl').isdir():
+        print "Error: the spnl entity must be a directory !"
+        return False
+
+    if len(Dir('#spnl').glob('*')) == 0:
+        print "Error: the spnl directory is empty !"
+        print "To fix this problem, you can type the following commands in the root directory of the project :"
+        print "\tgit submodule init"
+        print "\tgit submodule update"
+        return False
+
+    swig = subprocess.Popen("swig -version", stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    if swig.wait() != 0:
+        print "Error: unable to execute swig... Have you installed it ? Is it add to the PATH ?"
+        return False
+
+    return True
+
+
+if not check():
+    exit(-1)
 
 make()
 
