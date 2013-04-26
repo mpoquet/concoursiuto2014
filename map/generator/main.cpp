@@ -67,13 +67,13 @@ int main(int argc, char **argv)
     int nPlanetPerLayer = -1;
     int nPlanetRest = -1;
     
-    nLayers = rand() % 4 + 1;
     nPlanetPerPlayer = max(nPlanets / nPlayers, 1);
+    nLayers = min(nPlanetPerPlayer, rand() % 4 + 1);
     nPlanetPerLayer = max(nPlanetPerPlayer / nLayers, 1);
-    nPlanetRest = nPlanetPerPlayer % nLayers;
-
+    nPlanetRest = (nPlanetPerPlayer == 1) ? 0 : nPlanetPerPlayer % nLayers;
+ 
     vector<planet_s> planets(nPlayers * nPlanetPerPlayer);
-    
+
     // Pour chaque anneau de planètes,
     // on répartie les planètes équitablement
     float angle = (360 / nPlayers);
@@ -100,11 +100,12 @@ int main(int argc, char **argv)
                 // Calcul des coordonnées cartésiennes
                 p.x = X + cos(planetAngle) * planetRadius + radius;
                 p.y = Y + sin(planetAngle) * planetRadius + radius;
+                
                 p.galaxyId = galaxyId;
                 p.size = 1;
                 p.initial = false;
                 p.neutral = false;
-
+                
                 planets[id++] = p;
             }
         }
@@ -112,7 +113,7 @@ int main(int argc, char **argv)
         // Une planète initiale par joueur ...
         planets[id-1].initial = true;
     }
-
+    
     ofstream out(filename.c_str(), ofstream::out);
     
     for(unsigned int i = 0; i < planets.size(); ++i)
