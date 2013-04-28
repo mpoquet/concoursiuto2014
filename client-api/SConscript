@@ -201,7 +201,7 @@ def check():
         return False
 
     gcc = subprocess.Popen("g++ --version", stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-    if swig.wait() != 0:
+    if gcc.wait() != 0:
         print "Error: unable to execute g++... Have you installed it ? Is it add to the PATH ?"
         return False
 
