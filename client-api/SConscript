@@ -205,6 +205,14 @@ def check():
         print "Error: unable to execute g++... Have you installed it ? Is it add to the PATH ?"
         return False
 
+    if not Dir(javaIncludePath).exists():
+        print "Error: the java includes directory does not exist, try to change the variable javaIncludePath in the SConscript file !"
+        return False
+
+    if not Dir(javaIncludePath).isdir():
+        print "Error: the java includes directory must be a directory, try to change the variable javaIncludePath in the SConscript file !"
+        return False
+
     return True
 
 
