@@ -18,7 +18,7 @@ int main(int argc, char ** argv)
 
 	qsrand(QTime::currentTime().msec());
 
-	Game * m = new Game("../map/example.map", 500, 100, new BasicGameModel());
+    Game * g = new Game("../map/example.map", 500, 100, new BasicGameModel());
 
 	quint16 port = 4242;
 	bool ok;
@@ -36,18 +36,29 @@ int main(int argc, char ** argv)
 		port = p;
 	}
 
-    Network * n = new Network(port, 4, 1, m);
+    Network * n = new Network(port, 4, 1, g);
 
 
+    // Connexions entre le jeu et les joueurs
+    QObject::connect(n, SIGNAL(loginPlayer(QTcpSocket*,QString)), g, SLOT(playerLogin(QTcpSocket*,QString)));
+    QObject::connect(n, SIGNAL(playerDisconnected(QTcpSocket*)), g, SLOT(playerDisconnected(QTcpSocket*)));
+    QObject::connect(n, SIGNAL(movePlayer(QTcpSocket*,QVector<int>,QVector<BuildOrder>,QVector<ShipMove>)),
+                     g, SLOT(playerOrder(QTcpSocket*,QVector<int>,QVector<BuildOrder>,QVector<ShipMove>)));
+    QObject::connect(g, SIGNAL(finishedSignal(QTcpSocket*,bool)), n, SLOT(sendFinishedPlayer(QTcpSocket*,bool)));
+    QObject::connect(g, SIGNAL(initPlayerSignal(QTcpSocket*,int,QVector<QVector<int> >,int,int,int,int,int)),
+                     n, SLOT(sendInitPlayer(QTcpSocket*,int,QVector<QVector<int> >,int,int,int,int,int)));
+    QObject::connect(g, SIGNAL(turnPlayerSignal(QTcpSocket*,int,int,QVector<OurShipsOnPlanets>,QVector<ScanResult>,QVector<OurMovingShips>,QVector<IncomingEnnemyShips>,QVector<FightReport>)),
+                     n, SLOT(sendTurnPlayer(QTcpSocket*,int,int,QVector<OurShipsOnPlanets>,QVector<ScanResult>,QVector<OurMovingShips>,QVector<IncomingEnnemyShips>,QVector<FightReport>)));
 
-	QObject::connect(n, SIGNAL(loginPlayer(QTcpSocket*,QString)), m, SLOT(playerLogin(QTcpSocket*,QString)));
-	QObject::connect(n, SIGNAL(movePlayer(QTcpSocket*,QVector<int>,QVector<BuildOrder>,QVector<ShipMove>)), m, SLOT(playerOrder(QTcpSocket*,QVector<int>,QVector<BuildOrder>,QVector<ShipMove>)));
-	QObject::connect(m, SIGNAL(finishedSignal(QTcpSocket*,bool)), n, SLOT(sendFinishedPlayer(QTcpSocket*,bool)));
-	QObject::connect(m, SIGNAL(initPlayerSignal(QTcpSocket*,int,QVector<QVector<int> >,int,int,int,int,int)), n, SLOT(sendInitPlayer(QTcpSocket*,int,QVector<QVector<int> >,int,int,int,int,int)));
-	QObject::connect(m, SIGNAL(turnSignal(QTcpSocket*,int,int,QVector<OurShipsOnPlanets>,QVector<ScanResult>,QVector<OurMovingShips>,QVector<IncomingEnnemyShips>,QVector<FightReport>)), n, SLOT(sendTurnPlayer(QTcpSocket*,int,int,QVector<OurShipsOnPlanets>,QVector<ScanResult>,QVector<OurMovingShips>,QVector<IncomingEnnemyShips>,QVector<FightReport>)));
-	QObject::connect(n, SIGNAL(playerDisconnected(QTcpSocket*)), m, SLOT(playerDisconnected(QTcpSocket*)));
+    // Connexions entre le jeu et les observateurs
+    QObject::connect(n, SIGNAL(loginDisplay(QTcpSocket*)), g, SLOT(displayLogin(QTcpSocket*)));
+    QObject::connect(n, SIGNAL(displayDisconnected(QTcpSocket*)), g, SLOT(displayDisconnected(QTcpSocket*)));
+    QObject::connect(g, SIGNAL(initDisplaySignal(QTcpSocket*,int,QVector<QVector<int> >,QVector<InitDisplayPlanet>,QVector<QString>,int)),
+                     n, SLOT(sendInitDisplay(QTcpSocket*,int,QVector<QVector<int> >,QVector<InitDisplayPlanet>,QVector<QString>,int)));
+    QObject::connect(g, SIGNAL(turnDisplaySignal(QTcpSocket*,QVector<int>,QVector<TurnDisplayPlanet>,QVector<ShipMovement>)),
+                     n, SLOT(sendTurnDisplay(QTcpSocket*,QVector<int>,QVector<TurnDisplayPlanet>,QVector<ShipMovement>)));
 
-	ServerManagerWidget * w = new ServerManagerWidget(m, n);
+    ServerManagerWidget * w = new ServerManagerWidget(g, n);
 
 
 

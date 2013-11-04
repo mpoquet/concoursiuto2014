@@ -31,7 +31,15 @@ class Game : public QObject
 							int shipCost,
 							int nbPlayers,
 							int idPlayer);
-		void turnSignal(QTcpSocket * socket,
+
+        void initDisplaySignal(QTcpSocket * socket,
+                               int planetCount,
+                               QVector<QVector<int> > distanceMatrix,
+                               QVector<InitDisplayPlanet> planets,
+                               QVector<QString> playerNicks,
+                               int roundCount);
+
+        void turnPlayerSignal(QTcpSocket * socket,
 					  int currentRound,
 					  int resources,
 					  QVector<OurShipsOnPlanets> ourShipsOnPlanet,
@@ -40,6 +48,11 @@ class Game : public QObject
 					  QVector<IncomingEnnemyShips> incomingEnnemies,
 					  QVector<FightReport> fightReports);
 
+        void turnDisplaySignal(QTcpSocket * socket,
+                               QVector<int> scores,
+                               QVector<TurnDisplayPlanet> planets,
+                               QVector<ShipMovement> movements);
+
 		void finishedSignal(QTcpSocket * socket, bool youWon);
 
 		void gameStarted();
@@ -47,13 +60,14 @@ class Game : public QObject
 
 	public slots:
 		void playerLogin(QTcpSocket * socket, QString nickname);
-		void displayLogin(QTcpSocket * socket, QString nickname);
+        void displayLogin(QTcpSocket * socket);
 		void playerOrder(QTcpSocket * socket,
 						 QVector<int> planetsToScan,
 						 QVector<BuildOrder> shipsToBuild,
 						 QVector<ShipMove> shipsToMove);
 
 		void playerDisconnected(QTcpSocket * socket);
+        void displayDisconnected(QTcpSocket * socket);
 
 		void start();
 		void iteration();
@@ -85,6 +99,7 @@ class Game : public QObject
 		AbstractGameModel * m_gameModel;
 		QVector<Galaxy*> m_galaxies;
 		QVector<Player*> m_players;
+        QVector<QTcpSocket*> m_displaySockets;
 		QVector<ShipMovement*> m_movements;
 		QVector<Planet*> m_planets;
 		QMap<Player*, QTcpSocket *> m_clientSockets;

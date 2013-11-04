@@ -156,6 +156,8 @@ void Game::start()
 
 	qDebug() << "Matrice de distance : " << getDistanceMatrix();
 */
+    QVector<QVector<int> > distanceMatrix = getDistanceMatrix();
+
 	foreach(Player * p, m_players)
 	{
 		if(p->id() > 0)
@@ -163,7 +165,7 @@ void Game::start()
 			emit initPlayerSignal(
 				m_clientSockets.value(p),
 				m_planets.size(),
-				getDistanceMatrix(),
+                distanceMatrix,
 				m_roundCount,
 				m_gameModel->getMaxScan(),
 				m_gameModel->getSpaceShipCost(),
@@ -171,7 +173,33 @@ void Game::start()
 				p->id()
 			);
 		}
-	}
+    }
+
+    if (!m_displaySockets.empty())
+    {
+        QVector<InitDisplayPlanet> planets(m_planets.size());
+        QVector<QString> playerNicks(m_players.size());
+
+        for (int i = 0; i < planets.size(); ++i)
+        {
+            planets[i].planetSize = m_planets[i]->size();
+            planets[i].playerID = m_planets[i]->owner()->id();
+            planets[i].posX = m_planets[i]->x();
+            planets[i].posY = m_planets[i]->y();
+            planets[i].shipCount = m_planets[i]->shipCount();
+        }
+
+        for (int i = 0; i < playerNicks.size(); ++i)
+            playerNicks[i] = m_players[i]->nickname();
+
+        for (int i = 0; i < m_displaySockets.size(); ++i)
+            emit initDisplaySignal(m_displaySockets[i],
+                                   planets.size(),
+                                   distanceMatrix,
+                                   planets,
+                                   playerNicks,
+                                   m_roundCount);
+    }
 
 	m_timer = new QTimer();
 	m_timer->setInterval(m_delayBetweenRound);
@@ -345,11 +373,9 @@ void Game::playerOrder(QTcpSocket *socket, QVector<int> planetsToScan, QVector<B
 	p->setPlanetScan(scan);
 }
 
-void Game::displayLogin(QTcpSocket *socket, QString nickname)
+void Game::displayLogin(QTcpSocket *socket)
 {
-	Q_UNUSED(socket);
-	Q_UNUSED(nickname);
-	//TODO implement display relative part.
+    m_displaySockets.append(socket);
 }
 
 Planet * Game::getPlanet(int id)
@@ -567,7 +593,7 @@ void Game::sendTurnMessage(QMap<int, QVector<FightReport> > reports)
 			}
 		}
 
-		emit turnSignal(m_clientSockets.value(p),
+        emit turnPlayerSignal(m_clientSockets.value(p),
 						m_currentRound,
 						p->resources(),
 						ourShipsOnPlanets,
@@ -576,6 +602,26 @@ void Game::sendTurnMessage(QMap<int, QVector<FightReport> > reports)
 						incomingEnnemies,
 						reports[p->id()]);
 	}
+
+    // Let's send the turn to every observer
+    if (!m_displaySockets.empty())
+    {
+        QVector<int> scores(m_players.size());
+        QVector<TurnDisplayPlanet> planets(m_planets.size());
+        QVector<ShipMovement> movements(m_movements.size());
+
+        for (int i = 0; i < scores.size(); ++i)
+            scores[i] = 42; // todo : handle score
+
+        for (int i = 0; i < planets.size(); ++i)
+            planets[i] = {m_planets[i]->owner()->id(), m_planets[i]->shipCount()};
+
+        for (int i = 0; i < movements.size(); ++i)
+            movements[i] = *m_movements[i];
+
+        for (int i = 0; i < m_displaySockets.size(); ++i)
+            emit turnDisplaySignal(m_displaySockets[i], scores, planets, movements);
+    }
 }
 
 bool Game::hasFleet(Player * p)
@@ -702,6 +748,14 @@ void Game::playerDisconnected(QTcpSocket * socket)
             return;
 		}
     }*/
+}
+
+void Game::displayDisconnected(QTcpSocket *socket)
+{
+    int i = m_displaySockets.indexOf(socket);
+
+    if (i != -1)
+        m_displaySockets.remove(i);
 }
 
 void Game::setDelayBetweenRound(int ms)
