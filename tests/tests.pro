@@ -21,4 +21,4 @@ SOURCES += \
     ../server/network.cpp \
     testserver.cpp
 
-DEFINES += SRCDIR=\\\"$$PWD/\\\"
+DEFINES += "UNIT_TEST=1"

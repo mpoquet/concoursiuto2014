@@ -34,7 +34,7 @@ class Network : public QObject
 
 	Q_OBJECT
 public:
-    explicit Network(quint16 port, int maxPlayerCount, int maxDisplayCount, Game * game, QObject *parent = 0);
+    explicit Network(quint16 port, int maxPlayerCount, int maxDisplayCount, Game * game = 0, QObject *parent = 0);
 
 	void run();
 

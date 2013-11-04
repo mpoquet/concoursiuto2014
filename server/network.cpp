@@ -149,12 +149,14 @@ void Network::sendLoginPlayerACK(QTcpSocket *socket, char value)
 {
     _mutexDisconnected.lock();
 
+#ifndef UNIT_TEST
     if (typeOf(socket) == Client::DISCONNECTED)
     {
         qDebug() << "Invalid sendLoginPlayerACK : disconnected socket";
         _mutexDisconnected.unlock();
         return;
     }
+#endif
 
 	QByteArray message(3, '\n');
 	message[0] = LOGIN_PLAYER_ACK;
@@ -168,12 +170,14 @@ void Network::sendLoginDisplayACK(QTcpSocket *socket, char value)
 {
     _mutexDisconnected.lock();
 
+#ifndef UNIT_TEST
     if (typeOf(socket) == Client::DISCONNECTED)
     {
         qDebug() << "Invalid sendLoginPlayerACK : disconnected socket";
         _mutexDisconnected.unlock();
         return;
     }
+#endif
 
 	QByteArray message(3, '\n');
 	message[0] = LOGIN_DISPLAY_ACK;
@@ -191,6 +195,7 @@ void Network::sendInitPlayer(QTcpSocket *socket,
 {
     _mutexDisconnected.lock();
 
+#ifndef UNIT_TEST
     // This is the first sendInitPlayer
     if (_server->isListening())
     {
@@ -212,13 +217,13 @@ void Network::sendInitPlayer(QTcpSocket *socket,
         _mutexDisconnected.lock();
     }
 
-
     if (typeOf(socket) == Client::DISCONNECTED)
     {
         qDebug() << "Invalid sendInitPlayer : disconnected socket";
         _mutexDisconnected.unlock();
         return;
     }
+#endif
 
 	QByteArray message;
 
@@ -261,12 +266,14 @@ void Network::sendInitDisplay(QTcpSocket *socket,
 {
     _mutexDisconnected.lock();
 
+#ifndef UNIT_TEST
     if (typeOf(socket) == Client::DISCONNECTED)
     {
         qDebug() << "Invalid sendInitDisplay : disconnected socket";
         _mutexDisconnected.unlock();
         return;
     }
+#endif
 
     QByteArray message;
 
@@ -320,12 +327,14 @@ void Network::sendTurnPlayer(QTcpSocket *socket,
 {
     _mutexDisconnected.lock();
 
+#ifndef UNIT_TEST
     if (typeOf(socket) == Client::DISCONNECTED)
     {
         qDebug() << "Invalid sendTurnPlayer : disconnected socket";
         _mutexDisconnected.unlock();
         return;
     }
+#endif
 
 	QByteArray message;
 
@@ -379,12 +388,14 @@ void Network::sendTurnDisplay(QTcpSocket *socket,
 {
     _mutexDisconnected.lock();
 
+#ifndef UNIT_TEST
     if (typeOf(socket) == Client::DISCONNECTED)
     {
         qDebug() << "Invalid sendTurnDisplay : disconnected socket";
         _mutexDisconnected.unlock();
         return;
     }
+#endif
 
     QByteArray message;
 
@@ -414,12 +425,14 @@ void Network::sendFinishedPlayer(QTcpSocket *socket, bool youWon)
 {
     _mutexDisconnected.lock();
 
+#ifndef UNIT_TEST
     if (typeOf(socket) == Client::DISCONNECTED)
     {
         qDebug() << "Invalid sendLoginPlayerACK : disconnected socket";
         _mutexDisconnected.unlock();
         return;
     }
+#endif
 
 	QByteArray message(3, '\n');
 	message[0] = END_OF_GAME;
@@ -466,12 +479,16 @@ void Network::onMessageReceived()
 			_clients[socket].buffer.remove(0, index+1);
             _clients[socket].receivedMessageCount++;
 
-            if (_clients[socket].receivedMessageCount > (_game->currentRound() * 2 + 3))
+            // If the server is attached to a game, let's check if the received message count is correct
+            if (_game != 0)
             {
-                cerr << "A client is sending way too many messages. This client is about to be kicked" << endl;
-                socket->close();
+                if (_clients[socket].receivedMessageCount > (_game->currentRound() * 2 + 3))
+                {
+                    cerr << "A client is sending way too many messages. This client is about to be kicked" << endl;
+                    socket->close();
 
-                return;
+                    return;
+                }
             }
 
 			if (_regexMessage.exactMatch(message))
