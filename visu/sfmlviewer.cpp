@@ -23,32 +23,20 @@ SFMLViewer::SFMLViewer(QWidget *parent) :
 void SFMLViewer::onTurn(QVector<int> scores,
                         QVector<TurnDisplayPlanet> planets,
                         QVector<ShipMovement> movements)
-{
-    qDebug() << "SFML : onTurn()";
-    
-    qDebug() << "Round: " << _currentRound++;
-    
+{    
     _currentRound++;
     
-    for(int i=0; i<scores.size(); i++)
+    _mutex.lock();
+
+    _planets.resize(_planetCount);
+    for (int i = 0; i < _planets.size(); ++i)
     {
-		qDebug() << "Player" << _players[i].nick << ": " << scores[i];
-		qDebug() << "Planets:";
-		for(int i=0; i<planets.size(); i++)
-		{
-			if(planets[i].playerID == i)
-			{
-				qDebug() << "\tP: " << i << ", ships: " << planets[i].shipCount;
-			}
-		}
-		for(int i=0; i<movements.size(); i++)
-		{
-			if(movements[i].player == i)
-			{
-				qDebug() << "(" << movements[i].remainingRound << ")" << movements[i].move.shipCount << " ships to planet " << movements[i].move.destPlanet;
-			}
-		}
-	}
+		_planets[i].playerID = planets[i].playerID;
+        _planets[i].shipCount = planets[i].shipCount;
+        _planets[i].sprite.setColor(_players[_planets[i].playerID].color);
+    }
+
+    _mutex.unlock();
 }
 
 void SFMLViewer::resizeEvent(QResizeEvent *e)
@@ -69,7 +57,7 @@ void SFMLViewer::onInit(int planetCount,
     _currentRound = 0;
 
     // Let's handle players
-    _players[-1] = Player("Empty");
+    _players[-1] = Player("Empty", sf::Color(255, 255, 255));
     _players[0] = Player("Autochtone", sf::Color(127,127,127));
 
     for (int i = 0; i < playerNicks.size(); ++i)
@@ -109,41 +97,33 @@ void SFMLViewer::onInit(int planetCount,
             maxY = planets[i].posY;
     }
 
-    float radiusPX = QWidget::width() / planetCount / 2;
-    float scale = _texturePlanet.getSize().x / radiusPX;
+    _radiusPX = QWidget::width() / planetCount / 2;
+    //float scale = _texturePlanet.getSize().x / _radiusPX;
 
-    qDebug() << "radius, scale :" << radiusPX << scale;
-
-    qDebug() << "min" << minX << minY;
-    qDebug() << "max" << maxX << maxY;
-
-    maxX += radiusPX/2;
-    maxY += radiusPX/2;
-
-    float aW, aH;
-    aW = (float) QWidget::width() / (maxX - minX);
-    aH = (float) QWidget::height() / (maxY - minY);
+    float aW = (float) (QWidget::width() - _radiusPX * 2) / (maxX - minX);
+    float aH = (float) (QWidget::height() - _radiusPX * 2)/ (maxY - minY);
 
     _mutex.lock();
 
     _planets.resize(_planetCount);
-    for (int i = 0; i < _planets.size(); ++i)
-    {
+    for (int i = 0; i < _planets.size(); ++i)		
+    {		
         _planets[i].playerID = planets[i].playerID;
         _planets[i].shipCount = planets[i].shipCount;
         _planets[i].size = planets[i].planetSize;
 
         _planets[i].sprite.setTexture(_texturePlanet);
         _planets[i].sprite.setOrigin(_texturePlanet.getSize().x/2, _texturePlanet.getSize().y/2);
-        _planets[i].sprite.setPosition(radiusPX + aW * (planets[i].posX - minX),
-                                       radiusPX + aH * (planets[i].posY - minY));
-        _planets[i].sprite.setScale(radiusPX / _planets[i].sprite.getTexture()->getSize().x,
-                                    radiusPX / _planets[i].sprite.getTexture()->getSize().y);
-        // ça fait w. On veut que ça fasse x. w * x/w = x
+        _planets[i].sprite.setPosition(_radiusPX + aW * (planets[i].posX - minX),
+                                       _radiusPX + aH * (planets[i].posY - minY));
+        _planets[i].sprite.setScale(_radiusPX / _planets[i].sprite.getTexture()->getSize().x,
+                                    _radiusPX / _planets[i].sprite.getTexture()->getSize().y);
         _planets[i].sprite.setColor(_players[_planets[i].playerID].color);
     }
 
     _mutex.unlock();
+    
+    _font.loadFromFile("arial.ttf");
 
     qDebug() << "SFML : init received";
 }
@@ -166,7 +146,17 @@ void SFMLViewer::onDisplayUpdate()
 
     _mutex.lock();
     for (int i = 0; i < _planets.size(); ++i)
+    {
         draw(_planets[i].sprite);
+        
+        sf::Text text(_players[_planets[i].playerID].nick.toStdString(), _font);
+		text.setCharacterSize(15);
+		text.setPosition(_planets[i].sprite.getPosition().x - _radiusPX / 2, 
+			_planets[i].sprite.getPosition().y + _radiusPX / 2);
+		text.setColor(_players[_planets[i].playerID].color);
+		
+		draw(text);
+    }
     _mutex.unlock();
 }
 

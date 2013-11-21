@@ -57,7 +57,7 @@ private :
     QPaintEngine* paintEngine() const;
     void showEvent(QShowEvent * e);
     void paintEvent(QPaintEvent * e);
-
+	
     QTimer _timer;
     QTime _time;
     bool _initialized;
@@ -75,6 +75,9 @@ private :
     sf::Texture _texturePlanet;
     sf::Sprite _sprite;
     QMutex _mutex;
+    
+    sf::Font _font;
+    float _radiusPX;
 };
 
 #endif // SFMLVIEWER_HPP
