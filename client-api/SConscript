@@ -169,7 +169,7 @@ def makeJava(envBase, objFiles, lib):
 
     envJava = envBase.Clone()
     envJava['SWIGFLAGS'] = ['-java', '-c++']
-    envJava['CPPPATH'] += [javaIncludePath]
+    envJava['CPPPATH'] += [javaIncludePath, javaIncludePath + '/linux/']
     envJava['SWIGOUTDIR'] = javaFilesPath
     envJava['SWIGCXXFILESUFFIX'] = '-java.cxx'
 

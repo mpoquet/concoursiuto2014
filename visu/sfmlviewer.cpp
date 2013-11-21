@@ -20,51 +20,35 @@ SFMLViewer::SFMLViewer(QWidget *parent) :
     _timer.setInterval(50);
 }
 
-void SFMLViewer::test()
-{
-    int planetCount;
-    QVector<QVector<int> > distanceMatrix;
-    QVector<InitDisplayPlanet> planets;
-    QVector<QString> playerNicks;
-    int roundCount;
-
-    planetCount = 4;
-
-    distanceMatrix.resize(planetCount);
-    for (int i = 0; i < distanceMatrix.size(); ++i)
-        distanceMatrix.resize(planetCount);
-
-    planets.resize(planetCount);
-
-    planets[0].posX = 0;
-    planets[0].posY = 0;
-    planets[0].playerID = -1;
-
-    planets[1].posX = 50;
-    planets[1].posY = 0;
-    planets[1].playerID = 0;
-
-    planets[2].posX = 100;
-    planets[2].posY = 100;
-    planets[2].playerID = 1;
-
-    planets[3].posX = 75;
-    planets[3].posY = 75;
-    planets[3].playerID = 2;
-
-    playerNicks.resize(2);
-    playerNicks[0] = "Bouh";
-    playerNicks[1] = "Ada";
-    roundCount = 42;
-
-    onInit(planetCount, distanceMatrix, planets, playerNicks, roundCount);
-}
-
 void SFMLViewer::onTurn(QVector<int> scores,
                         QVector<TurnDisplayPlanet> planets,
                         QVector<ShipMovement> movements)
 {
-    qDebug() << "SFML : turn received";
+    qDebug() << "SFML : onTurn()";
+    
+    qDebug() << "Round: " << _currentRound++;
+    
+    _currentRound++;
+    
+    for(int i=0; i<scores.size(); i++)
+    {
+		qDebug() << "Player" << _players[i].nick << ": " << scores[i];
+		qDebug() << "Planets:";
+		for(int i=0; i<planets.size(); i++)
+		{
+			if(planets[i].playerID == i)
+			{
+				qDebug() << "\tP: " << i << ", ships: " << planets[i].shipCount;
+			}
+		}
+		for(int i=0; i<movements.size(); i++)
+		{
+			if(movements[i].player == i)
+			{
+				qDebug() << "(" << movements[i].remainingRound << ")" << movements[i].move.shipCount << " ships to planet " << movements[i].move.destPlanet;
+			}
+		}
+	}
 }
 
 void SFMLViewer::resizeEvent(QResizeEvent *e)
@@ -79,6 +63,8 @@ void SFMLViewer::onInit(int planetCount,
                         QVector<QString> playerNicks,
                         int roundCount)
 {
+	qDebug() << "SFML : onInit()";
+	
     _roundCount = roundCount;
     _currentRound = 0;
 
@@ -182,13 +168,6 @@ void SFMLViewer::onDisplayUpdate()
     for (int i = 0; i < _planets.size(); ++i)
         draw(_planets[i].sprite);
     _mutex.unlock();
-
-    static bool first = true;
-    if (first)
-    {
-        test();
-        first = false;
-    }
 }
 
 QPaintEngine *SFMLViewer::paintEngine() const

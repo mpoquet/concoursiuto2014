@@ -36,9 +36,6 @@ class SFMLViewer : public AbstractViewer, public sf::RenderWindow
 public:
     explicit SFMLViewer(QWidget * parent = 0);
 
-private:
-    void test();
-
 public slots:
     void onInit(int planetCount,
                 QVector<QVector<int> > distanceMatrix,

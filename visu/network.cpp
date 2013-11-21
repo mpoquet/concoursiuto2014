@@ -75,7 +75,7 @@ void Network::onMessageReceived()
             } break;
             case INIT_DISPLAY:
             {
-                QStringList qsl = message.split(SEP);
+				QStringList qsl = message.split(SEP);
                 QStringList qsl2;
 
                 int planetCount;
@@ -137,7 +137,7 @@ void Network::onMessageReceived()
             } break;
             case TURN_DISPLAY:
             {
-                QStringList qsl = message.split(SEP);
+                QStringList qsl = message.right(message.size()-1).split(SEP);
                 QStringList qsl2;
 
                 QVector<int> scores;
@@ -148,7 +148,8 @@ void Network::onMessageReceived()
 
                 if (qsl2.size() != qsl2.at(0).toInt() + 1)
                 {
-                    qDebug() << "Invalid player nicks size";
+					qDebug() << "Invalid player nicks size (" << qsl2.size() << "instead of " << qsl2.at(0).toInt() + 1 << ')';
+                    qDebug() << qsl;
                     continue;
                 }
 

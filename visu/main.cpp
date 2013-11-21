@@ -26,6 +26,7 @@ int main(int argc, char *argv[])
     QObject::connect(&n, SIGNAL(cannotLogIn()), &w, SLOT(onCannotLogIn()));
 
     QObject::connect(&n, SIGNAL(initReceived(int,QVector<QVector<int> >,QVector<InitDisplayPlanet>,QVector<QString>,int)), &viewer, SLOT(onInit(int,QVector<QVector<int> >,QVector<InitDisplayPlanet>,QVector<QString>,int)));
-
+	QObject::connect(&n, SIGNAL(turnReceived(QVector<int>, QVector<TurnDisplayPlanet>, QVector<ShipMovement>)), &viewer, SLOT(onTurn(QVector<int>, QVector<TurnDisplayPlanet>, QVector<ShipMovement>)));
+    
     return a.exec();
 }
