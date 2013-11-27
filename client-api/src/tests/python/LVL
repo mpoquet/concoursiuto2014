@@ -1,4 +1,6 @@
 Niveaux de difficulté des IAs de test:
-1: observer
-2: scout
-3: conquer
+1: observer (ne fait rien)
+2: scout (offensif mais ne construit rien)
+3: conquer (offensif & construit des vaisseaux)
+4: conquer-rush (très offensif mais défense & construit des vaisseaux)
+5: dominator (offensif & défensif & construit des vaisseaux)
