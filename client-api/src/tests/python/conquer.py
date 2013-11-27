@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # IA qui vise la prenière planète ennemi qu'elle voit pour envoyer la moitié de ses vaisseaux dessus
+# De plus, l'IA construit des vaisseaux
 
 from contest import *
 from time import *
