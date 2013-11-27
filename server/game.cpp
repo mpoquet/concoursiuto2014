@@ -70,15 +70,15 @@ Game::Game(QString mapFilename, int delayBetweenRound, int roundCount, AbstractG
 
 void Game::start()
 {
-
 	Q_ASSERT(m_players.size() > 1);
 
 	if(m_players.size() <= 1)
 	{
-		qDebug() << "Game::start() : on ne lance pas de jeu avec moins de deux joueurs idiot !";
+        qDebug() << "Game::start() : il faut au moins deux joueurs...";
 		return;
 	}
 
+    m_playerCount = m_players.size();
 	emit gameStarted();
 
 	qDebug() << "Game::start()";
@@ -211,10 +211,11 @@ void Game::start()
 
 void Game::iteration()
 {
-	if(m_currentRound >= m_roundCount)
+    if(m_currentRound >= m_roundCount || (m_playerCount == 0 && m_movements.empty()))
 	{
 		m_timer->stop();
 
+        // todo : handle score
 		foreach(Player * p, m_players)
 		{
 			emit finishedSignal(m_clientSockets.value(p), true);
@@ -730,6 +731,7 @@ QMap<int, QVector<FightReport> > Game::handleBattle(QVector<ShipMovement*> endMo
 void Game::playerDisconnected(QTcpSocket * socket)
 {
     (void) socket;
+    --m_playerCount;
 
     /*
      * Le code ci-dessous est commenté car il fait planter les

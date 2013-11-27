@@ -95,6 +95,7 @@ class Game : public QObject
 		int m_delayBetweenRound;
 		int m_currentRound;
 		int m_roundCount;
+        int m_playerCount;
 
 		AbstractGameModel * m_gameModel;
 		QVector<Galaxy*> m_galaxies;
