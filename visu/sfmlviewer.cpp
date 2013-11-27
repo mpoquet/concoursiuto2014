@@ -175,7 +175,7 @@ void SFMLViewer::onDisplayUpdate()
 			draw(sprite);
 			
 			sf::Text text(p.nick.toStdString(), _font);
-			text.setCharacterSize(15);
+			text.setCharacterSize(16);
 			text.setPosition(8 + localScale, count * localScale + localScale / 4);
 			text.setColor(sf::Color(0, 0, 0));
 			
@@ -189,16 +189,15 @@ void SFMLViewer::onDisplayUpdate()
 			
 			draw(planet.sprite);
 			
-			sf::Text nick(player.nick.toStdString(), _font); //QString::number(planet.shipCount).toStdString(), _font);
-			nick.setCharacterSize(15);			
+			sf::Text nick(player.nick.toStdString(), _font);
+			nick.setCharacterSize(16);			
 			nick.setPosition(planet.sprite.getPosition().x - nick.getLocalBounds().width / 2, planet.sprite.getPosition().y + _radiusPX / 2);
 			nick.setColor(player.color);
 			
 			draw(nick);
 			
 			sf::Text ships(QString::number(planet.shipCount).toStdString(), _font);
-			ships.setCharacterSize(28);	
-			ships.setStyle(sf::Text::Bold);		
+			ships.setCharacterSize(28);		
 			ships.setPosition(planet.sprite.getPosition().x - ships.getLocalBounds().width / 2, planet.sprite.getPosition().y - ships.getLocalBounds().height / 2);
 			ships.setColor(sf::Color(0, 0, 0));
 			
