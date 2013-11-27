@@ -13,16 +13,13 @@
 using namespace std;
 
 int main(int argc, char ** argv)
-{
+{	
 	QApplication app(argc, argv);
-
-	qsrand(QTime::currentTime().msec());
-
-    Game * g = new Game("../map/example.map", 500, 100, new BasicGameModel());
-
-	quint16 port = 4242;
+	
 	bool ok;
-
+	quint16 port = 4242;
+	QString mapname = "../map/example.map";
+	
 	if (argc > 1)
 	{
 		int p = app.arguments().at(1).toInt(&ok);
@@ -35,6 +32,13 @@ int main(int argc, char ** argv)
 
 		port = p;
 	}
+	
+	if (argc > 2)
+		mapname = argv[2];
+
+	qsrand(QTime::currentTime().msec());
+
+    Game * g = new Game(mapname, 500, 100, new BasicGameModel());
 
     Network * n = new Network(port, 4, 1, g);
 
