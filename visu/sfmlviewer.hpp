@@ -60,12 +60,12 @@ private :
 	
     QTimer _timer;
     QTime _time;
-    bool _initialized;
+    bool _initialized, _started;
 
     int _planetCount;
     QVector<QVector<int> > _distance;
 
-    QMap<int, Player> _players; // PlayerID->Player
+    QMap<int, Player> _players;
     QVector<Planet> _planets;
     QVector<sf::Sprite> _ships;
 
@@ -73,7 +73,6 @@ private :
     int _currentRound;
 
     sf::Texture _texturePlanet;
-    sf::Sprite _sprite;
     QMutex _mutex;
     
     sf::Font _font;
