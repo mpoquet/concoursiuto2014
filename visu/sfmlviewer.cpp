@@ -28,7 +28,7 @@ void SFMLViewer::scaleGame()
 {
 	if(_started)
 	{
-		_scale = std::max(std::min(size().width(), size().height()) / _planets.size(), 1);
+		_scale = std::max(std::min(size().width(), size().height()) / _planets.size(), 1) * 1.5f;
 
 		float aW = (float) (QWidget::width() - _scale * 2 - LEGEND_WIDTH) / (_maxX - _minX);
 		float aH = (float) (QWidget::height() - _scale * 2) / (_maxY - _minY);
