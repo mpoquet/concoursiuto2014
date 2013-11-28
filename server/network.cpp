@@ -173,7 +173,7 @@ void Network::sendLoginDisplayACK(QTcpSocket *socket, char value)
 #ifndef UNIT_TEST
     if (typeOf(socket) == Client::DISCONNECTED)
     {
-        qDebug() << "Invalid sendLoginPlayerACK : disconnected socket";
+        qDebug() << "Invalid sendLoginDisplayACK : disconnected socket";
         _mutexDisconnected.unlock();
         return;
     }
@@ -428,7 +428,7 @@ void Network::sendFinishedPlayer(QTcpSocket *socket, bool youWon)
 #ifndef UNIT_TEST
     if (typeOf(socket) == Client::DISCONNECTED)
     {
-        qDebug() << "Invalid sendLoginPlayerACK : disconnected socket";
+        qDebug() << "Invalid sendFinishedPlayer : disconnected socket";
         _mutexDisconnected.unlock();
         return;
     }
