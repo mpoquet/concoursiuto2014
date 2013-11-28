@@ -65,7 +65,32 @@ Game::Game(QString mapFilename, int delayBetweenRound, int roundCount, AbstractG
 	{
 		qDebug() << "Unable to open the map file : " << mapFilename;
         throw std::exception();
-	}
+    }
+}
+
+void Game::setPlayers(const QMap<QTcpSocket *, QString> players)
+{
+    QMapIterator<QTcpSocket *, QString> it(players);
+
+    while (it.hasNext())
+    {
+        it.next();
+
+        Player * p = new Player(it.value());
+        m_players.push_back(p);
+        m_clientSockets.insert(p, it.key());
+    }
+}
+
+void Game::setDisplays(const QMap<QTcpSocket *, QString> displays)
+{
+    QMapIterator<QTcpSocket *, QString> it(displays);
+
+    while (it.hasNext())
+    {
+        it.next();
+        m_displaySockets.append(it.key());
+    }
 }
 
 void Game::start()
@@ -352,13 +377,6 @@ void Game::iteration()
 	sendTurnMessage(reports);
 }
 
-void Game::playerLogin(QTcpSocket *socket, QString nickname)
-{
-	Player * p = new Player(nickname);
-	m_players.push_back(p);
-	m_clientSockets.insert(p, socket);
-}
-
 void Game::playerOrder(QTcpSocket *socket, QVector<int> planetsToScan, QVector<BuildOrder> shipsToBuild, QVector<ShipMove> shipsToMove)
 {
 	Player * p = m_clientSockets.key(socket);
@@ -392,11 +410,6 @@ void Game::playerOrder(QTcpSocket *socket, QVector<int> planetsToScan, QVector<B
 		}
 	}
 	p->setPlanetScan(scan);
-}
-
-void Game::displayLogin(QTcpSocket *socket)
-{
-    m_displaySockets.append(socket);
 }
 
 Planet * Game::getPlanet(int id)
