@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
-    /*if (argc == 1)
+    if (argc == 1)
     {
         Network n;
         NetWidget w;
@@ -27,12 +27,12 @@ int main(int argc, char *argv[])
         QObject::connect(&n, SIGNAL(logged()), &w, SLOT(onLogged()));
         QObject::connect(&n, SIGNAL(cannotLogIn()), &w, SLOT(onCannotLogIn()));
 
-        QObject::connect(&n, SIGNAL(initReceived(int,QVector<QVector<int> >,QVector<InitDisplayPlanet>,QVector<QString>,int)), &viewer, SLOT(onInit(int,QVector<QVector<int> >,QVector<InitDisplayPlanet>,QVector<QString>,int)));
+        QObject::connect(&n, SIGNAL(initReceived(QVector<InitDisplayPlanet>,QVector<QString>,int)), &viewer, SLOT(onInit(QVector<InitDisplayPlanet>,QVector<QString>,int)));
         QObject::connect(&n, SIGNAL(turnReceived(QVector<int>, QVector<TurnDisplayPlanet>, QVector<ShipMovement>)), &viewer, SLOT(onTurn(QVector<int>, QVector<TurnDisplayPlanet>, QVector<ShipMovement>)));
 
         return a.exec();
     }
-    else*/ if (argc == 3)
+    else if (argc == 3)
     {
         QString ip;
         quint16 port;
@@ -43,8 +43,7 @@ int main(int argc, char *argv[])
 
         if (!ok)
         {
-            printf("Usage : visu\n"
-                   "        visu ip port\n");
+            printf("Usage : %s ip port\n", argv[0]);
             return a.exec();
         }
 
@@ -54,7 +53,7 @@ int main(int argc, char *argv[])
         viewer.show();
 
         QObject::connect(&n, SIGNAL(connected()), &n, SLOT(login()));
-        QObject::connect(&n, SIGNAL(initReceived(int,QVector<QVector<int> >,QVector<InitDisplayPlanet>,QVector<QString>,int)), &viewer, SLOT(onInit(int,QVector<QVector<int> >,QVector<InitDisplayPlanet>,QVector<QString>,int)));
+        QObject::connect(&n, SIGNAL(initReceived(QVector<InitDisplayPlanet>,QVector<QString>,int)), &viewer, SLOT(onInit(QVector<InitDisplayPlanet>,QVector<QString>,int)));
         QObject::connect(&n, SIGNAL(turnReceived(QVector<int>, QVector<TurnDisplayPlanet>, QVector<ShipMovement>)), &viewer, SLOT(onTurn(QVector<int>, QVector<TurnDisplayPlanet>, QVector<ShipMovement>)));
         QObject::connect(&viewer, SIGNAL(destroyed()), qApp, SLOT(quit()));
 
@@ -64,7 +63,7 @@ int main(int argc, char *argv[])
     }
     else
     {
-        printf("Usage : visu ip port\n");
+        printf("Usage : %s ip port\n", argv[0]);
 
         a.exit(0);
     }

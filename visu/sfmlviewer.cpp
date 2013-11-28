@@ -44,9 +44,7 @@ void SFMLViewer::scaleGame()
 	}
 }
 
-void SFMLViewer::onInit(int planetCount,
-                        QVector<QVector<int> > distanceMatrix,
-                        QVector<InitDisplayPlanet> planets,
+void SFMLViewer::onInit(QVector<InitDisplayPlanet> planets,
                         QVector<QString> playerNicks,
                         int roundCount)
 {
@@ -74,12 +72,8 @@ void SFMLViewer::onInit(int planetCount,
     for (int i = 0; i < playerNicks.size(); ++i)
         _players[i+1].color = sf::Color(colors[i].red(), colors[i].green(), colors[i].blue());
 
-
     // Planets
-    _planetCount = planetCount;
-    _distance = distanceMatrix;
-
-    _minX = _minY = 2147483647; // Mouhahahaha
+    _minX = _minY = 2147483647;
     _maxX = _maxY = -2147483647;
 
     for (int i = 0; i < planets.size(); ++i)
@@ -99,7 +93,7 @@ void SFMLViewer::onInit(int planetCount,
 	
     _mutex.lock();
 
-    _planets.resize(_planetCount);
+    _planets.resize(planets.size());
     for (int i = 0; i < _planets.size(); ++i)		
     {		
         _planets[i].playerID = planets[i].playerID;
@@ -129,13 +123,19 @@ void SFMLViewer::onTurn(QVector<int> scores,
     
     _mutex.lock();
 
-    _planets.resize(_planetCount);
     for (int i = 0; i < _planets.size(); ++i)
     {
 		_planets[i].playerID = planets[i].playerID;
         _planets[i].shipCount = planets[i].shipCount;
         _planets[i].sprite.setColor(_players[_planets[i].playerID].color);
     }
+    
+    for (int i = 0; i < scores.size(); ++i)
+    {
+		_players[i].score = scores[i];
+    }
+    
+    _moves = movements;
 
     _mutex.unlock();
 }

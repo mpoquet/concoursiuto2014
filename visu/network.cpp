@@ -133,7 +133,7 @@ void Network::onMessageReceived()
 
                 roundCount = qsl.at(4).toInt();
 
-                emit initReceived(planetCount, distanceMatrix, planets, playerNicks, roundCount);
+                emit initReceived(planets, playerNicks, roundCount);
             } break;
             case TURN_DISPLAY:
             {
