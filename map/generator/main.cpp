@@ -66,6 +66,7 @@ int main(int argc, char **argv)
 		printf("Error: layers > planets\n");
 		return 0;
 	}
+	
     
     if(filename.empty() || galaxyId < 1 || radius < 1 || X < 0 || Y < 0 || nPlayers < 1 || nPlanets < 1)
     {
@@ -85,6 +86,9 @@ int main(int argc, char **argv)
     nPlanetPerPlayer = max(nPlanets / nPlayers, 1);
     nPlanetPerLayer = max(nPlanetPerPlayer / nLayers, 1);
     nPlanetRest = (nPlanetPerPlayer == 1) ? 0 : nPlanetPerPlayer % nLayers;
+	
+	if(nPlanetRest)
+		printf("Warning: nPlanet / nPlayers / nLayers is not an integer ... May result in a weird map.\n");
 	
     vector<planet_s> planets(nPlayers * nPlanetPerPlayer);
 
