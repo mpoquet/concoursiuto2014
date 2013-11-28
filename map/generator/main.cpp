@@ -28,16 +28,19 @@ void usage(const char *name)
     printf("players: \tnumber of players, [1-N]\n");
     printf("planets: \tnumber of planets, [1-N]\n");
     printf("radius: \tradius of the galaxy / 2, [1-N]\n");
-    printf("\nExample: %s test.map 1 0 0 100 4 16\n", name);
+    printf("layers: \tnumber of planet layers in the galaxy, [1-N]\n");
+    printf("\nExample: %s test.map 1 0 0 100 4 16 4\n", name);
     printf("will result in a galaxy of 16 planets with 4 planets per player.\n");
+    printf("If layer = 1, there will be one circle of planets.\n");
+    printf("If layer = N, there will be N of planets.\n");
 }
 
 int main(int argc, char **argv)
 {
     string filename;
-    int galaxyId = -1, X = -1, Y = -1, nPlayers = -1, nPlanets = -1, radius = -1;
+    int galaxyId = -1, X = -1, Y = -1, nPlayers = -1, nPlanets = -1, radius = -1, nLayers = -1;
     
-    if(argc < 8)
+    if(argc < 9)
     {
         usage(argv[0]);
         return 0;
@@ -50,6 +53,7 @@ int main(int argc, char **argv)
     radius = atoi(argv[5]);
     nPlayers = atoi(argv[6]);
     nPlanets = atoi(argv[7]);
+    nLayers = atoi(argv[8]);
     
     if(filename.empty() || galaxyId < 1 || radius < 1 || X < 0 || Y < 0 || nPlayers < 1 || nPlanets < 1)
     {
@@ -57,21 +61,19 @@ int main(int argc, char **argv)
         return 0;
     }
     
-    printf("Generating %s with id=%d, X=%d, Y=%d, radius=%d, players=%d, planets=%d\n", 
-        filename.c_str(), galaxyId, X, Y, radius, nPlayers, nPlanets);
+    printf("Generating %s with id=%d, X=%d, Y=%d, radius=%d, players=%d, planets=%d, layers=%d\n", 
+        filename.c_str(), galaxyId, X, Y, radius, nPlayers, nPlanets, nLayers);
     
     srand(time(0));
     
-    int nLayers = -1;
     int nPlanetPerPlayer = -1;
     int nPlanetPerLayer = -1;
     int nPlanetRest = -1;
     
     nPlanetPerPlayer = max(nPlanets / nPlayers, 1);
-    nLayers = min(nPlanetPerPlayer, rand() % 4 + 1);
     nPlanetPerLayer = max(nPlanetPerPlayer / nLayers, 1);
     nPlanetRest = (nPlanetPerPlayer == 1) ? 0 : nPlanetPerPlayer % nLayers;
- 
+	
     vector<planet_s> planets(nPlayers * nPlanetPerPlayer);
 
     // Pour chaque anneau de planètes,
@@ -98,8 +100,8 @@ int main(int argc, char **argv)
                 int planetRadius = range;
 
                 // Calcul des coordonnées cartésiennes
-                p.x = X + cos(planetAngle) * planetRadius + radius;
-                p.y = Y + sin(planetAngle) * planetRadius + radius;
+                p.x = X + cos(planetAngle) * radius * (j + 1);
+                p.y = Y + sin(planetAngle) * radius * (j + 1);
                 
                 p.galaxyId = galaxyId;
                 p.size = 1;
