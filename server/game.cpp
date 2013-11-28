@@ -64,7 +64,7 @@ Game::Game(QString mapFilename, int delayBetweenRound, int roundCount, AbstractG
 	else
 	{
 		qDebug() << "Unable to open the map file : " << mapFilename;
-		throw new std::exception();
+        throw new std::exception();
 	}
 }
 
