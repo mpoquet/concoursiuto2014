@@ -158,13 +158,13 @@ void SFMLViewer::onDisplayUpdate()
 
 	if(!_started)
 	{
-		sf::Text text("Waiting ...", _font);
-		text.setCharacterSize(45);
-		text.setPosition(size().width() / 2 - text.getLocalBounds().width / 2, 
-						 size().height() / 2 - text.getLocalBounds().height / 2);
-		text.setColor(sf::Color(255,255,255));
+		sf::Text waiting("Waiting ...", _font);
+		waiting.setCharacterSize(45);
+		waiting.setPosition(size().width() / 2 - waiting.getLocalBounds().width / 2, 
+						 size().height() / 2 - waiting.getLocalBounds().height / 2);
+		waiting.setColor(sf::Color(255,255,255));
 		
-		draw(text);
+		draw(waiting);
 	}
 	else
 	{
@@ -199,6 +199,15 @@ void SFMLViewer::onDisplayUpdate()
 			
 			draw(text);
 		}
+		
+		QString roundString = QString::number(_currentRound) + "/" + QString::number(_roundCount);
+		
+		sf::Text rounds(roundString.toStdString(), _font);
+		rounds.setCharacterSize(20);
+		rounds.setPosition(8, size().height() - rounds.getLocalBounds().height * 2);
+		rounds.setColor(sf::Color(0, 0, 0));
+		
+		draw(rounds);
 			
 		for(QVector<Planet>::iterator i = _planets.begin(); i != _planets.end(); ++i)
 		{		
@@ -219,7 +228,7 @@ void SFMLViewer::onDisplayUpdate()
 			}
 			
 			sf::Text ships(QString::number(planet.shipCount).toStdString(), _font);
-			ships.setCharacterSize(28);		
+			ships.setCharacterSize(14);		
 			ships.setOrigin(ships.getLocalBounds().width / 2, ships.getLocalBounds().height / 2);
 			ships.setPosition(planet.sprite.getPosition().x, planet.sprite.getPosition().y);
 			ships.setColor(sf::Color(0, 0, 0));
