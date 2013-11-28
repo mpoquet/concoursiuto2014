@@ -28,9 +28,12 @@ class SFMLViewer : public AbstractViewer, public sf::RenderWindow
     struct Planet
     {
         sf::Sprite sprite;
+        
         int size;
         int playerID;
         int shipCount;
+        
+        int posX, posY;
     };
 
 public:
@@ -51,6 +54,8 @@ protected:
     void resizeEvent(QResizeEvent * e);
 
 private :
+	void scaleGame();
+	
     void onDisplayInit();
     void onDisplayUpdate();
 
@@ -76,7 +81,9 @@ private :
     QMutex _mutex;
     
     sf::Font _font;
-    float _radiusPX;
+    float _scale;
+    
+    int _minX, _maxX, _minY, _maxY;
 };
 
 #endif // SFMLVIEWER_HPP

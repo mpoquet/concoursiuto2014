@@ -1,5 +1,7 @@
 #include "sfmlviewer.hpp"
 
+#include <SFML/OpenGL.hpp>
+
 #include <QDebug>
 
 #define LEGEND_WIDTH 160
@@ -20,6 +22,26 @@ SFMLViewer::SFMLViewer(QWidget *parent) :
 
     // Préparation du timer
     _timer.setInterval(50);
+}
+
+void SFMLViewer::scaleGame()
+{
+	if(_started)
+	{
+		_scale = std::min(size().width(), size().height()) / _planets.size();
+
+		float aW = (float) (QWidget::width() - _scale * 2 - LEGEND_WIDTH) / (_maxX - _minX);
+		float aH = (float) (QWidget::height() - _scale * 2) / (_maxY - _minY);
+		
+		for (int i = 0; i < _planets.size(); ++i)		
+		{		
+			_planets[i].sprite.setPosition(LEGEND_WIDTH + _scale + aW * (_planets[i].posX - _minX),
+										   _scale + aH * (_planets[i].posY - _minY));
+		   
+			_planets[i].sprite.setScale(_scale / _planets[i].sprite.getTexture()->getSize().x,
+										_scale / _planets[i].sprite.getTexture()->getSize().y);
+		}
+	}
 }
 
 void SFMLViewer::onInit(int planetCount,
@@ -57,31 +79,24 @@ void SFMLViewer::onInit(int planetCount,
     _planetCount = planetCount;
     _distance = distanceMatrix;
 
-    int minX,minY,maxX,maxY;
-    minX = minY = 2147483647; // Mouhahahaha
-    maxX = maxY = -2147483647;
+    _minX = _minY = 2147483647; // Mouhahahaha
+    _maxX = _maxY = -2147483647;
 
     for (int i = 0; i < planets.size(); ++i)
     {
-        if (planets[i].posX < minX)
-            minX = planets[i].posX;
+        if (planets[i].posX < _minX)
+            _minX = planets[i].posX;
 
-        if (planets[i].posX > maxX)
-            maxX = planets[i].posX;
+        if (planets[i].posX > _maxX)
+            _maxX = planets[i].posX;
 
-        if (planets[i].posY < minY)
-            minY = planets[i].posY;
+        if (planets[i].posY < _minY)
+            _minY = planets[i].posY;
 
-        if (planets[i].posY > maxY)
-            maxY = planets[i].posY;
+        if (planets[i].posY > _maxY)
+            _maxY = planets[i].posY;
     }
-
-    _radiusPX = QWidget::width() / planetCount / 2;
-    //float scale = _texturePlanet.getSize().x / _radiusPX;
-
-    float aW = (float) (QWidget::width() - _radiusPX * 2 - LEGEND_WIDTH) / (maxX - minX);
-    float aH = (float) (QWidget::height() - _radiusPX * 2) / (maxY - minY);
-
+	
     _mutex.lock();
 
     _planets.resize(_planetCount);
@@ -93,12 +108,13 @@ void SFMLViewer::onInit(int planetCount,
 
         _planets[i].sprite.setTexture(_texturePlanet);
         _planets[i].sprite.setOrigin(_texturePlanet.getSize().x/2, _texturePlanet.getSize().y/2);
-        _planets[i].sprite.setPosition(LEGEND_WIDTH + _radiusPX + aW * (planets[i].posX - minX),
-                                       _radiusPX + aH * (planets[i].posY - minY));
-        _planets[i].sprite.setScale(_radiusPX / _planets[i].sprite.getTexture()->getSize().x,
-                                    _radiusPX / _planets[i].sprite.getTexture()->getSize().y);
         _planets[i].sprite.setColor(_players[_planets[i].playerID].color);
+        
+        _planets[i].posX = planets[i].posX;
+        _planets[i].posY = planets[i].posY;
     }
+    
+    scaleGame();
 
     _mutex.unlock();
 
@@ -136,8 +152,10 @@ void SFMLViewer::onDisplayInit()
 
 void SFMLViewer::onDisplayUpdate()
 {
-    clear();
+	glViewport(0, 0, size().width(), size().height());
 	
+    clear();
+
 	if(!_started)
 	{
 		sf::Text text("Waiting ...", _font);
@@ -154,8 +172,9 @@ void SFMLViewer::onDisplayUpdate()
 		
 		// Legend
 		sf::RectangleShape rectangle;
-		rectangle.setSize(sf::Vector2f(LEGEND_WIDTH, QWidget::height()));
+		rectangle.setSize(sf::Vector2f(LEGEND_WIDTH, size().height()));
 		rectangle.setFillColor(sf::Color(180,180,200));
+		rectangle.setPosition(0, 0);
 		
 		draw(rectangle);
 		
@@ -163,13 +182,12 @@ void SFMLViewer::onDisplayUpdate()
 		for(QMap<int, Player>::iterator i = _players.begin(); i != _players.end(); ++i, ++count)
 		{
 			Player &p = i.value();
-			float localScale = _radiusPX / 2;
+			float localScale = 64;
 			
 			sf::Sprite sprite;
 			sprite.setTexture(_texturePlanet);
 			sprite.setPosition(4, count * localScale);
-			sprite.setScale(localScale / _texturePlanet.getSize().x,
-							localScale / _texturePlanet.getSize().y);
+			sprite.setScale(localScale / _texturePlanet.getSize().x, localScale / _texturePlanet.getSize().y);
 			sprite.setColor(p.color);
 			
 			draw(sprite);
@@ -191,14 +209,16 @@ void SFMLViewer::onDisplayUpdate()
 			
 			sf::Text nick(player.nick.toStdString(), _font);
 			nick.setCharacterSize(16);			
-			nick.setPosition(planet.sprite.getPosition().x - nick.getLocalBounds().width / 2, planet.sprite.getPosition().y + _radiusPX / 2);
+			nick.setOrigin(nick.getLocalBounds().width / 2, nick.getLocalBounds().height / 2);
+			nick.setPosition(planet.sprite.getPosition().x, planet.sprite.getPosition().y + _scale / 2);
 			nick.setColor(player.color);
 			
 			draw(nick);
 			
 			sf::Text ships(QString::number(planet.shipCount).toStdString(), _font);
 			ships.setCharacterSize(28);		
-			ships.setPosition(planet.sprite.getPosition().x - ships.getLocalBounds().width / 2, planet.sprite.getPosition().y - ships.getLocalBounds().height / 2);
+			ships.setOrigin(ships.getLocalBounds().width / 2, ships.getLocalBounds().height / 2);
+			ships.setPosition(planet.sprite.getPosition().x, planet.sprite.getPosition().y);
 			ships.setColor(sf::Color(0, 0, 0));
 			
 			draw(ships);
@@ -210,7 +230,17 @@ void SFMLViewer::onDisplayUpdate()
 
 void SFMLViewer::resizeEvent(QResizeEvent *e)
 {
+	sf::RenderWindow::setSize(sf::Vector2u(e->size().width(), e->size().height()));
+    
+	sf::View view(sf::FloatRect(0, 0, e->size().width(), e->size().height()));
+	view.setViewport(sf::FloatRect(0.0f, 0.0f, 1.0f, 1.0f));
+	
+    sf::RenderWindow::setView(view);
+	
     onResize();
+    
+    scaleGame();
+    
     e->accept();
 }
 
