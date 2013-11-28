@@ -20,6 +20,8 @@ class SFMLViewer : public AbstractViewer, public sf::RenderWindow
         QString nick;
         sf::Color color;
         int score;
+        int shipCount;
+        int planetCount;
 
         Player(const QString & n = "???", sf::Color c = sf::Color::White, int s = 0) :
             nick(n), color(c), score(s) {}
