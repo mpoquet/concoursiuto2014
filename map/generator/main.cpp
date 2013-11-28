@@ -52,7 +52,7 @@ int main(int argc, char **argv)
     Y = atoi(argv[4]);
     nPlayers = atoi(argv[5]);
     nPlanets = atoi(argv[6]);
-    radius = atoi(argv[5]);
+    radius = atoi(argv[7]);
     nLayers = atoi(argv[8]);
     
     if(nPlanets < nPlayers)
