@@ -21,24 +21,24 @@ struct planet_s
 
 void usage(const char *name)
 {
-    printf("usage: \t\t%s file galaxy X Y radius players planets\n", name);
-    printf("map: \t\toutput file name\n");
+    printf("usage: \t\t%s file galaxy X Y players planets radius rings\n", name);
+    printf("file: \t\toutput file name\n");
     printf("galaxy: \tid of the galaxy [1-N]\n");
     printf("X, Y: \t\tposition of the galaxy [0-N], [0-N]\n");
     printf("players: \tnumber of players, [1-N]\n");
     printf("planets: \tnumber of planets, [1-N]\n");
     printf("radius: \tradius of the galaxy / 2, [1-N]\n");
-    printf("layers: \tnumber of planet layers in the galaxy, [1-N]\n");
-    printf("\nExample: %s test.map 1 0 0 100 4 16 4\n", name);
-    printf("will result in a galaxy of 16 planets with 4 planets per player.\n");
-    printf("If layer = 1, there will be one circle of planets.\n");
-    printf("If layer = N, there will be N of planets.\n");
+    printf("rings: \tnumber of planet rings in the galaxy, [1-N]\n");
+    printf("\nExample: %s test.map 1 0 0 4 16 100 2\n", name);
+    printf("will result in a galaxy width a radius of 100 and 16 planets for 4 players.\n");
+    printf("If rings = 1, there will be one circle of planets.\n");
+    printf("If rings = N, there will be N of planets.\n");
 }
 
 int main(int argc, char **argv)
 {
     string filename;
-    int galaxyId = -1, X = -1, Y = -1, nPlayers = -1, nPlanets = -1, radius = -1, nLayers = -1;
+    int galaxyId = -1, X = -1, Y = -1, nPlayers = -1, nPlanets = -1, radius = -1, nRings = -1;
     
     if(argc < 9)
     {
@@ -53,7 +53,7 @@ int main(int argc, char **argv)
     nPlayers = atoi(argv[5]);
     nPlanets = atoi(argv[6]);
     radius = atoi(argv[7]);
-    nLayers = atoi(argv[8]);
+    nRings = atoi(argv[8]);
     
     if(nPlanets < nPlayers)
     {
@@ -61,9 +61,9 @@ int main(int argc, char **argv)
 		return 0;
 	}
 	
-	if(nLayers > nPlanets)
+	if(nRings > nPlanets)
 	{
-		printf("Error: layers > planets\n");
+		printf("Error: rings > planets\n");
 		return 0;
 	}
 	
@@ -74,8 +74,8 @@ int main(int argc, char **argv)
         return 0;
     }
     
-    printf("Generating %s with id=%d, X=%d, Y=%d, radius=%d, players=%d, planets=%d, layers=%d\n", 
-        filename.c_str(), galaxyId, X, Y, radius, nPlayers, nPlanets, nLayers);
+    printf("Generating %s with id=%d, X=%d, Y=%d, players=%d, planets=%d, radius=%d, rings=%d\n", 
+        filename.c_str(), galaxyId, X, Y, nPlayers, nPlanets, radius, nRings);
     
     srand(time(0));
     
@@ -84,11 +84,11 @@ int main(int argc, char **argv)
     int nPlanetRest = -1;
     
     nPlanetPerPlayer = max(nPlanets / nPlayers, 1);
-    nPlanetPerLayer = max(nPlanetPerPlayer / nLayers, 1);
-    nPlanetRest = (nPlanetPerPlayer == 1) ? 0 : nPlanetPerPlayer % nLayers;
+    nPlanetPerLayer = max(nPlanetPerPlayer / nRings, 1);
+    nPlanetRest = (nPlanetPerPlayer == 1) ? 0 : nPlanetPerPlayer % nRings;
 	
 	if(nPlanetRest)
-		printf("Warning: nPlanet / nPlayers / nLayers is not an integer ... May result in a weird map.\n");
+		printf("Warning: nPlanet / nPlayers / nRings is not an integer ... May result in a weird map.\n");
 	
     vector<planet_s> planets(nPlayers * nPlanetPerPlayer);
 
@@ -101,11 +101,11 @@ int main(int argc, char **argv)
     int range = rand() % radius + 1;
     for(int i = 0; i < nPlayers; ++i)
     {
-        for(int j = 0; j <= nLayers; ++j)
+        for(int j = 0; j <= nRings; ++j)
         {
             int nPlanetInLayer = -1;
-            if(j < nLayers) nPlanetInLayer = nPlanetPerLayer;
-            else if(j == nLayers) nPlanetInLayer = nPlanetRest;
+            if(j < nRings) nPlanetInLayer = nPlanetPerLayer;
+            else if(j == nRings) nPlanetInLayer = nPlanetRest;
 
             for(int k = 0; k < nPlanetInLayer; ++k)
             {

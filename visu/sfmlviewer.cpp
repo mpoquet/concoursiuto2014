@@ -143,7 +143,7 @@ void SFMLViewer::onTurn(QVector<int> scores,
     {
 		_players[i+1].score = scores[i];
     }
-    
+
     _moves = movements;
 
     _mutex.unlock();
@@ -207,6 +207,30 @@ void SFMLViewer::onDisplayUpdate()
 				ships.setColor(sf::Color(0, 0, 0));
 				
 				draw(ships);
+			}
+			
+			if(_planets.size() <= 64)
+			{
+				for(int i=0; i<_moves.size(); i++)
+				{
+					Player &p = _players[_moves[i].player];
+					Planet src = _planets[_moves[i].move.srcPlanet];
+					Planet dst = _planets[_moves[i].move.destPlanet];
+					
+					float x1 = src.sprite.getPosition().x;
+					float y1 = src.sprite.getPosition().y;
+					
+					float x2 = dst.sprite.getPosition().x;
+					float y2 = dst.sprite.getPosition().y;
+					
+					sf::Vertex line[] =
+					{
+						sf::Vertex(sf::Vector2f(x1, y1), p.color),
+						sf::Vertex(sf::Vector2f(x2, y2), p.color)
+					};
+
+					draw(line, 2, sf::Lines);
+				}
 			}
 		}
 		
