@@ -229,6 +229,20 @@ void Game::iteration()
 	m_currentRound++;
 
     qDebug() << '\n' << QDateTime::currentDateTime().toString("[hh:mm:ss]") << "Game::iteration" << m_currentRound;
+    /*if (m_playerCount == 0)
+    {
+        int a = -1;
+        int b = 40000000;
+
+        for (int i = 0; i < m_movements.size(); ++i)
+        {
+            a = std::max(m_movements[i]->remainingRound, a);
+            b = std::min(m_movements[i]->remainingRound, b);
+        }
+
+        qDebug() << QString("(MoveCount, MaxRRound, MinRR) = (%1,%2,%3)").arg(m_movements.size()).arg(a).arg(b);
+    }*/
+
 	Planet * planet;
 	Planet * planetDest;
 
@@ -283,7 +297,7 @@ void Game::iteration()
 	for(int i = 0 ; i < m_movements.size() ; ++i)
 	{
 		m_movements[i]->remainingRound--;
-		if(m_movements[i]->remainingRound == 0)
+        if(m_movements[i]->remainingRound <= 0)
 		{
 			endMovements.append(m_movements[i]);
 			m_movements.remove(i);
@@ -353,7 +367,7 @@ void Game::playerOrder(QTcpSocket *socket, QVector<int> planetsToScan, QVector<B
 	filterShipMove(shipsToMove, p);
 	filterScan(planetsToScan);
 
-	qDebug() << "Order received from player " << p->id() << " (" << p->nickname() << ")";
+    /*qDebug() << "Order received from player " << p->id() << " (" << p->nickname() << ")";
 	qDebug() << "===> Spaceship build";
 	foreach(BuildOrder b, shipsToBuild)
 	{
@@ -363,7 +377,7 @@ void Game::playerOrder(QTcpSocket *socket, QVector<int> planetsToScan, QVector<B
 	foreach(ShipMove m, shipsToMove)
 	{
 		qDebug() << "From " << m.srcPlanet << " To " << m.destPlanet << " with " << m.shipCount;
-	}
+    }*/
 
 	p->setBuildOrder(shipsToBuild);
 	p->setShipMove(shipsToMove);
@@ -699,17 +713,17 @@ QMap<int, QVector<FightReport> > Game::handleBattle(QVector<ShipMovement*> endMo
 			}
 
 			//DEBUG
-			qDebug() << "Battle resolution on planet : " << planet->id() << " owner : " << planet->owner()->id();
+            /*qDebug() << "Battle resolution on planet : " << planet->id() << " owner : " << planet->owner()->id();
 			qDebug() << "Fleets : ";
 			foreach(Fleet f, fleets)
 			{
 				qDebug() << "owner : " << f.player << " : " << f.shipCount;
-			}
+            }*/
 
 			//////
 
 			Fleet winner = m_gameModel->resolveBattle(fleets);
-			qDebug() << "battle winner : " << winner.player << " : " << winner.shipCount;
+            //qDebug() << "battle winner : " << winner.player << " : " << winner.shipCount;
 
 
 			FightReport report;
