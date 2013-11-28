@@ -34,7 +34,14 @@ void Player::setPlanetScan(QVector<Planet*> planetScan)
 
 void Player::setResources(int resources)
 {
-	m_resources = resources;
+    m_resources = resources;
+}
+
+void Player::clearOrders()
+{
+    m_waitingShipMoves.clear();
+    m_waitingBuildOrders.clear();
+    m_waitingPlanetScan.clear();
 }
 
 void Player::addPlanet(Planet *planet)

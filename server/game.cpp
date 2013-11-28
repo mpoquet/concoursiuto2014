@@ -212,14 +212,14 @@ void Game::start()
 void Game::iteration()
 {
     if(m_currentRound >= m_roundCount || (m_playerCount == 0 && m_movements.empty()))
-	{
-		m_timer->stop();
+    {
+        m_timer->stop();
 
         // todo : handle score
-		foreach(Player * p, m_players)
-		{
-			emit finishedSignal(m_clientSockets.value(p), true);
-		}
+        foreach(Player * p, m_players)
+        {
+            emit finishedSignal(m_clientSockets.value(p), true);
+        }
 
 		return;
 	}
@@ -228,7 +228,7 @@ void Game::iteration()
 
 	m_currentRound++;
 
-    qDebug() << QDateTime::currentDateTime().toString("[hh:mm:ss]") << "Game::iteration" << m_currentRound;
+    qDebug() << '\n' << QDateTime::currentDateTime().toString("[hh:mm:ss]") << "Game::iteration" << m_currentRound;
 	Planet * planet;
 	Planet * planetDest;
 
@@ -273,6 +273,12 @@ void Game::iteration()
 			}
 		}
 	}
+
+    // Let's clean the waitingBuilds and waitingMoves for each player
+    foreach (Player * p, m_players)
+    {
+        p->clearOrders();
+    }
 
 	for(int i = 0 ; i < m_movements.size() ; ++i)
 	{
@@ -424,6 +430,7 @@ void Game::filterBuildOrder(QVector<BuildOrder> & orders, Player * player)
 	int usedResources = 0;
 	int availableResources;
 	int spaceShipCost = m_gameModel->getSpaceShipCost();
+
 	for(int i = 0 ; i < orders.size() ; ++i)
 	{
 		ok = false;
@@ -472,7 +479,8 @@ void Game::filterShipMove(QVector<ShipMove> & shipMoves, Player * player)
 {
 	int idSource;
 	int idDest;
-	Planet * planet;
+    Planet * planetSource;
+    Planet * planetDest;
 	bool ok = false;
 	for(int i = 0 ; i < shipMoves.size() ; ++i)
 	{
@@ -480,15 +488,17 @@ void Game::filterShipMove(QVector<ShipMove> & shipMoves, Player * player)
 		idSource = shipMoves[i].srcPlanet;
 		idDest = shipMoves[i].destPlanet;
 
-		planet = getPlanet(idSource);
-		if(planet != nullptr && getPlanet(idDest) != nullptr && planet->owner() == player)
+        planetSource = getPlanet(idSource);
+        planetDest = getPlanet(idDest);
+
+        if(planetSource != nullptr && planetDest != nullptr && planetSource->owner() == player && planetSource != planetDest)
 		{
-			if(planet->shipCount() > 1)
+            if(planetSource->shipCount() > 1)
 			{
 				ok = true;
-				if(planet->shipCount() < shipMoves[i].shipCount)
+                if(planetSource->shipCount() < shipMoves[i].shipCount)
 				{
-					shipMoves[i].shipCount = planet->shipCount() - 1;
+                    shipMoves[i].shipCount = planetSource->shipCount() - 1;
 				}
 			}
 		}

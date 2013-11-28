@@ -19,6 +19,8 @@ class Player
 		void setPlanetScan(QVector<Planet*> planetScan);
 		void setResources(int resources);
 
+        void clearOrders();
+
 		void addPlanet(Planet* planet);
 		void removePlanet(Planet* planet);
 		QVector<Planet*> planets();
