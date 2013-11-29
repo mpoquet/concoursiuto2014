@@ -14,9 +14,7 @@ public:
 signals:
     
 public slots:
-    virtual void onInit(int planetCount,
-                        QVector<QVector<int> > distanceMatrix,
-                        QVector<InitDisplayPlanet> planets,
+    virtual void onInit(QVector<InitDisplayPlanet> planets,
                         QVector<QString> playerNicks,
                         int roundCount) = 0;
 

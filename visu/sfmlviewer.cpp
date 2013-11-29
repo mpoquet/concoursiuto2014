@@ -28,7 +28,7 @@ void SFMLViewer::scaleGame()
 {
 	if(_started)
 	{
-		_scale = std::max(std::min(size().width(), size().height()) / _planets.size(), 1);
+		_scale = std::max(std::min(size().width(), size().height()) / _planets.size(), 4);
 
 		float aW = (float) (QWidget::width() - _scale * 2 - LEGEND_WIDTH) / (_maxX - _minX);
 		float aH = (float) (QWidget::height() - _scale * 2) / (_maxY - _minY);
@@ -44,9 +44,7 @@ void SFMLViewer::scaleGame()
 	}
 }
 
-void SFMLViewer::onInit(int planetCount,
-                        QVector<QVector<int> > distanceMatrix,
-                        QVector<InitDisplayPlanet> planets,
+void SFMLViewer::onInit(QVector<InitDisplayPlanet> planets,
                         QVector<QString> playerNicks,
                         int roundCount)
 {
@@ -74,12 +72,8 @@ void SFMLViewer::onInit(int planetCount,
     for (int i = 0; i < playerNicks.size(); ++i)
         _players[i+1].color = sf::Color(colors[i].red(), colors[i].green(), colors[i].blue());
 
-
     // Planets
-    _planetCount = planetCount;
-    _distance = distanceMatrix;
-
-    _minX = _minY = 2147483647; // Mouhahahaha
+    _minX = _minY = 2147483647;
     _maxX = _maxY = -2147483647;
 
     for (int i = 0; i < planets.size(); ++i)
@@ -99,7 +93,7 @@ void SFMLViewer::onInit(int planetCount,
 	
     _mutex.lock();
 
-    _planets.resize(_planetCount);
+    _planets.resize(planets.size());
     for (int i = 0; i < _planets.size(); ++i)		
     {		
         _planets[i].playerID = planets[i].playerID;
@@ -128,14 +122,29 @@ void SFMLViewer::onTurn(QVector<int> scores,
     _currentRound++;
     
     _mutex.lock();
+	
+	for (QMap<int, Player>::iterator i=_players.begin(); i != _players.end(); ++i)
+	{
+		i.value().shipCount = 0;
+		i.value().planetCount = 0;
+	}
 
-    _planets.resize(_planetCount);
     for (int i = 0; i < _planets.size(); ++i)
     {
 		_planets[i].playerID = planets[i].playerID;
         _planets[i].shipCount = planets[i].shipCount;
         _planets[i].sprite.setColor(_players[_planets[i].playerID].color);
+        
+        _players[_planets[i].playerID].shipCount += _planets[i].shipCount;
+        _players[_planets[i].playerID].planetCount++;
     }
+    
+    for (int i = 0; i < scores.size(); ++i)
+    {
+		_players[i+1].score = scores[i];
+    }
+
+    _moves = movements;
 
     _mutex.unlock();
 }
@@ -158,48 +167,19 @@ void SFMLViewer::onDisplayUpdate()
 
 	if(!_started)
 	{
-		sf::Text text("Waiting ...", _font);
-		text.setCharacterSize(45);
-		text.setPosition(size().width() / 2 - text.getLocalBounds().width / 2, 
-						 size().height() / 2 - text.getLocalBounds().height / 2);
-		text.setColor(sf::Color(255,255,255));
+		sf::Text waiting("Waiting ...", _font);
+		waiting.setCharacterSize(45);
+		waiting.setPosition(size().width() / 2 - waiting.getLocalBounds().width / 2, 
+						 size().height() / 2 - waiting.getLocalBounds().height / 2);
+		waiting.setColor(sf::Color(255,255,255));
 		
-		draw(text);
+		draw(waiting);
 	}
 	else
 	{
 		_mutex.lock();
 		
-		// Legend
-		sf::RectangleShape rectangle;
-		rectangle.setSize(sf::Vector2f(LEGEND_WIDTH, size().height()));
-		rectangle.setFillColor(sf::Color(180,180,200));
-		rectangle.setPosition(0, 0);
-		
-		draw(rectangle);
-		
-		int count = 0;
-		for(QMap<int, Player>::iterator i = _players.begin(); i != _players.end(); ++i, ++count)
-		{
-			Player &p = i.value();
-			float localScale = 64;
-			
-			sf::Sprite sprite;
-			sprite.setTexture(_texturePlanet);
-			sprite.setPosition(4, count * localScale);
-			sprite.setScale(localScale / _texturePlanet.getSize().x, localScale / _texturePlanet.getSize().y);
-			sprite.setColor(p.color);
-			
-			draw(sprite);
-			
-			sf::Text text(p.nick.toStdString(), _font);
-			text.setCharacterSize(16);
-			text.setPosition(8 + localScale, count * localScale + localScale / 4);
-			text.setColor(sf::Color(0, 0, 0));
-			
-			draw(text);
-		}
-			
+		// Game
 		for(QVector<Planet>::iterator i = _planets.begin(); i != _planets.end(); ++i)
 		{		
 			Planet &planet = *i;
@@ -218,14 +198,132 @@ void SFMLViewer::onDisplayUpdate()
 				draw(nick);
 			}
 			
-			sf::Text ships(QString::number(planet.shipCount).toStdString(), _font);
-			ships.setCharacterSize(28);		
-			ships.setOrigin(ships.getLocalBounds().width / 2, ships.getLocalBounds().height / 2);
-			ships.setPosition(planet.sprite.getPosition().x, planet.sprite.getPosition().y);
-			ships.setColor(sf::Color(0, 0, 0));
+			if(_scale > 10)
+			{
+				sf::Text ships(QString::number(planet.shipCount).toStdString(), _font);
+				ships.setCharacterSize(14);		
+				ships.setOrigin(ships.getLocalBounds().width / 2, ships.getLocalBounds().height / 2);
+				ships.setPosition(planet.sprite.getPosition().x, planet.sprite.getPosition().y);
+				ships.setColor(sf::Color(0, 0, 0));
+				
+				draw(ships);
+			}
 			
-			draw(ships);
+			if(_planets.size() <= 64)
+			{
+				for(int i=0; i<_moves.size(); i++)
+				{
+					Player &p = _players[_moves[i].player];
+					Planet src = _planets[_moves[i].move.srcPlanet];
+					Planet dst = _planets[_moves[i].move.destPlanet];
+					
+					float x1 = src.sprite.getPosition().x;
+					float y1 = src.sprite.getPosition().y;
+					
+					float x2 = dst.sprite.getPosition().x;
+					float y2 = dst.sprite.getPosition().y;
+					
+					sf::Vertex line[] =
+					{
+						sf::Vertex(sf::Vector2f(x1, y1), p.color),
+						sf::Vertex(sf::Vector2f(x2, y2), p.color)
+					};
+
+					draw(line, 2, sf::Lines);
+				}
+			}
 		}
+		
+		// Legend
+		sf::RectangleShape rectangle;
+		rectangle.setSize(sf::Vector2f(LEGEND_WIDTH, size().height()));
+		rectangle.setFillColor(sf::Color(180,180,200));
+		rectangle.setPosition(0, 0);
+		
+		draw(rectangle);
+		
+		int h = 0;
+		float localScale = 40;
+		for(QMap<int, Player>::iterator i = _players.begin(); i != _players.end(); ++i)
+		{
+			Player &p = i.value();
+			
+			sf::Sprite sprite;
+			sprite.setTexture(_texturePlanet);
+			sprite.setPosition(4, h);
+			sprite.setScale(localScale / _texturePlanet.getSize().x, localScale / _texturePlanet.getSize().y);
+			sprite.setColor(p.color);
+			
+			draw(sprite);
+			
+			if(p.nick != "Empty" && p.nick != "Autochtone")
+			{
+				sf::Text nick(p.nick.toStdString(), _font);
+				nick.setCharacterSize(16);
+				nick.setStyle(sf::Text::Bold);
+				nick.setPosition(8 + localScale, h);
+				nick.setColor(sf::Color(0, 0, 0));
+				h += nick.getLocalBounds().height + 2;
+				
+				draw(nick);
+			
+				QString planetsString = "Planets: " + QString::number(p.planetCount);
+			
+				sf::Text planets(planetsString.toStdString(), _font);
+				planets.setCharacterSize(16);
+				planets.setPosition(8 + localScale, h);
+				planets.setColor(sf::Color(0, 0, 0));
+				h += planets.getLocalBounds().height + 2;
+				
+				draw(planets);
+				
+				QString shipsString = "Ships: " + QString::number(p.shipCount);
+				
+				sf::Text ships(shipsString.toStdString(), _font);
+				ships.setCharacterSize(16);
+				ships.setPosition(8 + localScale, h);
+				ships.setColor(sf::Color(0, 0, 0));
+				h += ships.getLocalBounds().height + 2;
+				
+				draw(ships);
+				
+				QString scoreString = "Score: " + QString::number(p.score);
+				
+				sf::Text score(scoreString.toStdString(), _font);
+				score.setCharacterSize(16);
+				score.setPosition(8 + localScale, h);
+				score.setColor(sf::Color(0, 0, 0));
+				h += score.getLocalBounds().height + 2;
+				
+				draw(score);
+			}
+			else
+			{
+				h += 10;
+			
+				sf::Text nick(p.nick.toStdString(), _font);
+				nick.setCharacterSize(16);
+				nick.setStyle(sf::Text::Bold);
+				nick.setPosition(8 + localScale, h);
+				nick.setColor(sf::Color(0, 0, 0));
+				h += nick.getLocalBounds().height + 2;
+				
+				draw(nick);
+			
+				h += 15;
+			}
+			
+			h += 10;
+		}
+		
+		QString roundString = QString::number(_currentRound) + "/" + QString::number(_roundCount);
+		
+		sf::Text rounds(roundString.toStdString(), _font);
+		rounds.setCharacterSize(20);
+		rounds.setPosition(8, size().height() - rounds.getLocalBounds().height * 2);
+		rounds.setColor(sf::Color(0, 0, 0));
+		
+		draw(rounds);
 		
 		_mutex.unlock();
 	}

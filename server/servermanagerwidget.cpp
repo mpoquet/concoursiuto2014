@@ -129,6 +129,8 @@ void ServerManagerWidget::startClicked()
     {
         m_gameEngine->setDelayBetweenRound(m_delayBetweenRound->value());
         m_gameEngine->setNumberOfRound(m_roundCount->value());
+        m_gameEngine->setPlayers(m_players);
+        m_gameEngine->setDisplays(m_displays);
         m_gameEngine->start();
 
         m_startButton->setEnabled(false);

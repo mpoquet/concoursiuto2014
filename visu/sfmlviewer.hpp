@@ -20,6 +20,8 @@ class SFMLViewer : public AbstractViewer, public sf::RenderWindow
         QString nick;
         sf::Color color;
         int score;
+        int shipCount;
+        int planetCount;
 
         Player(const QString & n = "???", sf::Color c = sf::Color::White, int s = 0) :
             nick(n), color(c), score(s) {}
@@ -40,9 +42,7 @@ public:
     explicit SFMLViewer(QWidget * parent = 0);
 
 public slots:
-    void onInit(int planetCount,
-                QVector<QVector<int> > distanceMatrix,
-                QVector<InitDisplayPlanet> planets,
+    void onInit(QVector<InitDisplayPlanet> planets,
                 QVector<QString> playerNicks,
                 int roundCount);
 
@@ -67,12 +67,9 @@ private :
     QTime _time;
     bool _initialized, _started;
 
-    int _planetCount;
-    QVector<QVector<int> > _distance;
-
     QMap<int, Player> _players;
     QVector<Planet> _planets;
-    QVector<sf::Sprite> _ships;
+    QVector<ShipMovement> _moves;
 
     int _roundCount;
     int _currentRound;

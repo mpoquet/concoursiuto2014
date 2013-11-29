@@ -21,6 +21,8 @@ class Game : public QObject
 		Game(QString mapFilename, int delayBetweenRound, int roundCount, AbstractGameModel * gameModel);
 
         int currentRound() const { return m_currentRound; }
+        void setPlayers(const QMap<QTcpSocket *, QString> players);
+        void setDisplays(const QMap<QTcpSocket *, QString> displays);
 
 	signals:
 		void initPlayerSignal(QTcpSocket * socket,
@@ -59,8 +61,6 @@ class Game : public QObject
 		void roundStarted(int nbRound);
 
 	public slots:
-		void playerLogin(QTcpSocket * socket, QString nickname);
-        void displayLogin(QTcpSocket * socket);
 		void playerOrder(QTcpSocket * socket,
 						 QVector<int> planetsToScan,
 						 QVector<BuildOrder> shipsToBuild,
@@ -108,7 +108,7 @@ class Game : public QObject
 		QTimer * m_timer;
 
 		Player * m_neutralPlayer;
-		Player * m_nullPlayer;
+        Player * m_nullPlayer;
 };
 
 #endif // GAME_HPP

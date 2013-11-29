@@ -64,8 +64,33 @@ Game::Game(QString mapFilename, int delayBetweenRound, int roundCount, AbstractG
 	else
 	{
 		qDebug() << "Unable to open the map file : " << mapFilename;
-		throw new std::exception();
-	}
+        throw std::exception();
+    }
+}
+
+void Game::setPlayers(const QMap<QTcpSocket *, QString> players)
+{
+    QMapIterator<QTcpSocket *, QString> it(players);
+
+    while (it.hasNext())
+    {
+        it.next();
+
+        Player * p = new Player(it.value());
+        m_players.push_back(p);
+        m_clientSockets.insert(p, it.key());
+    }
+}
+
+void Game::setDisplays(const QMap<QTcpSocket *, QString> displays)
+{
+    QMapIterator<QTcpSocket *, QString> it(displays);
+
+    while (it.hasNext())
+    {
+        it.next();
+        m_displaySockets.append(it.key());
+    }
 }
 
 void Game::start()
@@ -229,6 +254,20 @@ void Game::iteration()
 	m_currentRound++;
 
     qDebug() << '\n' << QDateTime::currentDateTime().toString("[hh:mm:ss]") << "Game::iteration" << m_currentRound;
+    /*if (m_playerCount == 0)
+    {
+        int a = -1;
+        int b = 40000000;
+
+        for (int i = 0; i < m_movements.size(); ++i)
+        {
+            a = std::max(m_movements[i]->remainingRound, a);
+            b = std::min(m_movements[i]->remainingRound, b);
+        }
+
+        qDebug() << QString("(MoveCount, MaxRRound, MinRR) = (%1,%2,%3)").arg(m_movements.size()).arg(a).arg(b);
+    }*/
+
 	Planet * planet;
 	Planet * planetDest;
 
@@ -283,7 +322,7 @@ void Game::iteration()
 	for(int i = 0 ; i < m_movements.size() ; ++i)
 	{
 		m_movements[i]->remainingRound--;
-		if(m_movements[i]->remainingRound == 0)
+        if(m_movements[i]->remainingRound <= 0)
 		{
 			endMovements.append(m_movements[i]);
 			m_movements.remove(i);
@@ -338,13 +377,6 @@ void Game::iteration()
 	sendTurnMessage(reports);
 }
 
-void Game::playerLogin(QTcpSocket *socket, QString nickname)
-{
-	Player * p = new Player(nickname);
-	m_players.push_back(p);
-	m_clientSockets.insert(p, socket);
-}
-
 void Game::playerOrder(QTcpSocket *socket, QVector<int> planetsToScan, QVector<BuildOrder> shipsToBuild, QVector<ShipMove> shipsToMove)
 {
 	Player * p = m_clientSockets.key(socket);
@@ -353,7 +385,7 @@ void Game::playerOrder(QTcpSocket *socket, QVector<int> planetsToScan, QVector<B
 	filterShipMove(shipsToMove, p);
 	filterScan(planetsToScan);
 
-	qDebug() << "Order received from player " << p->id() << " (" << p->nickname() << ")";
+    /*qDebug() << "Order received from player " << p->id() << " (" << p->nickname() << ")";
 	qDebug() << "===> Spaceship build";
 	foreach(BuildOrder b, shipsToBuild)
 	{
@@ -363,7 +395,7 @@ void Game::playerOrder(QTcpSocket *socket, QVector<int> planetsToScan, QVector<B
 	foreach(ShipMove m, shipsToMove)
 	{
 		qDebug() << "From " << m.srcPlanet << " To " << m.destPlanet << " with " << m.shipCount;
-	}
+    }*/
 
 	p->setBuildOrder(shipsToBuild);
 	p->setShipMove(shipsToMove);
@@ -378,11 +410,6 @@ void Game::playerOrder(QTcpSocket *socket, QVector<int> planetsToScan, QVector<B
 		}
 	}
 	p->setPlanetScan(scan);
-}
-
-void Game::displayLogin(QTcpSocket *socket)
-{
-    m_displaySockets.append(socket);
 }
 
 Planet * Game::getPlanet(int id)
@@ -699,17 +726,17 @@ QMap<int, QVector<FightReport> > Game::handleBattle(QVector<ShipMovement*> endMo
 			}
 
 			//DEBUG
-			qDebug() << "Battle resolution on planet : " << planet->id() << " owner : " << planet->owner()->id();
+            /*qDebug() << "Battle resolution on planet : " << planet->id() << " owner : " << planet->owner()->id();
 			qDebug() << "Fleets : ";
 			foreach(Fleet f, fleets)
 			{
 				qDebug() << "owner : " << f.player << " : " << f.shipCount;
-			}
+            }*/
 
 			//////
 
 			Fleet winner = m_gameModel->resolveBattle(fleets);
-			qDebug() << "battle winner : " << winner.player << " : " << winner.shipCount;
+            //qDebug() << "battle winner : " << winner.player << " : " << winner.shipCount;
 
 
 			FightReport report;

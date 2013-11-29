@@ -19,9 +19,7 @@ signals:
     void disconnected();
     void error();
 
-    void initReceived(int planetCount,
-                      QVector<QVector<int> > distanceMatrix,
-                      QVector<InitDisplayPlanet> planets,
+    void initReceived(QVector<InitDisplayPlanet> planets,
                       QVector<QString> playerNicks,
                       int roundCount);
 
