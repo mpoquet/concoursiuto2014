@@ -3,9 +3,14 @@
 # IA qui vise une planète random ennemi qu'elle voit pour envoyer la moitié de ses vaisseaux dessus
 # l'IA tente d'aider ces propres planètes lorsqu'elle sait que l'énemie va les attaquer
 
+# Mettre plus de protection sur les bord
+# Eviter de construire vers le centre
+# Déplacer les vaisseau du centre plutot vers les bord avant, pour attaquer, évitant ainsi une détection
+
 from contest import *
 from time import *
 from random import *
+from sys import *
 
 
 def gameError(session):
@@ -43,64 +48,57 @@ def gameRound(session):
     friends = data.fleets()
     enemies = data.enemies()
 
-    darkPlanets = list(set(range(infos.planetCount))-set([p.planetId for p in planets]))
+    if len(planets) > 0:
+        darkPlanets = list(set(range(infos.planetCount))-set([p.planetId for p in planets]))
 
-    print
-    print "Avancement:", infos.currentRoundId, "/", infos.totalRoundCount, "tours"
-    print "Contrôle:", len(planets), "/", infos.planetCount, "planètes:", [p.planetId for p in planets]
-    print "Ressources:", infos.resources
-    print "Vaisseaux:", sum([p.shipCount for p in planets])
+        print
+        print "Avancement:", infos.currentRoundId, "/", infos.totalRoundCount, "tours"
+        print "Contrôle:", len(planets), "/", infos.planetCount, "planètes:", [p.planetId for p in planets]
+        print "Ressources:", infos.resources
+        print "Vaisseaux:", sum([p.shipCount for p in planets])
 
-    for p in planets:
-        if p.shipCount > 1:
-            randomId = randint(0, len(darkPlanets)-1)
-            print "Choix > Attaque de la planète numéro", darkPlanets[randomId], "avec", p.shipCount/2, "vaisseaux"
-            session.orderMove(p.planetId, darkPlanets[randomId], p.shipCount/2)
+        shipCanBuild = max(infos.resources/infos.shipCost, 0)
 
-    # Réserve 5 vaisseaux au moins (contre une attaque probable)
-    shipToBuild = max(infos.resources/infos.shipCost - 10, 0)
-    shipToBuild = int(shipToBuild/len(planets)) * len(planets)
-    print "Choix > Contruction d'un total de", shipToBuild, "vaisseaux"
+        # Calcul de l'écart entre l'état d'équilibre et la situation réel pour chaque planète
 
-    for p in planets:
-        session.orderBuild(p.planetId, shipToBuild/len(planets))
+        planetsState = dict()
+        for p in planets:
+            base = p.shipCount
+            bonus = sum([f.shipCount for f in friends if f.destinationPlanetId == p.planetId])
+            malus = sum([e.shipCount for e in enemies if e.destinationPlanetId == p.planetId])
+            planetsState[p.planetId] = base + bonus - malus
 
-    # Calcul de l'écart entre l'état d'équilibre et la situation réel pour chaque planète
-    planetsState = dict()
-    for p in planets:
-        base = p.shipCount
-        bonus = sum([f.shipCount for f in friends if f.destinationPlanetId == p.planetId])
-        malus = sum([e.shipCount for e in enemies if e.destinationPlanetId == p.planetId])
-        planetsState[p.planetId] = base + bonus - malus
+        # Equilibrage du système
 
-    # Tente de protéger rapidement la planète qui est la plus en danger en y construisant des vaisseaux
-    # s'il reste de l'argent pour en créer
-    if infos.resources - infos.shipCost*shipToBuild >= infos.shipCost:
-        idPlanetInDanger = min(planetsState, key=lambda k: planetsState[k])
-        session.orderBuild(idPlanetInDanger, (infos.resources - infos.shipCost*shipToBuild)/infos.shipCost)
+        avg = sum([planetsState[key] for key in planetsState]) / len(planetsState)
+        avg = max(avg, 0)
+        safePlanets = sorted([key for key in planetsState if planetsState[key] >= avg], key=lambda k: planetsState[key])
+        unsafePlanets = sorted([key for key in planetsState if planetsState[key] < avg], key=lambda k: planetsState[key])
+        totalToBuild = sum([avg - planetsState[p] for p in unsafePlanets])
 
-    # Equilibrage du système
-
-    avg = sum([planetsState[key] for key in planetsState]) / len(planetsState)
-    safePlanets = [key for key in planetsState if planetsState[key] > avg]
-    unsafePlanets = [key for key in planetsState if planetsState[key] < avg]
-
-    while len(safePlanets) > 0 and len(unsafePlanets) > 0:
-        shipNeeded = avg - planetsState[unsafePlanets[-1]]
-        canGive = planetsState[safePlanets[-1]] - avg
-        if canGive-shipNeeded > 0:
-            session.orderMove(len(safePlanets)-1, len(unsafePlanets)-1, shipNeeded)
-            planetsState[safePlanets[-1]] -= shipNeeded
-            unsafePlanets[-1:] = []
+        if totalToBuild <= shipCanBuild:
+            shipCanBuild -= totalToBuild
+            for p in unsafePlanets:
+                session.orderBuild(p, avg - planetsState[p])
+                shipCanBuild -= avg - planetsState[p]
+            for p in planets:
+                if shipCanBuild / len(planets) > 0:
+                    session.orderBuild(p.planetId, shipCanBuild / len(planets))
         else:
-            session.orderMove(len(safePlanets)-1, len(unsafePlanets)-1, canGive)
-            if canGive-shipNeeded == 0:
-                unsafePlanets[-1:] = []
-            else:
-                planetsState[unsafePlanets[-1]] += canGive
-            safePlanets[-1:] = []
+            for p in unsafePlanets:
+                if shipCanBuild > 0:
+                    session.orderBuild(p, avg - planetsState[p])
+                    shipCanBuild -= avg - planetsState[p]
 
-    session.sendOrders()
+        if len(darkPlanets) > 0:
+            for pId in safePlanets:
+                p = [p2 for p2 in planets if p2.planetId==pId][0]
+                if p.shipCount > 1:
+                    bestPlanetToRush = min(darkPlanets, key=lambda dp: data.distance(p.planetId, dp))
+                    print "Choix > Attaque de la planète numéro", bestPlanetToRush, "avec", p.shipCount/2, "vaisseaux"
+                    session.orderMove(p.planetId, bestPlanetToRush, min(p.shipCount/2+1, p.shipCount))
+
+        session.sendOrders()
 
 
 def game():
