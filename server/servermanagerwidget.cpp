@@ -49,8 +49,8 @@ ServerManagerWidget::ServerManagerWidget(Game * gameEngine, Network * network, Q
 	m_roundCount->setRange(0, 100000);
 	m_delayBetweenRound->setRange(0, 100000);
 
-	m_roundCount->setValue(250);
-	m_delayBetweenRound->setValue(500);
+    m_roundCount->setValue(1000);
+    m_delayBetweenRound->setValue(100);
 
     m_startButton = new QPushButton("Start");
 

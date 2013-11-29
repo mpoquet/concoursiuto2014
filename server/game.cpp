@@ -1,9 +1,13 @@
 #include "game.hpp"
 
+#include <iostream>
+
 #include <QDebug>
 #include <QFile>
 #include <QStringList>
 #include <QDateTime>
+
+using namespace std;
 
 Game::Game(QString mapFilename, int delayBetweenRound, int roundCount, AbstractGameModel * gameModel)
 {
@@ -253,7 +257,8 @@ void Game::iteration()
 
 	m_currentRound++;
 
-    qDebug() << '\n' << QDateTime::currentDateTime().toString("[hh:mm:ss]") << "Game::iteration" << m_currentRound;
+    cout << QDateTime::currentDateTime().toString("[hh:mm:ss:zzz]").toStdString() << " Game iteration " << m_currentRound << endl;
+
     /*if (m_playerCount == 0)
     {
         int a = -1;
@@ -330,46 +335,52 @@ void Game::iteration()
 		}
 	}
 
-	// ajout des nouvelles flottes dans la liste de déplacement.
+    // Ajout des nouvelles flottes dans la liste de déplacement.
 	m_movements += newMovements;
 
+    // Gestion des combats
 	QMap<int, QVector<FightReport> > reports = handleBattle(endMovements);
 
-	foreach(Player * p, m_players)
-	{
+    // Mise à jour des ressources pour chaque joueur
+    foreach(Player * p, m_players)
+    {
 		int resourceInc = 0;
 		foreach(Planet * pl, p->planets())
 		{
 			resourceInc += m_gameModel->getResourcesByRound(pl->size());
 		}
+
 		p->setResources(p->resources() + resourceInc);
 	}
 
-	// check if someone lost or won
+    // Check if someone lost or won
 	if(m_players.size() > 1)
 	{
 		for(int i = 0 ; i < m_players.size() ; ++i)
 		{
 			Player * p = m_players[i];
-			//no more planets
+
+            // No more planet nor fleet
 			if(p->planets().empty() && !hasFleet(p))
 			{
-				qDebug() << "Player with id : " << p->id() << " lost !";
-				emit finishedSignal(m_clientSockets.value(p), false);
+                cout << "Player " << p->nickname().toStdString() << "(" << p->id() << ") lost" << endl;
+                emit finishedSignal(m_clientSockets.value(p), false);
 				m_players.remove(i);
 				i--;
 			}
 		}
 	}
-	if(m_players.size() == 1)
+
+    // If someone won
+    if(m_players.size() == 1)
 	{
 		Player * winner = m_players[0];
-		qDebug() << "Player with id : " << winner->id() << " won !";
+        cout << "Player " << winner->nickname().toStdString() << "(" << winner->id() << ") won" << endl;
 		emit finishedSignal(m_clientSockets.value(winner), true);
 		m_players.clear();
 		m_timer->stop();
 	}
-	else if(m_players.size() == 0)
+    else if(m_players.size() == 0) // All the remaining players lost in the same round
 	{
 		m_timer->stop();
 	}
