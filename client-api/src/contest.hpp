@@ -46,7 +46,7 @@ struct Planet
 {
     int planetId;               // Id de la planète
     int resources;              // Ressources accumulées à chaque tours grâce à cette planète
-    int shipCountLimit;         // Nombre limite de vaisseaux pouvant être construit à chaque tours autours de la planète
+    int shipBuildCountLimit;    // Nombre limite de vaisseaux pouvant être construit à chaque tours autours de la planète
     int shipCount;              // Nombre de vaisseaux actuellement présents autours de la planète
 };
 
@@ -57,7 +57,7 @@ struct ScanResult
     int planetId;               // Id de la planète scannée
     int playerId;               // Id du joueur scanné
     int resources;              // Ressources accumulées par le joueur à chaque tours grâce à cette planète
-    int shipCountLimit;         // Nombre limite de vaisseaux pouvant être présents autours de la planète
+    int shipBuildCountLimit;    // Nombre limite de vaisseaux pouvant être construit à chaque tours autours de la planète
     int shipCount;              // Nombre de vaisseaux actuellement présents autours de la planète
 };
 
