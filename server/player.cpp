@@ -5,6 +5,7 @@ Player::Player(QString nickname)
 	m_nickname = nickname;
 	m_id = 0;
 	m_resources = 0;
+    m_score = 0;
 }
 
 Player::~Player()
@@ -35,6 +36,11 @@ void Player::setPlanetScan(QVector<Planet*> planetScan)
 void Player::setResources(int resources)
 {
     m_resources = resources;
+}
+
+void Player::setScore(int score)
+{
+    m_score = score;
 }
 
 void Player::clearOrders()
@@ -78,7 +84,12 @@ int Player::id()
 
 QString Player::nickname()
 {
-	return m_nickname;
+    return m_nickname;
+}
+
+int Player::score()
+{
+    return m_score;
 }
 
 QVector<Planet*> Player::waitingScan()

@@ -103,7 +103,7 @@ class Game : public QObject
         QVector<QTcpSocket*> m_displaySockets;
 		QVector<ShipMovement*> m_movements;
 		QVector<Planet*> m_planets;
-		QMap<Player*, QTcpSocket *> m_clientSockets;
+        QMap<Player*, QTcpSocket *> m_playerSocketsMap;
 
 		QTimer * m_timer;
 

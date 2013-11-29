@@ -82,7 +82,7 @@ void Game::setPlayers(const QMap<QTcpSocket *, QString> players)
 
         Player * p = new Player(it.value());
         m_players.push_back(p);
-        m_clientSockets.insert(p, it.key());
+        m_playerSocketsMap.insert(p, it.key());
     }
 }
 
@@ -192,7 +192,7 @@ void Game::start()
 		if(p->id() > 0)
 		{
 			emit initPlayerSignal(
-				m_clientSockets.value(p),
+                m_playerSocketsMap.value(p),
 				m_planets.size(),
                 distanceMatrix,
 				m_roundCount,
@@ -247,7 +247,7 @@ void Game::iteration()
         // todo : handle score
         foreach(Player * p, m_players)
         {
-            emit finishedSignal(m_clientSockets.value(p), true);
+            emit finishedSignal(m_playerSocketsMap.value(p), true);
         }
 
 		return;
@@ -341,16 +341,20 @@ void Game::iteration()
     // Gestion des combats
 	QMap<int, QVector<FightReport> > reports = handleBattle(endMovements);
 
-    // Mise à jour des ressources pour chaque joueur
+    // Mise à jour des ressources et du score pour chaque joueur
     foreach(Player * p, m_players)
     {
-		int resourceInc = 0;
+        int resources = p->resources();
+        int score = p->score();
+
 		foreach(Planet * pl, p->planets())
 		{
-			resourceInc += m_gameModel->getResourcesByRound(pl->size());
+            resources += m_gameModel->getResourcesByRound(pl->size());
+            score += pl->shipCount();
 		}
 
-		p->setResources(p->resources() + resourceInc);
+        p->setResources(resources);
+        p->setScore(score);
 	}
 
     // Check if someone lost or won
@@ -364,7 +368,7 @@ void Game::iteration()
 			if(p->planets().empty() && !hasFleet(p))
 			{
                 cout << "Player " << p->nickname().toStdString() << "(" << p->id() << ") lost" << endl;
-                emit finishedSignal(m_clientSockets.value(p), false);
+                emit finishedSignal(m_playerSocketsMap.value(p), false);
 				m_players.remove(i);
 				i--;
 			}
@@ -376,7 +380,7 @@ void Game::iteration()
 	{
 		Player * winner = m_players[0];
         cout << "Player " << winner->nickname().toStdString() << "(" << winner->id() << ") won" << endl;
-		emit finishedSignal(m_clientSockets.value(winner), true);
+        emit finishedSignal(m_playerSocketsMap.value(winner), true);
 		m_players.clear();
 		m_timer->stop();
 	}
@@ -390,7 +394,7 @@ void Game::iteration()
 
 void Game::playerOrder(QTcpSocket *socket, QVector<int> planetsToScan, QVector<BuildOrder> shipsToBuild, QVector<ShipMove> shipsToMove)
 {
-	Player * p = m_clientSockets.key(socket);
+    Player * p = m_playerSocketsMap.key(socket);
 
 	filterBuildOrder(shipsToBuild, p);
 	filterShipMove(shipsToMove, p);
@@ -642,7 +646,7 @@ void Game::sendTurnMessage(QMap<int, QVector<FightReport> > reports)
 			}
 		}
 
-        emit turnPlayerSignal(m_clientSockets.value(p),
+        emit turnPlayerSignal(m_playerSocketsMap.value(p),
 						m_currentRound,
 						p->resources(),
 						ourShipsOnPlanets,
@@ -655,12 +659,20 @@ void Game::sendTurnMessage(QMap<int, QVector<FightReport> > reports)
     // Let's send the turn to every observer
     if (!m_displaySockets.empty())
     {
-        QVector<int> scores(m_players.size());
+        QVector<int> scores(m_players.size(), 0);
         QVector<TurnDisplayPlanet> planets(m_planets.size());
         QVector<ShipMovement> movements(m_movements.size());
 
-        for (int i = 0; i < scores.size(); ++i)
-            scores[i] = 42; // todo : handle score
+        QMapIterator<Player *, QTcpSocket *> it(m_playerSocketsMap);
+        while (it.hasNext())
+        {
+            it.next();
+
+            int id = it.key()->id();
+
+            if (id > 0 && id <= scores.size())
+                scores[id-1] = it.key()->score();
+        }
 
         for (int i = 0; i < planets.size(); ++i)
             planets[i] = {m_planets[i]->owner()->id(), m_planets[i]->shipCount()};

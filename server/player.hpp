@@ -18,6 +18,7 @@ class Player
 		void setBuildOrder(QVector<BuildOrder> buildOrders);
 		void setPlanetScan(QVector<Planet*> planetScan);
 		void setResources(int resources);
+        void setScore(int score);
 
         void clearOrders();
 
@@ -28,6 +29,7 @@ class Player
 		int resources();
 		int id();
 		QString nickname();
+        int score();
 
 		QVector<Planet*> waitingScan();
 		QVector<ShipMove> waitingMove();
@@ -37,6 +39,7 @@ class Player
 		QString m_nickname;
 		int m_id;
 		int m_resources;
+        int m_score;
 
 		QVector<Planet*> m_planets;
 
