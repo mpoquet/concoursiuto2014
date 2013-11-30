@@ -2,11 +2,13 @@ Niveaux de difficulté des IAs de test:
 
 IA de base:
     1: observer (ne fait rien)
-    2: scout (offensif mais ne construit rien)
-    3: conquer (offensif & construit des vaisseaux)
-    4: conquer-rush (bien offensif mais défense & construit des vaisseaux)
+    2: scout (offensif- mais ne construit rien)
+    3: conquer (offensif- & construit des vaisseaux)
+    4: conquer-rush (offensif & construit des vaisseaux)
 
 IA stratégiques:
-    5: dominator (offensif & bien défensif & stratégique)
-    6: struts (très offensif & peu défensif & stratégique)
+    5: struts (offensif+ & défensif)
+    6: dominator (offensif+ & défensif+)
+    7: domirush (offensif++ & défensif+)
+    8: struts2 (offensif++ & défensif++)
 
