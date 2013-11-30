@@ -61,12 +61,16 @@ def gameRound(session):
 
         # Calcul de l'écart entre l'état d'équilibre et la situation réel pour chaque planète
 
-        planetsState = dict()
-        for p in planets:
-            base = p.shipCount
-            bonus = sum([f.shipCount for f in friends if f.destinationPlanetId == p.planetId])
-            malus = sum([e.shipCount for e in enemies if e.destinationPlanetId == p.planetId])
-            planetsState[p.planetId] = base + bonus - malus
+        bonus = [0] * infos.planetCount
+        malus = [0] * infos.planetCount
+
+        for f in friends:
+            bonus[f.destinationPlanetId] += f.shipCount
+
+        for e in enemies:
+            malus[e.destinationPlanetId] += e.shipCount
+
+        planetsState = {p.planetId: p.shipCount + bonus[p.planetId] - malus[p.planetId] for p in planets}
 
         # Equilibrage du système
 
@@ -91,8 +95,9 @@ def gameRound(session):
                     shipCanBuild -= avg - planetsState[p]
 
         if len(darkPlanets) > 0:
+            planetsDico = {p.planetId:p for p in planets}
             for pId in safePlanets:
-                p = [p2 for p2 in planets if p2.planetId==pId][0]
+                p = planetsDico[pId]
                 if p.shipCount > 1:
                     bestPlanetToRush = min(darkPlanets, key=lambda dp: data.distance(p.planetId, dp))
                     print "Choix > Attaque de la planète numéro", bestPlanetToRush, "avec", p.shipCount/2, "vaisseaux"
