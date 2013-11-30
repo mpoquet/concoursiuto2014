@@ -357,6 +357,12 @@ void Game::iteration()
         p->setScore(score);
 	}
 
+    foreach(ShipMovement * m, m_movements)
+    {
+        Player * p = getPlayer(m->player);
+        p->setScore(p->score() + m->move.shipCount);
+    }
+
     // Check if someone lost or won
 	if(m_players.size() > 1)
 	{

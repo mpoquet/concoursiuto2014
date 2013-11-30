@@ -140,9 +140,10 @@ void SFMLViewer::onTurn(QVector<int> scores,
     }
     
     for (int i = 0; i < scores.size(); ++i)
-    {
 		_players[i+1].score = scores[i];
-    }
+
+    for (int i = 0; i < movements.size(); ++i)
+        _players[movements[i].player].shipCount += movements[i].move.shipCount;
 
     _moves = movements;
 
