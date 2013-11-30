@@ -59,22 +59,29 @@ Fleet BasicGameModel::resolveBattle(QVector<Fleet> fleets)
 	if(fleets.size() <= 2)
 	{
 		if(fleets.size() == 0)
-		{
 			return Fleet(-1, 0);
-		}
 		else if(fleets.size() == 1)
-		{
-			return fleets[0];
-		}
+        {
+            if (fleets[0].shipCount == 0)
+                return Fleet(-1, 0);
+            else
+                return fleets[0];
+        }
 		else
-		{
-			return simulateBattle(fleets[0], fleets[1]);
-		}
+        {
+            Fleet f = simulateBattle(fleets[0], fleets[1]);
+
+            if (f.shipCount == 0)
+                return Fleet(-1, 0);
+            else
+                return f;
+        }
 	}
-	//division de chaque flotte pas fleets.size() - 1
+
+    // Division de chaque flotte par fleets.size() - 1
 	QVector<QVector<Fleet> > fleetsDivision;
 
-	//division de la flotte sous forme de matrice
+    // Division de la flotte sous forme de matrice
 	for(int i = 0 ; i < fleets.size() ; ++i)
 	{
 		QVector<Fleet> division;
@@ -83,13 +90,9 @@ Fleet BasicGameModel::resolveBattle(QVector<Fleet> fleets)
 		for(int j = 0 ; j < fleets.size() ; ++j)
 		{
 			if(j == i)
-			{
 				division.append(Fleet(-1, 0));
-			}
 			else
-			{
 				division.append(Fleet(fleets[i].player, fleets[i].shipCount / dividers));
-			}
 		}
 
 		if(i != fleets.size() - 1)
@@ -100,21 +103,18 @@ Fleet BasicGameModel::resolveBattle(QVector<Fleet> fleets)
 		fleetsDivision.append(division);
 	}
 
-	//resolution des combats 2 a 2
+    // Résolution des combats 2 à 2
 	QMap<int, Fleet> results;
 	for(int i = 0 ; i < fleets.size() ; ++i)
 	{
 		for(int j = i+1 ; j < fleets.size() ; ++j)
 		{
 			Fleet res = simulateBattle(fleetsDivision[i][j], fleetsDivision[j][i]);
+
 			if(results.contains(res.player))
-			{
 				results[res.player].shipCount += res.shipCount;
-			}
 			else
-			{
 				results[res.player] = res;
-			}
 		}
 	}
 
@@ -128,9 +128,9 @@ Fleet BasicGameModel::simulateBattle(Fleet f1, Fleet f2)
 		f2.shipCount -= f1.shipCount;
 		return f2;
 	}
-	else
+    else
 	{
 		f1.shipCount -= f2.shipCount;
 		return f1;
-	}
+    }
 }
