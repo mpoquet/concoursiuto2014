@@ -5,7 +5,7 @@
 
 from contest import *
 from time import *
-
+import random
 
 def gameError(session):
     print "ERROR:", session.lastError()
@@ -160,10 +160,24 @@ def gameRound(session, nearest, distances, maxDistance, averageDistance):
                 shipsToMove = planetMap[goodPID].shipCount - 1
 
             if shipsToMove > 0:
+                r = random.sample([1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 4], 1)[0]
+                k = 0
+                sent = False
                 for nearPID in nearest[goodPID]:
                     if nearPID in otherPlanets:
-                        session.orderMove(goodPID, nearPID, shipsToMove)
-                        break;
+                        k = k + 1
+                        if k == r:
+                            session.orderMove(goodPID, nearPID, shipsToMove)
+                            sent = True
+                            break;
+
+                if not sent and k > 0:
+                    for nearPID in nearest[goodPID]:
+                        if nearPID in otherPlanets:
+                            session.orderMove(goodPID, nearPID, shipsToMove)
+                            break;
+
+
 
     session.sendOrders()
     print 'Temps de calcul : ', int(1000*(time() - startTime)), 'ms'
