@@ -95,9 +95,13 @@ def gameRound(session, nearest, distances, maxDistance, averageDistance):
     sortedEnergy = sorted([(energy[i], i) for i in energy])
     badPlanets = [e[1] for e in sortedEnergy if e[0] < 0]
 
+    distribBuild = [1 - i*i*0.02 for i in range(-4, 5)]
+    distribAttack = [1 - i*i*0.02 for i in range(-4, 5)]
+
     # Création des vaisseaux
     for pid in badPlanets:
-        buildCount = planetMap[pid].shipBuildCountLimit
+        buildCount = int(planetMap[pid].shipBuildCountLimit * random.sample(distribBuild, 1)[0])
+
         while buildCount * infos.shipCost > resources:
             buildCount = buildCount - 1
 
@@ -108,10 +112,17 @@ def gameRound(session, nearest, distances, maxDistance, averageDistance):
         if resources < infos.shipCost:
             break
 
+    maxShipBuildPerPlanet = resources / ((len(planets) - len(badPlanets) * 1.0))
+
     if resources > infos.shipCost:
         goodPlanets = [e[1] for e in sortedEnergy if e[0] >= 0]
         for pid in goodPlanets:
-            buildCount = planetMap[pid].shipBuildCountLimit
+            buildCount = maxShipBuildPerPlanet
+            if buildCount > planetMap[pid].shipBuildCountLimit:
+                buildCount = planetMap[pid].shipBuildCountLimit
+            else:
+                buildCount = int(buildCount)
+
             while buildCount * infos.shipCost > resources:
                 buildCount = buildCount - 1
 
@@ -153,7 +164,7 @@ def gameRound(session, nearest, distances, maxDistance, averageDistance):
     # Attaque à partir des planètes dont l'énergie locale est positive
     for goodPID in goodPlanetsID:
         if localEnergy[goodPID] > 0:
-            energyToLose = localEnergy[goodPID] / 2
+            energyToLose = int(localEnergy[goodPID] * random.sample(distribAttack, 1)[0])
             shipsToMove = energyToLose / maxDistance
 
             if shipsToMove > planetMap[goodPID].shipCount - 1:
