@@ -341,26 +341,31 @@ void Game::iteration()
     // Gestion des combats
 	QMap<int, QVector<FightReport> > reports = handleBattle(endMovements);
 
+    QVector<int> scores(m_playerSocketsMap.size());
     // Mise à jour des ressources et du score pour chaque joueur
     foreach(Player * p, m_players)
     {
         int resources = p->resources();
-        int score = p->score();
+        scores[p->id()-1] = p->score();
 
 		foreach(Planet * pl, p->planets())
 		{
             resources += m_gameModel->getResourcesByRound(pl->size());
-            score += pl->shipCount();
+            scores[p->id()-1] += pl->shipCount();
 		}
 
         p->setResources(resources);
-        p->setScore(score);
 	}
 
     foreach(ShipMovement * m, m_movements)
     {
         Player * p = getPlayer(m->player);
-        p->setScore(p->score() + m->move.shipCount);
+        scores[p->id()-1] += m->move.shipCount;
+    }
+
+    foreach(Player * p, m_players)
+    {
+        p->setScore(p->score() + scores[p->id()-1] / m_planets.size());
     }
 
     // Check if someone lost or won
