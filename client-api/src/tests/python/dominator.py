@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# IA qui vise une planète random ennemi qu'elle voit pour envoyer la moitié de ses vaisseaux dessus
+# IA qui vise les planètes les plus proches ennemi qu'elle voit pour envoyer la moitié de ses vaisseaux dessus
 # l'IA tente d'aider ces propres planètes lorsqu'elle sait que l'énemie va les attaquer
 
 # Mettre plus de protection sur les bord
