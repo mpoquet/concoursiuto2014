@@ -22,7 +22,7 @@ void Network::onError(QAbstractSocket::SocketError e)
     if (e != QAbstractSocket::RemoteHostClosedError)
     {
         qDebug() << e;
-        emit error();
+          error();
     }
 }
 
@@ -133,7 +133,7 @@ void Network::onMessageReceived()
 
                 roundCount = qsl.at(4).toInt();
 
-                emit initReceived(planets, playerNicks, roundCount);
+                emit initReceived(planets, distanceMatrix, playerNicks, roundCount);
             } break;
             case TURN_DISPLAY:
             {

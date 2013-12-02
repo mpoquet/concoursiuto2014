@@ -20,6 +20,7 @@ signals:
     void error();
 
     void initReceived(QVector<InitDisplayPlanet> planets,
+                      QVector<QVector<int> > distanceMatrix,
                       QVector<QString> playerNicks,
                       int roundCount);
 
