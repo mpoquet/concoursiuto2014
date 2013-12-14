@@ -4,7 +4,6 @@
 #include <QTimer>
 #include <QTime>
 #include <QMap>
-#include <QMutex>
 
 #include <SFML/Graphics.hpp>
 #include <QResizeEvent>
@@ -43,6 +42,7 @@ public:
 
 public slots:
     void onInit(QVector<InitDisplayPlanet> planets,
+                QVector<QVector<int> > distanceMatrix,
                 QVector<QString> playerNicks,
                 int roundCount);
 
@@ -52,6 +52,7 @@ public slots:
 
 protected:
     void resizeEvent(QResizeEvent * e);
+    void keyPressEvent(QKeyEvent * e);
 
 private :
 	void scaleGame();
@@ -70,17 +71,20 @@ private :
     QMap<int, Player> _players;
     QVector<Planet> _planets;
     QVector<ShipMovement> _moves;
+    QVector<QVector<int> > _distanceMatrix;
 
     int _roundCount;
     int _currentRound;
 
     sf::Texture _texturePlanet;
-    QMutex _mutex;
-    
+    sf::Texture _textureShip;
+
     sf::Font _font;
     float _scale;
     
     int _minX, _maxX, _minY, _maxY;
+
+    bool _drawShips = false;
 };
 
 #endif // SFMLVIEWER_HPP
