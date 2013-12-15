@@ -11,19 +11,19 @@ Préliminaires:
 
 Compilation:
     Commande: python scons.py
+    Infos: Les fichiers de sortie de la compilation sont dans le dossier ".build".
 
 Installation dans le système (testé uniquement sous Linux):
     Commande: sudo python scons.py install
+    Infos: Par défaut, les bibliothèques dynamiques pour la version C++ et Java sont placés dans /usr/lib. Dans le cas de Python, le script et la bibliothèque dynamique associée sont placés là où les packages Python sont installés par défaut (/usr/lib/pythonX.Y/dist-packages). L'archive Jar est placé dans /usr/share/java et devra être ajouté au classpath pour que la compilation et l'exécution fonctionne.
 
 Installation locale (testé uniquement sous Linux):
     Commande: python scons.py install prefix="/chemin/absolu/où/le/client/sera/installé"
 
-Désinstallation dans le système (attention cette opération peut casser le système en cas de bugs, testé uniquement sous Linux):
+Désinstallation dans le système (testé uniquement sous Linux):
     Commande: sudo python scons.py install -c
+    Infos: Attention cette opération peut casser le système en cas de bugs
 
 Nettoyage:
     Commande: python scons.py -c
-
-Note: Les fichiers de sortie intermédiaires sont dans le dossier .build
-
 
