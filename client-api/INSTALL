@@ -1,17 +1,29 @@
 Préliminaires:
     - Installer python-dev (ou python3-dev si la version de scons utilisé le gère)
     - Installer Swig
+    - Installer les outils nécessaire à la compilation de fichiers Java/JNI
     - Changer le chemin de Java le SConscript pour compiler la partie Java
 
     Note pour windows : 
         - Mettre Python et Swig dans le path
-        - L'execution marche pas encore bien suite a une fonction non implémenté dans MinGW
+        - L'exécution marche pas encore bien suite a une fonction non implémenté dans MinGW
         - Il faut installer le SDK Java complet contenant les .h sur Windows pour compiler la partie Java
 
 Compilation:
     Commande: python scons.py
 
+Installation dans le système (testé uniquement sous Linux):
+    Commande: sudo python scons.py install
+
+Installation locale (testé uniquement sous Linux):
+    Commande: python scons.py install prefix="/chemin/absolu/où/le/client/sera/installé"
+
+Désinstallation dans le système (attention cette opération peut casser le système en cas de bugs, testé uniquement sous Linux):
+    Commande: sudo python scons.py install -c
+
 Nettoyage:
     Commande: python scons.py -c
 
-Les fichiers de sortie sont dans le dossier .build
+Note: Les fichiers de sortie intermédiaires sont dans le dossier .build
+
+

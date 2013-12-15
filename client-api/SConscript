@@ -1,4 +1,6 @@
+ # -*- coding: utf-8 -*
 import distutils.sysconfig
+import installer
 import platform
 import subprocess
 import os
@@ -8,13 +10,13 @@ import re
 # User variables
 moduleName = 'contest'
 installPath = 'install'
-javaIncludePath = '/usr/lib/jvm/java-1.6.0-openjdk-i386/include'
+javaPath = '/usr/lib/jvm/java-7-openjdk-amd64'
 
 # Internal variables
 srcDir = 'src'
 spnlInstallPath = 'spnl-install'
-includePath = ['#../server', spnlInstallPath+'/include']
-libPath = [spnlInstallPath+'/lib']
+includePath = ['#' + os.path.join('..', 'server'), os.path.join(spnlInstallPath, 'include')]
+libPath = [os.path.join(spnlInstallPath, 'lib')]
 libs = ['spnl', 'pthread']
 
 
@@ -54,6 +56,10 @@ def getPythonBinPath():
     return os.path.join(pythonPath, 'bin')
 
 
+def absPath(path):
+    return os.path.join(Dir('#').abspath, path)
+
+
 def make():
     envBase = Environment()
     envBase['CPPPATH'] = includePath
@@ -64,12 +70,14 @@ def make():
     envBase['CXXCOMSTR'] = envBase['CCCOMSTR'] = 'Compiling "${SOURCE}"...'
     envBase['SHCCCOMSTR'] = envBase['SHCXXCOMSTR'] = 'Compiling "${SOURCE}"...'
     envBase['PCHCOMSTR'] = 'Precompiling "${SOURCE}"...'
-    envBase['JAVACCOMSTR'] = 'Jcompiling "${SOURCE}"...'
-    envBase['JARCOMSTR'] = 'Jarchiving "${TARGET}"...'
-    envBase['LINKCOMSTR'] = 'Linking "${TARGET}"...'
-    envBase['ARCOMSTR'] = envBase['SHLINKCOMSTR'] = envBase['LDMODULECOMSTR'] = 'Linking "${TARGET}"...'
-    envBase['RANLIBCOMSTR'] = 'Indexing "${TARGET}"...'
-    envBase['SWIGCOMSTR'] = 'Swiging "${SOURCE}"...'
+    envBase['JAVACCOMSTR'] = 'Jcompiling java files...'
+    envBase['JARCOMSTR'] = 'Jarchiving class files to "${TARGET}"...'
+    envBase['LINKCOMSTR'] = 'Linking files to "${TARGET}"...'
+    envBase['ARCOMSTR'] = envBase['SHLINKCOMSTR'] = envBase['LDMODULECOMSTR'] = 'Linking files to "${TARGET}"...'
+    envBase['RANLIBCOMSTR'] = 'Indexing files to "${TARGET}"...'
+    envBase['SWIGCOMSTR'] = 'Swiging file "${SOURCE}"...'
+
+    makeHelp(envBase)
 
     lib = makeSpnl(envBase)
 
@@ -77,9 +85,19 @@ def make():
     objFiles = envBase.SharedObject(srcFiles)
     envBase.Requires(objFiles, lib)
     
-    makeCpp(envBase, objFiles, lib)
-    makePython(envBase, objFiles, lib)
-    makeJava(envBase, objFiles, lib)
+    cppTargets = makeCpp(envBase, objFiles, lib)
+    pythonTargets = makePython(envBase, objFiles, lib)
+    javaTargets = makeJava(envBase, objFiles, lib)
+
+    install = installer.Installer(envBase)
+    install.AddHeaders(absPath(srcDir), '*.hpp')
+    install.AddLibrary(cppTargets['lib'])
+    install.AddLibrary(javaTargets['lib'])
+    pythonInstallPath = os.path.join(install.libdir(), getPythonLibName(), 'dist-packages')
+    install.Add(pythonInstallPath, pythonTargets['lib'])
+    install.Add(pythonInstallPath, pythonTargets['pyfile'])
+    javaInstallPath = os.path.join(install.sharedir(), 'java')
+    install.Add(javaInstallPath, javaTargets['jar'])
 
 
 def makeSpnl(envBase):
@@ -90,8 +108,8 @@ def makeSpnl(envBase):
     sconsScript = os.path.join(projectPath, 'scons.py')
     pythonExec = os.path.join(getPythonBinPath(), getPythonExecName())
 
-    commands = ['cd '+spnlSrcDir+' && '+pythonExec+' '+sconsScript+' install prefix='+spnlInstallDir+' -Qs']
-    
+    commands = ['cd '+spnlSrcDir+' && '+pythonExec+' '+sconsScript+' install prefix="'+spnlInstallDir+'" -Qs']
+
     envSpnl = envBase.Clone()
     envSpnl['CPPPATH'] = envSpnl['LIBS'] = envSpnl['LIBPATH'] = []
     generatedFiles = [
@@ -124,7 +142,6 @@ def makeSpnl(envBase):
                         spnlInstallDir+'/lib/libspnl.a',
                      ]
 
-
     spnlBuild = envSpnl.Command(generatedFiles, 'spnl', commands)
     #tmp = Glob(spnlSrcDir+'/include/spnl/*/*.hpp')+Glob(spnlSrcDir+'/include/spnl/*.hpp')+Glob(spnlSrcDir+'/lib/*.a')
     #generatedFiles = [re.sub('^'+re.escape(spnlSrcDir), spnlInstallDir, i) for i in tmp]
@@ -136,6 +153,7 @@ def makeCpp(envBase, objFiles, lib):
     envCpp = envBase.Clone()
     libCpp = envCpp.SharedLibrary(moduleName+'-cpp', objFiles)
     envCpp.Requires(libCpp, lib)
+    return {'lib': libCpp}
 
 
 def makePython(envBase, objFiles, lib):
@@ -160,23 +178,54 @@ def makePython(envBase, objFiles, lib):
 
     libPy = envPy.SharedLibrary('_'+moduleName, objFiles+[swigFile])
     envPy.Requires(libPy, lib)
-    envPy.Install('.', pyFile)
+    #installedPyFile = envPy.Install('.', pyFile)
+    return {'lib': libPy, 'pyfile': pyFile}
 
 
 def makeJava(envBase, objFiles, lib):
     swigFile = os.path.join(srcDir, moduleName+'.i')
-    javaFilesPath = Dir(srcDir).abspath+'/java'
+    javaFilesPath = os.path.join(Dir(srcDir).abspath, 'java')
 
     envJava = envBase.Clone()
     envJava['SWIGFLAGS'] = ['-java', '-c++']
-    envJava['CPPPATH'] += [javaIncludePath, javaIncludePath + '/linux/']
+    envJava['CPPPATH'] += [os.path.join(javaPath, 'include'), os.path.join(javaPath, 'include', 'linux')]
     envJava['SWIGOUTDIR'] = javaFilesPath
     envJava['SWIGCXXFILESUFFIX'] = '-java.cxx'
 
     libJava = envJava.SharedLibrary(moduleName, objFiles+[swigFile])
     envJava.Requires(libJava, lib)
-    javaSrc = envJava.Java(os.path.join(srcDir, 'classes'), swigFile)
+
+    # Cela regénère les fichiers de code java qui sont déjà présent
+    # car ont été généré par swig lors du envJava.SharedLibrary
+    # Cependant, comme la commande est buggé du à l'utilisation de swig pour Java, 
+    # scons considère que les fichier ne devrait pas exister et les supprime
+    # si on tente de les utiliser explicitement
+    javaClasses =   [
+                        'Fleet',            'Planet',           'FleetList',    'PlanetList',
+                        'Ennemy',           'GameData',         'RoundState',   'EnnemyList',
+                        'GameInfos',        'ScanResult',       'FightReport',  'IntList',
+                        'ScanResultList',   'FightReportList',  'LoginResult',  'Session'
+                    ]
+
+    absSrcDir = Dir(os.path.join('.', 'src')).path
+    javaCppFile = os.path.join(absSrcDir, moduleName + '-java.cxx')
+    javaCodeDir = os.path.join(absSrcDir, 'java')
+    command = 'swig -o ' + javaCppFile + ' -outdir ' + javaCodeDir + ' -java -c++ ' + swigFile
+    genFiles = [os.path.join('src', 'java', i + '.java') for i in javaClasses]
+    genJavaCode = envJava.Command(genFiles, libJava, command)
+    envJava.Requires(genJavaCode, libJava) # Nécessaire pour éviter les appels en parallèle
+
+    javaSrc = envJava.Java(os.path.join(srcDir, 'classes'), os.path.join('src', 'java'))
+    envJava.Requires(javaSrc, genJavaCode)
     javaJar = envJava.Jar(moduleName+'.jar', javaSrc)
+    return {'lib': libJava, 'jar': javaJar}
+
+
+def makeHelp(env):
+    opts = Variables(args=ARGUMENTS)
+    installer.AddOptions(opts)
+    opts.Update(env)
+    Help(opts.GenerateHelpText(env))
 
 
 def check():
@@ -196,7 +245,7 @@ def check():
         return False
 
     swig = subprocess.Popen("swig -version", stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-    if swig.wait() != 0:
+    if swig.wait() != 0:    
         print "Error: unable to execute swig... Have you installed it ? Is it add to the PATH ?"
         return False
 
@@ -205,12 +254,12 @@ def check():
         print "Error: unable to execute g++... Have you installed it ? Is it add to the PATH ?"
         return False
 
-    if not Dir(javaIncludePath).exists():
-        print "Error: the java includes directory does not exist, try to change the variable javaIncludePath in the SConscript file !"
+    if not Dir(javaPath).exists():
+        print "Error: the java directory does not exist, try to change the variable javaPath in the SConscript file !"
         return False
 
-    if not Dir(javaIncludePath).isdir():
-        print "Error: the java includes directory must be a directory, try to change the variable javaIncludePath in the SConscript file !"
+    if not Dir(javaPath).isdir():
+        print "Error: the java directory must be a directory, try to change the variable javaPath in the SConscript file !"
         return False
 
     return True
