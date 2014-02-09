@@ -10,6 +10,7 @@ import re
 # User variables
 moduleName = 'contest'
 installPath = 'install'
+pythonCommand = 'python'
 javaPath = '/usr/lib/jvm/java-7-openjdk-amd64'
 
 # Internal variables
@@ -24,23 +25,58 @@ if platform.system() == 'Windows':
     libs += ['ws2_32']
 
 
+def pythonRequest(pythonCodeLine):
+    pythonCodeLine = pythonCodeLine.replace('"', '\\"')
+    result = subprocess.Popen(pythonCommand + ' -c "' + pythonCodeLine + '"', stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    if result.wait() != 0:
+        raise Exception('Critical error occured when trying to execute a python command')
+    return [line.decode().strip('\n') for line in result.stdout.readlines()]
+
+
+def pythonConfigRequest(request):
+    pythonCodeLine = 'from distutils.sysconfig import *; print(' + request + ')'
+    result = pythonRequest(pythonCodeLine)
+    if len(result) == 0:
+        raise Exception('No result for the request: "' + request.replace('"', '\\"') + '"')
+    if len(result) > 1:
+        raise Exception('Multiple result for the request: "' + request.replace('"', '\\"') + '"')
+    return result[0]
+
+
 def getPythonLibPath():
-    pythonPath = distutils.sysconfig.PREFIX
+    #pythonPath = pythonConfigRequest('PREFIX')
+    #
+    #if platform.system() == 'Windows':
+    #    return os.path.join(pythonPath, 'libs')
+    #return os.path.join(pythonPath, 'lib')
+    return pythonConfigRequest('get_config_vars().get("LIBDIR")')
 
+
+def getPythonName():
     if platform.system() == 'Windows':
-        return os.path.join(pythonPath, 'libs')
-    return os.path.join(pythonPath, 'lib')
-
-
-def getPythonLibName():
-    pythonVersion = distutils.sysconfig.get_python_version()
-
-    if platform.system() == 'Windows':
-        return 'python'+''.join(pythonVersion.split('.'))
+        pythonVersion = ''.join(pythonVersion.split('.'))
+    else:
+        pythonVersion = pythonConfigRequest('get_python_version()')
+    #pythonVersion += pythonConfigRequest('get_config_vars().get("ABIFLAGS") or ""')
     return 'python'+pythonVersion
+#    res = pythonConfigRequest('get_config_vars().get("BLDLIBRARY")')
+#    if not res.startswith('-l'):
+#        [...]
+#            raise Exception("Unable to get the name of the python library to link")
+#    return res[2:]
 
 
-def getPythonExecName():
+def getPythonLinkFlags():
+    res = pythonConfigRequest('get_config_vars().get("BLDLIBRARY")')
+    return re.findall('(?:[^ "]+|"[^"]*")+', res)
+
+
+def getPythonLibDirName():
+    res = pythonConfigRequest('get_python_lib()')
+    return os.path.split(os.path.realpath(res))[-1]
+
+
+def getCurrentPythonExecName():
     if platform.system() == 'Windows':
         return 'python'
 
@@ -48,7 +84,7 @@ def getPythonExecName():
     return 'python'+pythonVersion
 
 
-def getPythonBinPath():
+def getCurrentPythonBinPath():
     pythonPath = distutils.sysconfig.EXEC_PREFIX
 
     if platform.system() == 'Windows':
@@ -66,7 +102,7 @@ def make():
     envBase['LIBS'] = libs
     envBase['LIBPATH'] = libPath
     envBase['ENV'] = {'PATH' : os.environ['PATH']}
-    #envBase['CXXFLAGS'] = '-O2'
+    envBase['CXXFLAGS'] = '-O2'
     envBase['CXXCOMSTR'] = envBase['CCCOMSTR'] = 'Compiling "${SOURCE}"...'
     envBase['SHCCCOMSTR'] = envBase['SHCXXCOMSTR'] = 'Compiling "${SOURCE}"...'
     envBase['PCHCOMSTR'] = 'Precompiling "${SOURCE}"...'
@@ -93,7 +129,7 @@ def make():
     install.AddHeaders(absPath(srcDir), '*.hpp')
     install.AddLibrary(cppTargets['lib'])
     install.AddLibrary(javaTargets['lib'])
-    pythonInstallPath = os.path.join(install.libdir(), getPythonLibName(), 'dist-packages')
+    pythonInstallPath = os.path.join(install.libdir(), getPythonName(), getPythonLibDirName())
     install.Add(pythonInstallPath, pythonTargets['lib'])
     install.Add(pythonInstallPath, pythonTargets['pyfile'])
     javaInstallPath = os.path.join(install.sharedir(), 'java')
@@ -106,7 +142,7 @@ def makeSpnl(envBase):
     spnlSrcDir = os.path.join(projectPath, 'spnl')
     spnlInstallDir = Dir(spnlInstallPath).abspath
     sconsScript = os.path.join(projectPath, 'scons.py')
-    pythonExec = os.path.join(getPythonBinPath(), getPythonExecName())
+    pythonExec = os.path.join(getCurrentPythonBinPath(), getCurrentPythonExecName())
 
     commands = ['cd '+spnlSrcDir+' && '+pythonExec+' '+sconsScript+' install prefix="'+spnlInstallDir+'" -Qs']
 
@@ -157,20 +193,25 @@ def makeCpp(envBase, objFiles, lib):
 
 
 def makePython(envBase, objFiles, lib):
+    pythonVersion = pythonConfigRequest('get_python_version()')
+
     if not GetOption('silent'):
-        pythonVersion = distutils.sysconfig.get_python_version()
         print 'infos: python', pythonVersion, 'used'
 
-    pythonIncludePath = distutils.sysconfig.get_python_inc()
-    pythonLibFile = getPythonLibName()
+    pythonIncludePath = pythonConfigRequest('get_python_inc()')
     swigFile = os.path.join(srcDir, moduleName+'.i')
     pyFile = os.path.join(srcDir, moduleName+'.py')
-    dynLibFileExt = distutils.sysconfig.get_config_vars('SO')
+    dynLibFileExt = pythonConfigRequest('get_config_vars("SO")[0]')
+    pythonFlag = []
+
+    if int(pythonVersion.split('.')[0]) == 3:
+        pythonFlag.append('-py3')
 
     envPy = envBase.Clone()
-    envPy['SWIGFLAGS'] = ['-python', '-c++']
+    envPy['SWIGFLAGS'] = ['-python', '-c++'] + pythonFlag
     envPy['LIBPATH'] += [getPythonLibPath()]
-    envPy['LIBS'] += [pythonLibFile]
+    #envPy['LIBS'] += [getPythonLibName()]
+    envPy['LINKFLAGS'] += getPythonLinkFlags()
     envPy['CPPPATH'] += [pythonIncludePath]
     envPy['SWIGCXXFILESUFFIX'] = '-python.cxx'
     envPy['SHLIBPREFIX'] = ''
@@ -230,36 +271,41 @@ def makeHelp(env):
 
 def check():
     if not Dir('#spnl').exists():
-        print "Error: the spnl directory does not exist, try to get it !"
+        print 'Error: the spnl directory does not exist, try to get it !'
         return False
 
     if not Dir('#spnl').isdir():
-        print "Error: the spnl entity must be a directory !"
+        print 'Error: the spnl entity must be a directory !'
         return False
 
     if len(Dir('#spnl').glob('*')) == 0:
-        print "Error: the spnl directory is empty !"
-        print "To fix this problem, you can type the following commands in the root directory of the project :"
-        print "\tgit submodule init"
-        print "\tgit submodule update"
+        print 'Error: the spnl directory is empty !'
+        print 'To fix this problem, you can type the following commands in the root directory of the project :'
+        print '\tgit submodule init'
+        print '\tgit submodule update'
         return False
 
-    swig = subprocess.Popen("swig -version", stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-    if swig.wait() != 0:    
-        print "Error: unable to execute swig... Have you installed it ? Is it add to the PATH ?"
+    python = subprocess.Popen(pythonCommand + ' -c pass', stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    if python.wait() != 0:
+        print 'Error: unable to execute python... Have you installed it ? Is it add to the PATH ? Is the version configured in this script ?'
         return False
 
-    gcc = subprocess.Popen("g++ --version", stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    swig = subprocess.Popen('swig -version', stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    if swig.wait() != 0:
+        print 'Error: unable to execute swig... Have you installed it ? Is it add to the PATH ?'
+        return False
+
+    gcc = subprocess.Popen('g++ --version', stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     if gcc.wait() != 0:
-        print "Error: unable to execute g++... Have you installed it ? Is it add to the PATH ?"
+        print 'Error: unable to execute g++... Have you installed it ? Is it add to the PATH ?'
         return False
 
     if not Dir(javaPath).exists():
-        print "Error: the java directory does not exist, try to change the variable javaPath in the SConscript file !"
+        print 'Error: the java directory does not exist, try to change the variable javaPath in the SConscript file !'
         return False
 
     if not Dir(javaPath).isdir():
-        print "Error: the java directory must be a directory, try to change the variable javaPath in the SConscript file !"
+        print 'Error: the java directory must be a directory, try to change the variable javaPath in the SConscript file !'
         return False
 
     return True
