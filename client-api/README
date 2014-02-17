@@ -1,8 +1,9 @@
 Préliminaires:
-    - Installer python-dev (ou python3-dev si la version de scons utilisé le gère)
+    - Installer python-dev (ou python3-dev si la version de scons utilisé le gère, se qui n'est pas le cas actuellement [le 17 février])
     - Installer Swig
     - Installer les outils nécessaire à la compilation de fichiers Java/JNI
     - Changer le chemin de Java le SConscript pour compiler la partie Java
+    - Changer éventuellement la commande python utilisée pour compiler explicitement en python 2 ou python 3 (la commande par défaut utilisée est "python" ce qui veut dire que la version par défaut utilisée pour python est celle du système)
 
     Note pour windows : 
         - Mettre Python et Swig dans le path
@@ -15,7 +16,7 @@ Compilation:
 
 Installation dans le système (testé uniquement sous Linux):
     Commande: sudo python scons.py install
-    Infos: Par défaut, les bibliothèques dynamiques pour la version C++ et Java sont placés dans /usr/lib. Dans le cas de Python, le script et la bibliothèque dynamique associée sont placés là où les packages Python sont installés par défaut (/usr/lib/pythonX.Y/dist-packages). L'archive Jar est placé dans /usr/share/java et devra être ajouté au classpath pour que la compilation et l'exécution fonctionne.
+    Infos: Par défaut, les bibliothèques dynamiques pour la version C++ et Java sont placés dans /usr/lib. Dans le cas de Python, le script et la bibliothèque dynamique associée sont placés là où les packages Python sont installés par défaut (/usr/lib/pythonX.Y/dist-packages ou /usr/lib/pythonX.Y/site-packages selon la distribution). L'archive Jar est placé dans /usr/share/java et devra être ajouté au classpath pour que la compilation et l'exécution fonctionne.
 
 Installation locale (testé uniquement sous Linux):
     Commande: python scons.py install prefix="/chemin/absolu/où/le/client/sera/installé"
