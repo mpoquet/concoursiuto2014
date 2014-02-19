@@ -8,6 +8,9 @@
 %}
 
 
+%feature("autodoc", "2");
+
+
 #if defined(SWIGPYTHON)
     %rename (_wrap_planets) GameData::planets();
     %rename (_wrap_scanResults) GameData::scanResults();
