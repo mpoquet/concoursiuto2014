@@ -130,7 +130,7 @@ class GameData
     // Récupére les résultats des scans du dernier tour.
     ScanResultList scanResults();
 
-    // Récupére toutes les flottes qu’on a actuellement lancé.
+    // Récupére toutes les flottes qu’on a actuellement lancées.
     FleetList fleets();
 
     // Récupére toutes les flottes ennemies se dirigeant vers une de nos planète.
@@ -160,18 +160,18 @@ class Session
     Session();
     ~Session();
 
-    // Connecte le client au serveur
+    // Connecte le client au serveur.
     bool connect(const std::string& host, int port);
 
-    // Déconnecte le client du serveur
+    // Déconnecte le client du serveur.
     void disconnect();
 
-    // Définie un login pour le client
+    // Définie un login pour le client.
     LoginResult login(const std::string& pseudo);
 
-    // Attend l'initialisation du jeu
-    // Les ordres peuvent seulement être données après l'appel de cette fonction
-    // Avant l'appel, tous les ordres donnés ne sont pas pris en compte
+    // Attend l'initialisation du jeu.
+    // Les ordres peuvent seulement être données après l'appel de cette fonction.
+    // Avant l'appel, tous les ordres donnés ne sont pas pris en compte.
     bool waitInit();
 
     // Attend le début d'un tour
@@ -180,25 +180,25 @@ class Session
     // Récupère une classe permettant d'obtenir de nombreuses informations sur le jeux.
     GameData gameData();
 
-    // Ordonne un scan sur la plaète ayant l’id idPlanet.
+    // Ordonne un scan sur la planète ayant l’id idPlanet.
     void orderScan(int planetId);
 
-    // Ordonne la construction de nbVaisseaux sur la planète idSource.
+    // Ordonne la construction de nbVaisseaux vaisseaux sur la planète idSource.
     void orderBuild(int planetSourceId, int shipCount);
 
-    // Ordonne un mouvement de troupe de idSource à idDest et de nombre de vaisseaux.
+    // Ordonne un mouvement de shipCount vaisseaux de planetSourceId à planetDestinationId.
     void orderMove(int planetSourceId, int planetDestinationId, int shipCount);
 
-    // Envoie d’un coup au serveur tous les ordre précédemment émis.
+    // Envoie d’un coup au serveur tous les ordres précédemment émis.
     void sendOrders();
 
-    // Efface tout les ordres donnés qui n'ont pas encore été envoyés
+    // Efface tous les ordres donnés qui n'ont pas encore été envoyés.
     void clearOrders();
 
-    // Permet de savoir si on est connecté au serveur
+    // Permet de savoir si on est connecté au serveur.
     bool isConnected();
 
-    // Récupère la dernière erreur survenue sous al forme d'une chaine lisible humainement
+    // Récupère la dernière erreur survenue sous la forme d'une chaine lisible humainement.
     std::string lastError();
 
 
