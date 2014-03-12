@@ -595,6 +595,21 @@ QVector<QVector<int> > Game::getDistanceMatrix()
 	return matrix;
 }
 
+int estimate(int baseNumber)
+{
+	if (baseNumber <= 10)
+		return 5;
+	int r1 = 10, r2 = 20;
+
+	while(r2 < baseNumber)
+	{
+		r1 *= 2;
+		r2 *= 2;
+	}
+
+	return (int)(r1 * 1.5);
+}
+
 void Game::sendTurnMessage(QMap<int, QVector<FightReport> > reports)
 {
 	foreach(Player * p, m_players)
@@ -651,7 +666,7 @@ void Game::sendTurnMessage(QMap<int, QVector<FightReport> > reports)
 					IncomingEnnemyShips ennemy;
 					ennemy.srcPlanet = m->move.srcPlanet;
 					ennemy.destPlanet = m->move.destPlanet;
-					ennemy.shipCount = m->move.shipCount;
+					ennemy.shipCount = estimate(m->move.shipCount);
 					incomingEnnemies.append(ennemy);
 				}
 			}
