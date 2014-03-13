@@ -76,7 +76,7 @@ ServerManagerWidget::ServerManagerWidget(Game * gameEngine, Network * network, Q
 void ServerManagerWidget::clientConnected(QTcpSocket* s)
 {
     m_clients.insert(s, QString("Anonymous_%1").arg(QString::number(m_clientId)));
-	addMessage(QString("<strong>Client connection</strong> : Anonymous_%1").arg(QString::number(m_clientId)));
+    addMessage(QString("<strong>Client connection</strong> : Anonymous_%1 (%2)").arg(QString::number(m_clientId), s->peerAddress().toString()));
 	m_clientId++;
 	refreshClient();
 }
@@ -84,8 +84,8 @@ void ServerManagerWidget::clientConnected(QTcpSocket* s)
 void ServerManagerWidget::playerConnected(QTcpSocket* s, QString login)
 {
 	m_clients.remove(s);
-	m_players.insert(s, login);
-	addMessage(QString("<strong>Player connection</strong> : %1").arg(login));
+    m_players.insert(s, login);
+    addMessage(QString("<strong>Player logged</strong> : %1 (%2)").arg(login).arg(s->peerAddress().toString()));
 	refreshPlayer();
 	refreshClient();
 }
@@ -93,8 +93,8 @@ void ServerManagerWidget::playerConnected(QTcpSocket* s, QString login)
 void ServerManagerWidget::displayConnected(QTcpSocket* s)
 {
 	m_clients.remove(s);
-	m_displays.insert(s, QString("Display_%1").arg(m_displayId));
-	addMessage(QString("<strong>Display connection</strong> : Display_%1").arg(m_displayId));
+    m_displays.insert(s, QString("Display_%1").arg(m_displayId));
+    addMessage(QString("<strong>Display logged</strong> : Display_%1 (%2)").arg(m_displayId).arg(s->peerAddress().toString()));
 	m_displayId++;
 	refreshDisplay();
 	refreshClient();
@@ -102,21 +102,21 @@ void ServerManagerWidget::displayConnected(QTcpSocket* s)
 
 void ServerManagerWidget::clientDisconnected(QTcpSocket * s)
 {
-	addMessage(QString("<strong>Client deconnection</strong> : %1").arg(m_clients[s]));
+    addMessage(QString("<strong>Client disconnection</strong> : %1 (%2)").arg(m_clients[s]).arg(s->peerAddress().toString()));
 	m_clients.remove(s);
 	refreshClient();
 }
 
 void ServerManagerWidget::displayDisconnected(QTcpSocket* s)
 {
-	addMessage(QString("<strong>Display deconnection</strong> : %1").arg(m_clients[s]));
+    addMessage(QString("<strong>Display disconnection</strong> : %1 (%2)").arg(m_clients[s]).arg(s->peerAddress().toString()));
 	m_displays.remove(s);
 	refreshDisplay();
 }
 
 void ServerManagerWidget::playerDisconnected(QTcpSocket* s)
 {
-	addMessage(QString("<strong>Player deconnection</strong> : %1").arg(m_clients[s]));
+    addMessage(QString("<strong>Player disconnection</strong> : %1 (%2)").arg(m_clients[s]).arg(s->peerAddress().toString()));
 	m_players.remove(s);
 	refreshPlayer();
 }
