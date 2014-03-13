@@ -1,4 +1,6 @@
 import multiprocessing
+import sys
+import os
 
 
 buildPath = '.build'
@@ -12,6 +14,8 @@ try:
 except:
     print 'warning: unable to detect processors count, only 1 processor will be used by default'
 
+# Ajoute au pythonpath le dossier scons-tools utile pour l'installateur
+sys.path.append(os.path.abspath('scons-tools'))
 
 SConscript('SConscript', variant_dir=buildPath)
 Clean('.', buildPath)

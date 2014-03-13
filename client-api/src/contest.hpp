@@ -1,13 +1,112 @@
+/// \mainpage Documentation de la bibliotèque Contest
+///
+///     \section intro_sec Introduction
+///
+/// La bibliothèque Contest sert à développer simplement des clients pour le challenge de programmation.
+/// Elle est utilisable dans plusieurs langages tels que C++, Python et Java. 
+/// Son utilisation ne diffère que très peu en fonction du langage utilisé.
+///
+///     \section exemple_sec Exemple
+///
+/// Voici un exemple minimaliste d'utilisation en C++ :
+/// \code{.cpp}
+///     #include <contest.hpp>
+///
+///     int main()
+///     {
+///         Session session;
+///
+///         session.connect("127.0.0.1", 4242);
+///         session.login("DarkVador");
+///
+///         session.waitInit();
+///         compute_preprocessing();
+///
+///         while(session.waitRoundStarting() == ROUND_NORMAL)
+///             compute_one_round(session);
+///         
+///         return EXIT_SUCCESS;
+///     }
+/// \endcode
+///
+/// Voici le même exemple d'utilisation en Python :
+/// \code{.python}
+///     import contest
+///
+///     session = contest.Session()
+///
+///     session.connect('127.0.0.1', 4242)
+///     session.login('DarkVador')
+///
+///     session.waitInit()
+///     compute_preprocessing(session)
+///
+///     while session.waitRoundStarting() == ROUND_NORMAL:
+///         compute_one_round(session)
+/// \endcode
+///
+/// Voici encore le même exemple d'utilisation mais en Java :
+/// \code{.java}
+///     public class Test
+///     {
+///         static
+///         {
+///             System.loadLibrary("contest");
+///         }
+/// 
+///         public static void main(String[] args)
+///         {
+///             Session session = new Session();
+/// 
+///             session.connect("127.0.0.1", (short)4242);
+///             session.login("DarkVador");
+/// 
+///             session.waitInit();
+///             compute_preprocessing();
+/// 
+///             while(session.waitRoundStarting() == RoundState.ROUND_NORMAL)
+///                 compute_one_round(session);
+///         }
+///     }
+/// \endcode
+///
+///     \section play_sec À vous de jouer !
+///
+///
+///                                                      ____________
+///                                       --)-----------|____________|
+///                                                     ,'       ,'   
+///                       -)------========            ,'  ____ ,'     
+///                                `.    `.         ,'  ,'__ ,'       
+///                                  `.    `.     ,'       ,'         
+///                                    `.    `._,'_______,'__         
+///                                      [._ _| ^--      || |         
+///                              ____,...-----|__________ll_|\        
+///             ,.,..-------"""""     "----'                 ||       
+///         .-""  |=========================== ______________ |       
+///          "-...l_______________________    |  |'      || |_]       
+///                                       [`-.|__________ll_|         
+///                                     ,'    ,' `.        `.         
+///                                   ,'    ,'     `.    ____`.       
+///                       -)---------========        `.  `.____`.     
+///                                                    `.        `.   
+///                                                      `.________`. 
+///                                      --)-------------|___________|
+///                                                        Strutsified
+
+
 #include <string>
 #include <vector>
 
 
 #define List std::vector
+#define String std::string
 
 
 struct SessionData;
 
 
+/// État du bot après authentification auprès du serveur
 enum LoginResult
 {
     LOGIN_OK,
@@ -17,6 +116,8 @@ enum LoginResult
     LOGIN_NETWORK_ERROR
 };
 
+
+/// État d'un tour du jeu
 enum RoundState
 {
     ROUND_NORMAL,
@@ -25,71 +126,122 @@ enum RoundState
 };
 
 
-// Structure contenant toutes les données nécessaire à propos du message initial du serveur. 
-// Seul le champ currentRoundId sera à mis à jour par l’API lors de chaque tours.
+/// \brief Structure contenant toutes les données nécessaires à propos du message initial du serveur. 
+///
+/// Seul le champ currentRoundId sera mis à jour par l’API lors de chaque tour.
 struct GameInfos
 {
-    int playerId;               // Id du joueur courant
-    int playerCount;            // Nombre de joueurs audébut de partie
-    int totalRoundCount;        // Nombre max de tours
-    int currentRoundId;         // Id du tour actuel entre 1 et totalRoundCount (0 lors de l'initialisation)
-    int planetCount;            // Nombre total de planètes dans la partie
-    int resources;              // Ressources globales actuelles (0 lors de l'initialisation)
+    /// Identifiant du joueur courant
+    int playerId;
 
-    int scanCountLimit;         // Nombre maximal de scans autorisés par tour
-    int shipCost;               // Coût en ressources d’un vaisseaux
+    /// Nombre de joueurs au début de la partie
+    int playerCount;
+
+    /// Nombre maximum de tours
+    int totalRoundCount;
+
+    /// Identifiant du tour actuel entre 1 et totalRoundCount (0 lors de l'initialisation)
+    int currentRoundId;
+
+    /// Nombre total de planètes dans la partie
+    int planetCount;
+
+    /// Ressources globales actuelles (0 lors de l'initialisation)
+    int resources;
+
+    /// Nombre maximal de scans autorisés par tour
+    int scanCountLimit;
+
+    /// Coût en ressources d’un vaisseau
+    int shipCost;
 };
 
 
-// Structure contenant les informations sur l’une de nos planètes.
+/// \brief Structure contenant les informations sur l’une de nos planètes.
 struct Planet
 {
-    int planetId;               // Id de la planète
-    int resources;              // Ressources accumulées à chaque tours grâce à cette planète
-    int shipBuildCountLimit;    // Nombre limite de vaisseaux pouvant être construit à chaque tours autours de la planète
-    int shipCount;              // Nombre de vaisseaux actuellement présents autours de la planète
+    /// Identifiant de la planète
+    int planetId;
+
+    /// Ressources accumulées à chaque tour grâce à cette planète
+    int resources;
+
+    /// Nombre limite de vaisseaux pouvant être construits à chaque tour sur cette planète
+    int shipBuildCountLimit;
+
+    /// Nombre de vaisseaux actuellement présents autour de cette planète
+    int shipCount;
 };
 
 
-// Structure contenant le résultat d’un scan.
+/// \brief Structure contenant le résultat d’un scan.
 struct ScanResult
 {
-    int planetId;               // Id de la planète scannée
-    int playerId;               // Id du joueur scanné
-    int resources;              // Ressources accumulées par le joueur à chaque tours grâce à cette planète
-    int shipBuildCountLimit;    // Nombre limite de vaisseaux pouvant être construit à chaque tours autours de la planète
-    int shipCount;              // Nombre de vaisseaux actuellement présents autours de la planète
+    /// Identifiant de la planète scannée
+    int planetId;
+
+    /// Identifiant du joueur qui possède la planète scannée
+    int playerId;
+
+    /// Ressources accumulées par le joueur à chaque tour grâce à cette planète
+    int resources;
+
+    /// Nombre limite de vaisseaux pouvant être construit à chaque tour sur cette planète
+    int shipBuildCountLimit;
+
+    /// Nombre de vaisseaux actuellement présents autour de cette planète
+    int shipCount;
 };
 
 
-// Structure contenant les informations sur nos flottes en cours de déplacement 
-// que ce soit pour l'attaque comme pour le déplacement.
+/// \brief Structure contenant les informations sur nos flottes en cours de déplacement
 struct Fleet
 {
-    int sourcePlanetId;         // Planête de laquelle les vaisseaux proviennent
-    int destinationPlanetId;    // Planête vers laquelle les vaisseaux se dirigent
-    int shipCount;              // Nombre de vaisseaux présents dans la flotte
-    int remainingRound;         // Nombre de tour restant avant l'arrivée des vaisseaux
+    /// Identifiant de la planête depuis laquelle les vaisseaux sont partis
+    int sourcePlanetId;
+
+    /// Identifiant de la planête vers laquelle les vaisseaux se dirigent
+    int destinationPlanetId;
+
+    /// Nombre de vaisseaux présents dans la flotte
+    int shipCount;
+
+    /// Nombre de tours restants avant l'arrivée des vaisseaux
+    int remainingRound;
 };
 
 
-// Structure contenant les informations sur les flottes ennemies arrivant vers le joueur.
+/// \brief Structure contenant les informations sur les flottes ennemies arrivant vers une de nos planètes
 struct Ennemy
 {
-    int sourcePlanetId;         // Planête de laquelle les vaisseaux proviennent
-    int destinationPlanetId;    // Planête vers laquelle les vaisseaux se dirigent
-    int shipCount;              // Nombre de vaisseaux présents dans la flotte (ce nombre est une estimation)
-    int remainingRound;         // Nombre de tour restant avant l'arrivée des vaisseaux
+    /// Identifiant de la planête depuis laquelle les vaisseaux sont partis
+    int sourcePlanetId;
+
+    /// Identifiant de la planête vers laquelle les vaisseaux se dirigent
+    int destinationPlanetId;
+
+    /// Nombre de vaisseaux présents dans la flotte (ce nombre est une estimation)
+    int shipCount;
+
+    /// Nombre de tours restants avant l'arrivée des vaisseaux
+    int remainingRound;
 };
 
 
-// Structure contenant les informations sur les rapports de combat.
+/// \brief Structure contenant les informations sur les rapports de combat.
 struct FightReport
 {
-    int planetId;               // Planête sur laquelle les vaisseaux ont combattus
-    int winnerPlayerId;         // Id du joueur qui à gagné la bataille
-    int playerCount;            // Nombre de joueurs présents dans la bataille
-    int remainingShip;          // Nombre de vaisseaux restant du joueur survivant
+    /// Identifiant de la planête autour de laquelle les vaisseaux ont combattu
+    int planetId;
+
+    /// Identifiant du joueur qui a gagné la bataille
+    int winnerPlayerId;
+
+    /// Nombre de joueurs présents dans la bataille
+    int playerCount;
+
+    /// Nombre de vaisseaux restant du joueur survivant
+    int remainingShip;
 };
 
 
@@ -101,6 +253,7 @@ typedef List<FightReport> FightReportList;
 typedef List<int> IntList;
 
 
+/// \brief Classe permettant d'obtenir de nombreuses informations sur le jeu.
 class GameData
 {
     private:
@@ -121,25 +274,34 @@ class GameData
 
     public:
 
-    // Récupére les informations générales sur le jeu en cours.
+    /// \brief Récupére les informations générales sur le jeu en cours.
+    /// \return Informations générales sur le jeu en cours.
     GameInfos globalInformations();
 
-    // Récupére une listes de ses planètes.
+    /// \brief Récupére une liste des planètes qui vous appartiennent.
+    /// \return Liste des planètes qui vous appartiennent.
     PlanetList planets();
 
-    // Récupére les résultats des scans du dernier tour.
+    /// \brief Récupére les résultats des scans du dernier tour.
+    /// \return Résultats des scans du dernier tour.
     ScanResultList scanResults();
 
-    // Récupére toutes les flottes qu’on a actuellement lancé.
+    /// \brief Récupére toutes les flottes qu’on a actuellement lancées.
+    /// \return Liste de toutes les flottes qu’on a actuellement lancées.
     FleetList fleets();
 
-    // Récupére toutes les flottes ennemies se dirigeant vers une de nos planète.
+    /// \brief Récupére toutes les flottes ennemies se dirigeant vers une de vos planètes.
+    /// \return Liste de toutes les flottes ennemies se dirigeant vers une de vos planètes.
     EnnemyList enemies();
 
-    // Récupére tous les rapports de combat envoyé au tour précédent.
+    /// \brief Récupére tous les rapports de combat envoyés au tour précédent.
+    /// \return Liste de tous les rapports de combat envoyés au tour précédent.
     FightReportList reports();
 
-    // Récupère la distance entre deux planètes.
+    /// \brief Récupère la distance entre deux planètes.
+    /// \param planetA Identifiant d'une planète
+    /// \param planetB Identifiant d'une planète
+    /// \return Distance qui sépare la première planète de la seconde (en nombre de tours).
     int distance(int planetA, int planetB);
 
 
@@ -148,6 +310,7 @@ class GameData
 };
 
 
+/// \brief Classe mère qui permet de créer un bot pour le jeu.
 class Session
 {
     private:
@@ -157,49 +320,69 @@ class Session
 
     public:
 
+    /// \brief Constructeur de Session
     Session();
+
+    /// \brief Destructeur de Session
     ~Session();
 
-    // Connecte le client au serveur
-    bool connect(const std::string& host, int port);
+    /// \brief Connecte le client au serveur.
+    /// \param host Adresse IP de l'hôte distant auquel le client doit se connecter.
+    /// \param port Port de l'hôte distant sur lequel le client doit se connecter.
+    /// \return vrai si la connexion a été établie, faux en cas d'erreur.
+    bool connect(String host, int port);
 
-    // Déconnecte le client du serveur
+    /// \brief Déconnecte le client du serveur.
     void disconnect();
 
-    // Définie un login pour le client
-    LoginResult login(const std::string& pseudo);
+    /// \brief Définit un login pour le client.
+    /// \param pseudo Pseudo à définir.
+    /// \return État du client après authentification du serveur.
+    LoginResult login(String pseudo);
 
-    // Attend l'initialisation du jeu
-    // Les ordres peuvent seulement être données après l'appel de cette fonction
-    // Avant l'appel, tous les ordres donnés ne sont pas pris en compte
+    /// \brief Attend l'initialisation du jeu.
+    ///
+    /// Les ordres peuvent seulement être donnés après l'appel de cette fonction.
+    /// Avant l'appel, tous les ordres donnés ne sont pas pris en compte.
+    /// \return Vrai si tout s'est bien passé, faux en cas d'erreur.
     bool waitInit();
 
-    // Attend le début d'un tour
+    /// \brief Attend le début d'un tour.
+    /// \return État du tour de jeux.
     RoundState waitRoundStarting();
 
-    // Récupère une classe permettant d'obtenir de nombreuses informations sur le jeux.
+    /// \brief Récupère une classe permettant d'obtenir de nombreuses informations sur le jeu.
+    /// \return Structure informative.
     GameData gameData();
 
-    // Ordonne un scan sur la plaète ayant l’id idPlanet.
+    /// \brief Ordonne un scan sur la planète ayant l'identifiant idPlanet.
+    /// \param planetId Identifiant de planète a analyser.
     void orderScan(int planetId);
 
-    // Ordonne la construction de nbVaisseaux sur la planète idSource.
+    /// \brief Ordonne la construction de nbVaisseaux vaisseaux sur la planète dont l'identifiant est planetSourceId.
+    /// \param planetSourceId Identifiant de la planète sur laquelle les vaisseaux doivent être construits.
+    /// \param shipCount Nombre de vaisseaux à construire.
     void orderBuild(int planetSourceId, int shipCount);
 
-    // Ordonne un mouvement de troupe de idSource à idDest et de nombre de vaisseaux.
+    /// \brief Ordonne un mouvement de shipCount vaisseaux de planetSourceId à planetDestinationId.
+    /// \param planetSourceId Identifiant de la planète depuis laquelle les vaisseaux doivent partir.
+    /// \param planetDestinationId Identifiant de la planète sur laquelle les vaisseaux doivent arriver.
+    /// \param shipCount Nombre de vaisseaux a déplacer.
     void orderMove(int planetSourceId, int planetDestinationId, int shipCount);
 
-    // Envoie d’un coup au serveur tous les ordre précédemment émis.
+    /// \brief Envoie d’un coup au serveur tous les ordres précédemment émis.
     void sendOrders();
 
-    // Efface tout les ordres donnés qui n'ont pas encore été envoyés
+    /// \brief Efface tous les ordres donnés qui n'ont pas encore été envoyés.
     void clearOrders();
 
-    // Permet de savoir si on est connecté au serveur
+    /// \brief Permet de savoir si on est connecté au serveur.
+    /// \return Vrai si le client est bien connecté au serveur, faux autrement.
     bool isConnected();
 
-    // Récupère la dernière erreur survenue sous al forme d'une chaine lisible humainement
-    std::string lastError();
+    /// \brief Récupère la dernière erreur survenue sous la forme d'une chaine lisible par des humains.
+    /// \return Chaine d'erreur.
+    String lastError();
 
 
     private:

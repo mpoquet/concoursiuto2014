@@ -46,7 +46,7 @@ Session::~Session()
 }
 
 
-bool Session::connect(const string& host, int port)
+bool Session::connect(String host, int port)
 {
     if(port < 0 || port >= 1<<16)
     {
@@ -80,7 +80,7 @@ void Session::disconnect()
 }
 
 
-LoginResult Session::login(const string& pseudo)
+LoginResult Session::login(String pseudo)
 {
     try
     {

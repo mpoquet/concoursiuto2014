@@ -244,7 +244,6 @@ void Game::iteration()
     {
         m_timer->stop();
 
-        // todo : handle score
         foreach(Player * p, m_players)
         {
             emit finishedSignal(m_playerSocketsMap.value(p), true);
@@ -258,20 +257,6 @@ void Game::iteration()
 	m_currentRound++;
 
     cout << QDateTime::currentDateTime().toString("[hh:mm:ss:zzz]").toStdString() << " Game iteration " << m_currentRound << endl;
-
-    /*if (m_playerCount == 0)
-    {
-        int a = -1;
-        int b = 40000000;
-
-        for (int i = 0; i < m_movements.size(); ++i)
-        {
-            a = std::max(m_movements[i]->remainingRound, a);
-            b = std::min(m_movements[i]->remainingRound, b);
-        }
-
-        qDebug() << QString("(MoveCount, MaxRRound, MinRR) = (%1,%2,%3)").arg(m_movements.size()).arg(a).arg(b);
-    }*/
 
 	Planet * planet;
 	Planet * planetDest;
@@ -341,34 +326,40 @@ void Game::iteration()
     // Gestion des combats
 	QMap<int, QVector<FightReport> > reports = handleBattle(endMovements);
 
-    QVector<int> scores(m_playerSocketsMap.size());
-    // Mise à jour des ressources et du score pour chaque joueur
+    // Mise à jour des ressources
     foreach(Player * p, m_players)
     {
         int resources = p->resources();
-        scores[p->id()-1] = p->score();
 
 		foreach(Planet * pl, p->planets())
 		{
             resources += m_gameModel->getResourcesByRound(pl->size());
-            scores[p->id()-1] += pl->shipCount();
 		}
 
         p->setResources(resources);
 	}
 
+    // Mise à jour du score
+    foreach(Player * p, m_players)
+    {
+        int score = m_currentRound;
+
+        foreach(Planet * pl, p->planets())
+        {
+            score += m_gameModel->getMaxBuildByRound(pl->size()) * m_roundCount;
+            score += pl->shipCount();
+        }
+
+        p->setScore(score);
+    }
+
     foreach(ShipMovement * m, m_movements)
     {
         Player * p = getPlayer(m->player);
-        scores[p->id()-1] += m->move.shipCount;
+        p->setScore(p->score() + m->move.shipCount);
     }
 
-    foreach(Player * p, m_players)
-    {
-        p->setScore(p->score() + scores[p->id()-1] / m_planets.size());
-    }
-
-    // Check if someone lost or won
+    // Check if someone lost
 	if(m_players.size() > 1)
 	{
 		for(int i = 0 ; i < m_players.size() ; ++i)
@@ -670,7 +661,7 @@ void Game::sendTurnMessage(QMap<int, QVector<FightReport> > reports)
     // Let's send the turn to every observer
     if (!m_displaySockets.empty())
     {
-        QVector<int> scores(m_players.size(), 0);
+        QVector<int> scores(m_playerSocketsMap.size(), 0);
         QVector<TurnDisplayPlanet> planets(m_planets.size());
         QVector<ShipMovement> movements(m_movements.size());
 
