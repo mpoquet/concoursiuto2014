@@ -139,13 +139,6 @@ def make():
     docInstallPath = os.path.join(install.sharedir(), moduleName)
     install.Add(docInstallPath, docTargets, perm=0755)
 
-#    for target in docTargets:
-#        def test():
-#            print 'ADD(', docInstallPath, os.path.join(target, filename), ')'
-#        envBase.AddPostAction(filename, test)
-#        for filename in os.listdir(target.path):
-#            #install.Add(docInstallPath, os.path.join(target, filename))
-
 
 def makeSpnl(envBase):
     currentPath = Dir('.').abspath
@@ -236,7 +229,7 @@ def makePython(envBase, objFiles, lib):
 
 def makeJava(envBase, objFiles, lib):
     swigFile = os.path.join(srcDir, moduleName+'.i')
-    javaFilesPath = os.path.join(Dir(srcDir).abspath, 'java')
+    javaFilesPath = os.path.join(Dir(srcDir).abspath, 'java', 'com', 'iut')
 
     envJava = envBase.Clone()
     envJava['SWIGFLAGS'] = ['-java', '-c++']
@@ -247,30 +240,21 @@ def makeJava(envBase, objFiles, lib):
     libJava = envJava.SharedLibrary(moduleName, objFiles+[swigFile])
     envJava.Requires(libJava, lib)
 
-    # Cela regénère les fichiers de code java qui sont déjà présent
-    # car ont été généré par swig lors du envJava.SharedLibrary
-    # Cependant, comme la commande est buggé du à l'utilisation de swig pour Java, 
-    # scons considère que les fichier ne devrait pas exister et les supprime
-    # si on tente de les utiliser explicitement
-    javaClasses =   [
-                        'Fleet',            'Planet',           'FleetList',    'PlanetList',
-                        'Ennemy',           'GameData',         'RoundState',   'EnnemyList',
-                        'GameInfos',        'ScanResult',       'FightReport',  'IntList',
-                        'ScanResultList',   'FightReportList',  'LoginResult',  'Session'
-                    ]
-
     absSrcDir = Dir(os.path.join('.', 'src')).path
     javaCppFile = os.path.join(absSrcDir, moduleName + '-java.cxx')
     javaCodeDir = os.path.join(absSrcDir, 'java')
-    command = 'swig -o ' + javaCppFile + ' -outdir ' + javaCodeDir + ' -java -c++ ' + swigFile
-    genFiles = [os.path.join('src', 'java', i + '.java') for i in javaClasses]
-    genJavaCode = envJava.Command(genFiles, libJava, command)
+    commands = [
+        'mkdir -p ' + javaCodeDir + '/com/iut',
+        'swig -o ' + javaCppFile + ' -outdir ' + javaCodeDir + '/com/iut -java -package com.iut -c++ ' + swigFile,
+        'cd ' + javaCodeDir,
+        'javac com/iut/*.java',
+        'jar cf contest.jar com/iut/*.*',
+        'mv contest.jar ../.. && cd -'
+    ]
+    genJavaCode = envJava.Command('contest.jar', libJava, ' && '.join(commands))
     envJava.Requires(genJavaCode, libJava) # Nécessaire pour éviter les appels en parallèle
 
-    javaSrc = envJava.Java(os.path.join(srcDir, 'classes'), os.path.join('src', 'java'))
-    envJava.Requires(javaSrc, genJavaCode)
-    javaJar = envJava.Jar(moduleName+'.jar', javaSrc)
-    return {'lib': libJava, 'jar': javaJar}
+    return {'lib': libJava, 'jar': genJavaCode}
 
 
 def makeDoc(envBase):
