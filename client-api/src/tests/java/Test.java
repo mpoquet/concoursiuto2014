@@ -1,3 +1,6 @@
+import com.iut.*;
+
+
 public class Test
 {
     static
