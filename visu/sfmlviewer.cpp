@@ -59,11 +59,11 @@ void SFMLViewer::onInit(QVector<InitDisplayPlanet> planets,
     _currentRound = 0;
 
     // Let's handle players
-    _players[-1] = Player("Empty", sf::Color(255, 255, 255));
+    _players[-1] = Player("Vide", sf::Color(255, 255, 255));
     _players[0] = Player("Autochtone", sf::Color(127,127,127));
 
     for (int i = 0; i < playerNicks.size(); ++i)
-        _players[i+1] = Player(playerNicks[i]);
+        _players[i+1] = Player(QString("%1(%2)").arg(playerNicks[i]).arg(i+1));
 
     // Player colors
     QVector<QColor> colors(playerNicks.size());

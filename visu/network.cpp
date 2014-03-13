@@ -64,9 +64,15 @@ void Network::onMessageReceived()
                 char response = message[1].toLatin1();
 
                 if (response == OK)
+                {
+                    qDebug() << "Logged" << endl;
                     emit logged();
+                }
                 else if (response == NO_MORE_ROOM)
+                {
+                    qDebug() << "Cannot login to the server (no more room)";
                     emit cannotLogIn();
+                }
                 else if (response == ALREADY_LOGGED)
                     qDebug() << "I can't log twice...";
                 else
