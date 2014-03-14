@@ -798,7 +798,8 @@ QMap<int, QVector<FightReport> > Game::handleBattle(QVector<ShipMovement*> endMo
 
 				planet->setOwner(p);
 				
-				m_gameModel->handleBonus(planet, p);
+				if(m_currentRound > (m_roundCount * 0.25))
+					m_gameModel->handleBonus(planet, p);
 			}
 			planet->setShipCount(winner.shipCount);
 		}

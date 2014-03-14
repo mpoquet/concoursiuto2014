@@ -73,7 +73,7 @@ void BasicGameModel::handleBonus(Planet* planet, Player* player)
 		{
 			int byRound = this->getResourcesByRound(planet->size());
 			
-			int inc = (int)((qrand() % 70 + 33f) / 100f * byRound);
+			int inc = (int)((qrand() % 70 + 33.f) / 100.f * byRound);
 			
 			player->setResources(player->resources() + inc);
 		}
