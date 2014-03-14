@@ -482,7 +482,7 @@ void Network::onMessageReceived()
             // If the server is attached to a game, let's check if the received message count is correct
             if (_game != 0)
             {
-                if (_clients[socket].receivedMessageCount > (_game->currentRound() * 2 + 3))
+                if (_clients[socket].receivedMessageCount > (_game->currentRound() * 1 + 5))
                 {
                     cerr << "A client is sending way too many messages. This client is about to be kicked" << endl;
                     socket->close();
