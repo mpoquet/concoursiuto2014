@@ -22,6 +22,7 @@ class BasicGameModel : public AbstractGameModel
 		virtual int getDistance(Planet * p1, Planet * p2);
 
 		virtual Fleet resolveBattle(QVector<Fleet> fleets);
+		virtual void handleBonus(Planet* planet, Player* player);
 
 	protected:
 		Fleet simulateBattle(Fleet f1, Fleet f2);

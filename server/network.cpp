@@ -344,8 +344,8 @@ void Network::sendTurnPlayer(QTcpSocket *socket,
 	message += QString("%1").arg(ourShipsOnPlanet.size()).toLatin1();
 
 	for (int i = 0; i < ourShipsOnPlanet.size(); ++i)
-		message += QString("%1%2%1%3%1%4%1%5").arg(SSEP).arg(ourShipsOnPlanet[i].planet).arg(
-					ourShipsOnPlanet[i].resourcePerRound).arg(ourShipsOnPlanet[i].maxBuildPerRound).arg(ourShipsOnPlanet[i].shipCount).toLatin1();
+		message += QString("%1%2%1%3%1%4%1%5%1%6").arg(SSEP).arg(ourShipsOnPlanet[i].planet).arg(
+					ourShipsOnPlanet[i].resourcePerRound).arg(ourShipsOnPlanet[i].maxBuildPerRound).arg(ourShipsOnPlanet[i].shipCount).arg(ourShipsOnPlanet[i].doubleSpeedRemainingTurns).toLatin1();
 
 	message += QString("%1%2").arg(SEP).arg(scanResults.size()).toLatin1();
 

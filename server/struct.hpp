@@ -63,6 +63,7 @@ struct OurShipsOnPlanets
     int planet;
     int resourcePerRound;
     int maxBuildPerRound;
+	int doubleSpeedRemainingTurns;
     int shipCount;
 };
 

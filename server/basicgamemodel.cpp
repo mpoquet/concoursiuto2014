@@ -54,6 +54,32 @@ int BasicGameModel::getDistance(Planet * p1, Planet * p2)
 	return distance;
 }
 
+void BasicGameModel::handleBonus(Planet* planet, Player* player)
+{
+	//disable previous bonus
+	planet->setDoubleSpeed(0);
+	int chance = qrand() % 100;
+	
+	if(chance < 15) // 15% de chance d'avoir un bonus
+	{
+		chance = qrand() % 100;
+		
+		//50/50 entre +ressource et speed
+		if(chance < 50)
+		{
+			planet->setDoubleSpeed(5);
+		}
+		else
+		{
+			int byRound = this->getResourcesByRound(planet->size());
+			
+			int inc = (int)((qrand() % 70 + 33f) / 100f * byRound);
+			
+			player->setResources(player->resources() + inc);
+		}
+	}
+}
+
 Fleet BasicGameModel::resolveBattle(QVector<Fleet> fleets)
 {
 	if(fleets.size() <= 2)

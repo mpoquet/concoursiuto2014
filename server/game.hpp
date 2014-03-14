@@ -88,7 +88,7 @@ class Game : public QObject
 
 		void sendTurnMessage(QMap<int, QVector<FightReport> > reports);
 		QMap<int, QVector<FightReport> > handleBattle(QVector<ShipMovement*> endMovements);
-
+		
 		bool hasFleet(Player * p);
 
 	private:
