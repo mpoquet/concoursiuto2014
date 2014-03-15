@@ -258,6 +258,8 @@ void Game::iteration()
             emit finishedSignal(m_playerSocketsMap.value(p), true);
         }
 
+        displayScore();
+
 		return;
 	}
 
@@ -399,10 +401,14 @@ void Game::iteration()
         emit finishedSignal(m_playerSocketsMap.value(winner), true);
 		m_players.clear();
 		m_timer->stop();
+
+        displayScore();
 	}
     else if(m_players.size() == 0) // All the remaining players lost in the same round
 	{
 		m_timer->stop();
+
+        displayScore();
 	}
 
 	//remove one turn for doublespeed bonus
@@ -729,7 +735,29 @@ bool Game::hasFleet(Player * p)
 			return true;
 		}
 	}
-	return false;
+    return false;
+}
+
+void Game::displayScore()
+{
+    QMap<int, QString> sortedScores;
+
+    QMapIterator<Player *, QTcpSocket *> it(m_playerSocketsMap);
+    while (it.hasNext())
+    {
+        it.next();
+        sortedScores[it.key()->score()] = QString("%1(%2)").arg(it.key()->nickname()).arg(it.key()->id());
+    }
+
+    cout << "Final scores:" << endl;
+    QMapIterator<int, QString> it2(sortedScores);
+    it2.toBack();
+    for(int i = 1; it2.hasPrevious(); ++i)
+    {
+        it2.previous();
+
+        cout << QString("#%1 %2, %3").arg(i).arg(it2.value()).arg(it2.key()).toStdString() << endl;
+    }
 }
 
 QMap<int, QVector<FightReport> > Game::handleBattle(QVector<ShipMovement*> endMovements)
