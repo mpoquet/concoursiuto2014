@@ -5,6 +5,7 @@
 
 from contest import *
 from time import *
+from sys import *
 
 
 def gameError(session):
@@ -77,8 +78,8 @@ def gameRound(session, nearest):
 
     session.sendOrders()
 
-def game():
-    session, nearest = gameInit('Struts')
+def game(ip, port):
+    session, nearest = gameInit('Struts', ip, port)
 
     # pré-calculs
 
@@ -95,6 +96,12 @@ def game():
     print 'End of the game'
 
 
-game()
+ip = '127.0.0.1'
+port = 4242
+if len(argv) >= 2:
+    ip = argv[1]
+if len(argv) >= 3:
+    port = int(argv[2])
+game(ip, port)
 
 

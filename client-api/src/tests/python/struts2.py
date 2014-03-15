@@ -5,6 +5,7 @@
 
 from contest import *
 from time import *
+from sys import *
 import random
 
 def gameError(session):
@@ -193,8 +194,8 @@ def gameRound(session, nearest, distances, maxDistance, averageDistance):
     session.sendOrders()
     print 'Temps de calcul : ', int(1000*(time() - startTime)), 'ms'
 
-def game():
-    session, nearest, distances, maxDistance, averageDistance = gameInit('Struts2')
+def game(ip, port):
+    session, nearest, distances, maxDistance, averageDistance = gameInit('Struts2', ip, port)
 
     # pré-calculs
 
@@ -211,6 +212,12 @@ def game():
     print 'End of the game'
 
 
-game()
+ip = '127.0.0.1'
+port = 4242
+if len(argv) >= 2:
+    ip = argv[1]
+if len(argv) >= 3:
+    port = int(argv[2])
+game(ip, port)
 
 

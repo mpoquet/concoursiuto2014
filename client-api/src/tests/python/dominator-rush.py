@@ -116,8 +116,8 @@ def gameRound(session):
             session.sendOrders()
 
 
-def game():
-    session = gameInit("domirush")
+def game(ip, port):
+    session = gameInit("domirush", ip, port)
 
     # pré-calculs
 
@@ -134,6 +134,12 @@ def game():
     print "End of the game"
 
 
-game()
+ip = '127.0.0.1'
+port = 4242
+if len(argv) >= 2:
+    ip = argv[1]
+if len(argv) >= 3:
+    port = int(argv[2])
+game(ip, port)
 
 
