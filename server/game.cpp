@@ -310,11 +310,6 @@ void Game::iteration()
 		}
 	}
 
-    // Let's clean the waitingBuilds and waitingMoves for each player
-    foreach (Player * p, m_players)
-    {
-        p->clearOrders();
-    }
 
 	for(int i = 0 ; i < m_movements.size() ; ++i)
 	{
@@ -410,7 +405,9 @@ void Game::iteration()
 
 void Game::playerOrder(QTcpSocket *socket, QVector<int> planetsToScan, QVector<BuildOrder> shipsToBuild, QVector<ShipMove> shipsToMove)
 {
+	qDebug() << "Scan orders received : " << planetsToScan;
     Player * p = m_playerSocketsMap.key(socket);
+
 
 	filterBuildOrder(shipsToBuild, p);
 	filterShipMove(shipsToMove, p);
@@ -437,6 +434,7 @@ void Game::playerOrder(QTcpSocket *socket, QVector<int> planetsToScan, QVector<B
 		planet = getPlanet(idPlanet);
 		if(planet != nullptr)
 		{
+			qDebug() << "Add to scan list for id " << idPlanet;
 			scan.push_back(planet);
 		}
 	}
@@ -611,10 +609,12 @@ void Game::sendTurnMessage(QMap<int, QVector<FightReport> > reports)
 
 
 		//scans
+		qDebug() << "SendTurnMessage::waitingScan = " << p->waitingScan();
 		foreach(Planet * pl, p->waitingScan())
 		{
 			if(pl != nullptr)
 			{
+				qDebug() << "Add Scan";
 				ScanResult scan;
 				scan.planet = pl->id();
 				scan.player = pl->owner()->id();
@@ -672,6 +672,12 @@ void Game::sendTurnMessage(QMap<int, QVector<FightReport> > reports)
 						incomingEnnemies,
 						reports[p->id()]);
 	}
+
+	// Let's clean the waitingBuilds and waitingMoves for each player
+    foreach (Player * p, m_players)
+    {
+        p->clearOrders();
+    }
 
     // Let's send the turn to every observer
     if (!m_displaySockets.empty())
