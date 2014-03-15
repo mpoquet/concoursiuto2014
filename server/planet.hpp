@@ -9,7 +9,7 @@ class Player;
 class Planet
 {
 	public:
-		Planet(int id, int idGalaxy, int x, int y, int size, bool isInitial, bool isNeutral);
+		Planet(int id, int idGalaxy, int x, int y, int size, bool isInitial, bool isNeutral, int autochtoneNumber);
 		~Planet();
 
 		int id();
@@ -19,6 +19,7 @@ class Planet
 		int y();
 		bool isInitial();
 		bool isNeutral();
+		int autochtoneNumber();
 
 		int shipCount();
 		Player * owner();
@@ -37,6 +38,7 @@ class Planet
 		int m_idGalaxy;
 		bool m_isInitial;
 		bool m_isNeutral;
+		int m_autochtoneNumber;
 		int m_xPos;
 		int m_yPos;
 		int m_size;

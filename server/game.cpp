@@ -28,7 +28,7 @@ Game::Game(QString mapFilename, int delayBetweenRound, int roundCount, AbstractG
 		{
 			QStringList numbers = line.trimmed().split(' ');
 
-			if(numbers.size() == 6)
+			if(numbers.size() >= 6)
 			{
 				int x = numbers[0].toInt();
 				int y = numbers[1].toInt();
@@ -37,7 +37,13 @@ Game::Game(QString mapFilename, int delayBetweenRound, int roundCount, AbstractG
 				bool initial = numbers[4].toInt() == 1;
 				bool neutral = numbers[5].toInt() == 1;
 
-				Planet * newPlanet = new Planet(m_planets.size(), idGalaxy, x, y, taille, initial, neutral);
+				int autochtoneNumber;
+				if(numbers.size() > 6)
+					autochtoneNumber = numbers[6].toInt();
+				else
+					autochtoneNumber = m_gameModel->getSpaceShipForNeutral(taille);
+
+				Planet * newPlanet = new Planet(m_planets.size(), idGalaxy, x, y, taille, initial, neutral, autochtoneNumber);
 				getGalaxy(idGalaxy)->addPlanet(newPlanet);
 
 				m_planets.push_back(newPlanet);
@@ -137,12 +143,15 @@ void Game::start()
 
 		foreach(Player * p, m_players)
 		{
-			int planetIndex = qrand() % initialPlanets.size();
-			Planet * planet = initialPlanets[planetIndex];
+			if(initialPlanets.size() > 0)
+			{
+				int planetIndex = qrand() % initialPlanets.size();
+				Planet * planet = initialPlanets[planetIndex];
 
-			planet->setOwner(p);
+				planet->setOwner(p);
 
-			initialPlanets.remove(planetIndex);
+				initialPlanets.remove(planetIndex);
+			}
 		}
 	}
 
@@ -158,7 +167,7 @@ void Game::start()
 			if(p->isNeutral())
 			{
 				p->setOwner(m_neutralPlayer);
-				p->setShipCount(m_gameModel->getSpaceShipForNeutral(p->size()));
+				p->setShipCount(p->autochtoneNumber());
 			}
 			else
 			{
@@ -293,19 +302,22 @@ void Game::iteration()
 				}
 				planet->setShipCount(planet->shipCount() - m.shipCount);
 
-				ShipMovement * move = new ShipMovement();
-				move->move = m;
-				if(planet->doubleSpeed() > 0)
+				if(m.shipCount != 0)
 				{
-					move->remainingRound = planet->distance(planetDest) / 2 + 1;
-				}
-				else
-				{
-					move->remainingRound = planet->distance(planetDest);
-				}
-				move->player = p->id();
+					ShipMovement * move = new ShipMovement();
+					move->move = m;
+					if(planet->doubleSpeed() > 0)
+					{
+						move->remainingRound = planet->distance(planetDest) / 2 + 1;
+					}
+					else
+					{
+						move->remainingRound = planet->distance(planetDest);
+					}
+					move->player = p->id();
 
-				newMovements.append(move);
+					newMovements.append(move);
+				}
 			}
 		}
 	}
@@ -405,7 +417,7 @@ void Game::iteration()
 
 void Game::playerOrder(QTcpSocket *socket, QVector<int> planetsToScan, QVector<BuildOrder> shipsToBuild, QVector<ShipMove> shipsToMove)
 {
-	qDebug() << "Scan orders received : " << planetsToScan;
+	//qDebug() << "Scan orders received : " << planetsToScan;
     Player * p = m_playerSocketsMap.key(socket);
 
 
@@ -434,7 +446,7 @@ void Game::playerOrder(QTcpSocket *socket, QVector<int> planetsToScan, QVector<B
 		planet = getPlanet(idPlanet);
 		if(planet != nullptr)
 		{
-			qDebug() << "Add to scan list for id " << idPlanet;
+			//qDebug() << "Add to scan list for id " << idPlanet;
 			scan.push_back(planet);
 		}
 	}
@@ -609,12 +621,12 @@ void Game::sendTurnMessage(QMap<int, QVector<FightReport> > reports)
 
 
 		//scans
-		qDebug() << "SendTurnMessage::waitingScan = " << p->waitingScan();
+		//qDebug() << "SendTurnMessage::waitingScan = " << p->waitingScan();
 		foreach(Planet * pl, p->waitingScan())
 		{
 			if(pl != nullptr)
 			{
-				qDebug() << "Add Scan";
+				//qDebug() << "Add Scan";
 				ScanResult scan;
 				scan.planet = pl->id();
 				scan.player = pl->owner()->id();
@@ -788,7 +800,7 @@ QMap<int, QVector<FightReport> > Game::handleBattle(QVector<ShipMovement*> endMo
 			FightReport report;
 			report.planet = planetId;
 			report.playerCount = m_incomingFleet[planetId].keys().size();
-			if(winner.player >= 0 || planet->owner()->id() < 0)
+			if(winner.shipCount > 0 || planet->owner()->id() < 0)
 			{
 				report.aliveShipCount = winner.shipCount;
 				report.winner = winner.player;
@@ -804,9 +816,9 @@ QMap<int, QVector<FightReport> > Game::handleBattle(QVector<ShipMovement*> endMo
 				reports[playerId].append(report);
 			}
 
-			if(planet->owner()->id() != winner.player)
+			if(planet->owner()->id() != report.winner)
 			{
-				Player * p = getPlayer(winner.player);
+				Player * p = getPlayer(report.winner);
 
 				Q_ASSERT(p != nullptr);
 
