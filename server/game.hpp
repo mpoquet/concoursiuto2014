@@ -91,6 +91,8 @@ class Game : public QObject
 		
 		bool hasFleet(Player * p);
 
+        void displayScore();
+
 	private:
 		int m_delayBetweenRound;
 		int m_currentRound;
