@@ -128,7 +128,7 @@ int main(int argc, char **argv)
                 p.galaxyId = galaxyId;
                 p.size = psize;
                 p.initial = false;
-                p.neutral = false;
+                p.neutral = true;
 
                 planets[id++] = p;
             }
