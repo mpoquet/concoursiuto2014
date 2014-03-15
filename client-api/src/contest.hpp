@@ -47,6 +47,9 @@
 ///
 /// Voici encore le même exemple d'utilisation mais en Java :
 /// \code{.java}
+///     import com.iut.*;
+///
+///
 ///     public class Test
 ///     {
 ///         static
