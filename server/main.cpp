@@ -41,7 +41,7 @@ int main(int argc, char ** argv)
         qsrand(QTime::currentTime().msec());
 
         Game * g = new Game(mapname, 500, 100, new BasicGameModel());
-        Network * n = new Network(port, 4, 1, g);
+        Network * n = new Network(port, 16, 1, g);
 
         // Connexions entre le jeu et les joueurs
         QObject::connect(n, SIGNAL(playerDisconnected(QTcpSocket*)), g, SLOT(playerDisconnected(QTcpSocket*)));
