@@ -85,6 +85,7 @@ private :
     int _minX, _maxX, _minY, _maxY;
 
     bool _drawShips = false;
+    bool _drawNames = true;
 };
 
 #endif // SFMLVIEWER_HPP
