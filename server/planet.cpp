@@ -107,8 +107,4 @@ void Planet::setOwner(Player * player)
 		this->m_owner->removePlanet(this);
 	player->addPlanet(this);
 	m_owner = player;
-
-	if(player->id() < 0) {
-		qDebug() << "\t\tERROR => setOwner empty";
-	}
 }
