@@ -6,6 +6,7 @@
 #include <fstream>
 #include <vector>
 #include <string>
+#include <iostream>
 
 using namespace std;
 
@@ -94,7 +95,7 @@ int main(int argc, char **argv)
 	if(nPlanetRest)
 		printf("Warning: nPlanet / nPlayers / nRings is not an integer ... May result in a weird map.\n");
 	
-    vector<planet_s> planets(nPlayers * nPlanetPerPlayer);
+    vector<planet_s> planets;
 
     // Pour chaque anneau de planètes,
     // on répartie les planètes équitablement
@@ -103,6 +104,7 @@ int main(int argc, char **argv)
     // On place toutes les planètes à la même distance du centre (range)
     int id = 0;
     int range = rand() % radius + 1;
+    std::vector<int> layerLastIds;
     for(int i = 0; i < nPlayers; ++i)
     {
         for(int j = 0; j <= nRings; ++j)
@@ -110,15 +112,19 @@ int main(int argc, char **argv)
             float padding = j%2  * (360 / nPlanetPerLayer);
 
             int nPlanetInLayer = -1;
-            if(j < nRings) nPlanetInLayer = nPlanetPerLayer;
-            else if(j == nRings) nPlanetInLayer = nPlanetRest;
-
+            /*if(j < nRings) */nPlanetInLayer = nPlanetPerLayer;
+            //else if(j == nRings) nPlanetInLayer = nPlanetRest;
+            int startLastlayer = id;
             for(int k = 0; k < nPlanetInLayer; ++k)
             {
                 struct planet_s p;
                 
                 // Calcul des coordonnées polaires
                 float planetAngle = padding + (angle * i) + (angle / nPlanetPerLayer) * k;
+
+                //
+                //planetAngle = (3.14116f * 2 / nPlanetInLayer) * k;
+
                 int planetRadius = range;
 
                 // Calcul des coordonnées cartésiennes
@@ -130,14 +136,29 @@ int main(int argc, char **argv)
                 p.initial = false;
                 p.neutral = true;
 
-                planets[id++] = p;
+                planets.push_back(p);
+                id++;
+            }
+
+            if(j == nRings)
+            {
+                for( ; startLastlayer < id ; ++startLastlayer)
+                    layerLastIds.push_back(startLastlayer);
             }
         }
         
         // Une planète initiale par joueur ...
-        planets[id-1].initial = true;
+        //planets[id-1].initial = true;
     }
-    
+    std::cout << "OK" <<std::endl;
+    int nbLastIds = layerLastIds.size();
+    int inc = nbLastIds / nPlayers;
+std::cout << "OK" <<std::endl;
+    for(int i = 0 ; i < nPlayers ; ++i) {
+
+        planets[layerLastIds[i*inc]].initial = true;
+    }
+    std::cout << "OK" <<std::endl;
     ofstream out(filename.c_str(), ofstream::out);
     
     for(unsigned int i = 0; i < planets.size(); ++i)
@@ -147,6 +168,7 @@ int main(int argc, char **argv)
         // write map
         out << (int)p.x << " " << (int)p.y << " " << p.size << " " << p.galaxyId << " " << p.initial << " " << p.neutral << " " << autochtone << "\n";
     }
+    std::cout << "OK" <<std::endl;
     
     out.close();
     
