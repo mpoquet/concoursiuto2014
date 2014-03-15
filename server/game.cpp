@@ -143,12 +143,15 @@ void Game::start()
 
 		foreach(Player * p, m_players)
 		{
-			int planetIndex = qrand() % initialPlanets.size();
-			Planet * planet = initialPlanets[planetIndex];
+			if(initialPlanets.size() > 0)
+			{
+				int planetIndex = qrand() % initialPlanets.size();
+				Planet * planet = initialPlanets[planetIndex];
 
-			planet->setOwner(p);
+				planet->setOwner(p);
 
-			initialPlanets.remove(planetIndex);
+				initialPlanets.remove(planetIndex);
+			}
 		}
 	}
 
