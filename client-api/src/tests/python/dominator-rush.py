@@ -45,9 +45,16 @@ def gameRound(session):
     friends = data.fleets()
     enemies = data.enemies()
 
+    darkPlanets = list(set(range(infos.planetCount))-set([p.planetId for p in planets]))
+
+    if len(darkPlanets) > 0:
+        darkPlanetsRandom = darkPlanets[:]
+        shuffle(darkPlanetsRandom)
+        for p in darkPlanetsRandom[:infos.scanCountLimit]:
+            session.orderScan(p)
+
     if infos.currentRoundId == 1:
         if len(planets) > 0:
-            darkPlanets = list(set(range(infos.planetCount))-set([p.planetId for p in planets]))
             shipCount = planets[0].shipCount
 
             for p in darkPlanets:
@@ -59,8 +66,6 @@ def gameRound(session):
 
     else:
         if len(planets) > 0:
-            darkPlanets = list(set(range(infos.planetCount))-set([p.planetId for p in planets]))
-
             print
             print "Avancement:", infos.currentRoundId, "/", infos.totalRoundCount, "tours"
             print "Contrôle:", len(planets), "/", infos.planetCount, "planètes:", [p.planetId for p in planets]
@@ -109,6 +114,18 @@ def gameRound(session):
                 for pId in safePlanets:
                     p = planetsDico[pId]
                     if p.shipCount > 1:
+                        if randint(0, 2) == 0:
+                            rushList = []
+                            for scan in data.scanResults():
+                                if scan.playerId <= 0:
+                                    rushList.append(scan)
+                            for scan in sorted(rushList, key=lambda x: data.distance(p.planetId, x.planetId)):
+                                if scan.playerId == -1:
+                                    session.orderMove(p.planetId, scan.planetId, 1)
+                                elif scan.playerId == 0:
+                                    if scan.shipCount+1 < p.shipCount:
+                                        session.orderMove(p.planetId, scan.planetId, scan.shipCount+1)
+
                         bestPlanetToRush = min(darkPlanets, key=lambda dp: data.distance(p.planetId, dp))
                         print "Choix > Attaque de la planète numéro", bestPlanetToRush, "avec", p.shipCount/2, "vaisseaux"
                         session.orderMove(p.planetId, bestPlanetToRush, min(p.shipCount/2+1, p.shipCount))
