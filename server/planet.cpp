@@ -2,7 +2,9 @@
 
 #include "player.hpp"
 
-Planet::Planet(int id, int idGalaxy, int x, int y, int size, bool isInitial, bool isNeutral)
+#include <QtCore/QDebug>
+
+Planet::Planet(int id, int idGalaxy, int x, int y, int size, bool isInitial, bool isNeutral, int autochtoneNumber)
 {
 	m_id = id;
 	m_idGalaxy = idGalaxy;
@@ -15,11 +17,18 @@ Planet::Planet(int id, int idGalaxy, int x, int y, int size, bool isInitial, boo
 	m_owner = nullptr;
 	m_shipCount = 0;
 	m_doubleSpeed = 0;
+
+	m_autochtoneNumber = autochtoneNumber;
 }
 
 Planet::~Planet()
 {
 
+}
+
+int Planet::autochtoneNumber()
+{
+	return m_autochtoneNumber;
 }
 
 int Planet::id()
@@ -98,4 +107,8 @@ void Planet::setOwner(Player * player)
 		this->m_owner->removePlanet(this);
 	player->addPlanet(this);
 	m_owner = player;
+
+	if(player->id() < 0) {
+		qDebug() << "\t\tERROR => setOwner empty";
+	}
 }
