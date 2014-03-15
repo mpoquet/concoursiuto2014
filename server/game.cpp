@@ -782,8 +782,16 @@ QMap<int, QVector<FightReport> > Game::handleBattle(QVector<ShipMovement*> endMo
 			FightReport report;
 			report.planet = planetId;
 			report.playerCount = m_incomingFleet[planetId].keys().size();
-			report.aliveShipCount = winner.shipCount;
-			report.winner = winner.player;
+			if(winner.player >= 0 || planet->owner()->id() < 0)
+			{
+				report.aliveShipCount = winner.shipCount;
+				report.winner = winner.player;
+			}
+			else
+			{
+				report.aliveShipCount = 1;
+				report.winner = planet->owner()->id();
+			}
 
 			foreach(int playerId, m_incomingFleet[planetId].keys())
 			{
@@ -801,7 +809,7 @@ QMap<int, QVector<FightReport> > Game::handleBattle(QVector<ShipMovement*> endMo
 				if(m_currentRound > (m_roundCount * 0.25))
 					m_gameModel->handleBonus(planet, p);
 			}
-			planet->setShipCount(winner.shipCount);
+			planet->setShipCount(report.aliveShipCount);
 		}
 	}
 
