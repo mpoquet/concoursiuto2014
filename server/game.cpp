@@ -414,7 +414,7 @@ void Game::iteration()
 
 void Game::playerOrder(QTcpSocket *socket, QVector<int> planetsToScan, QVector<BuildOrder> shipsToBuild, QVector<ShipMove> shipsToMove)
 {
-	qDebug() << "Scan orders received : " << planetsToScan;
+	//qDebug() << "Scan orders received : " << planetsToScan;
     Player * p = m_playerSocketsMap.key(socket);
 
 
@@ -443,7 +443,7 @@ void Game::playerOrder(QTcpSocket *socket, QVector<int> planetsToScan, QVector<B
 		planet = getPlanet(idPlanet);
 		if(planet != nullptr)
 		{
-			qDebug() << "Add to scan list for id " << idPlanet;
+			//qDebug() << "Add to scan list for id " << idPlanet;
 			scan.push_back(planet);
 		}
 	}
@@ -618,12 +618,12 @@ void Game::sendTurnMessage(QMap<int, QVector<FightReport> > reports)
 
 
 		//scans
-		qDebug() << "SendTurnMessage::waitingScan = " << p->waitingScan();
+		//qDebug() << "SendTurnMessage::waitingScan = " << p->waitingScan();
 		foreach(Planet * pl, p->waitingScan())
 		{
 			if(pl != nullptr)
 			{
-				qDebug() << "Add Scan";
+				//qDebug() << "Add Scan";
 				ScanResult scan;
 				scan.planet = pl->id();
 				scan.player = pl->owner()->id();
@@ -815,8 +815,6 @@ QMap<int, QVector<FightReport> > Game::handleBattle(QVector<ShipMovement*> endMo
 
 			if(planet->owner()->id() != report.winner)
 			{
-				if(report.winner < 0)
-					qDebug() << "\t\t\tERROR ====> battle result empty with planet old owner = " << planet->owner()->id();
 				Player * p = getPlayer(report.winner);
 
 				Q_ASSERT(p != nullptr);
