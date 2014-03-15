@@ -256,7 +256,7 @@ void SFMLViewer::onDisplayUpdate()
 
             draw(planet.sprite);
 
-            if(player.nick.toStdString() != "Empty")
+            if(player.nick.toStdString() != "Empty" && _drawNames)
             {
                 sf::Text nick(player.nick.toStdString(), _font);
                 nick.setCharacterSize(16);
@@ -304,7 +304,7 @@ void SFMLViewer::onDisplayUpdate()
             if(p.nick != "Empty" && p.nick != "Autochtone")
             {
                 sf::Text nick(p.nick.toStdString(), _font);
-                nick.setCharacterSize(16);
+                nick.setCharacterSize(10);
                 nick.setStyle(sf::Text::Bold);
                 nick.setPosition(8 + localScale, h);
                 nick.setColor(sf::Color(0, 0, 0));
@@ -315,7 +315,7 @@ void SFMLViewer::onDisplayUpdate()
                 QString planetsString = "Planets: " + QString::number(p.planetCount);
 
                 sf::Text planets(planetsString.toStdString(), _font);
-                planets.setCharacterSize(16);
+                planets.setCharacterSize(10);
                 planets.setPosition(8 + localScale, h);
                 planets.setColor(sf::Color(0, 0, 0));
                 h += planets.getLocalBounds().height + 2;
@@ -325,7 +325,7 @@ void SFMLViewer::onDisplayUpdate()
                 QString shipsString = "Ships: " + QString::number(p.shipCount);
 
                 sf::Text ships(shipsString.toStdString(), _font);
-                ships.setCharacterSize(16);
+                ships.setCharacterSize(10);
                 ships.setPosition(8 + localScale, h);
                 ships.setColor(sf::Color(0, 0, 0));
                 h += ships.getLocalBounds().height + 2;
@@ -335,7 +335,7 @@ void SFMLViewer::onDisplayUpdate()
                 QString scoreString = "Score: " + QString::number(p.score);
 
                 sf::Text score(scoreString.toStdString(), _font);
-                score.setCharacterSize(16);
+                score.setCharacterSize(10);
                 score.setPosition(8 + localScale, h);
                 score.setColor(sf::Color(0, 0, 0));
                 h += score.getLocalBounds().height + 2;
@@ -347,7 +347,7 @@ void SFMLViewer::onDisplayUpdate()
                 h += 10;
 
                 sf::Text nick(p.nick.toStdString(), _font);
-                nick.setCharacterSize(16);
+                nick.setCharacterSize(8);
                 nick.setStyle(sf::Text::Bold);
                 nick.setPosition(8 + localScale, h);
                 nick.setColor(sf::Color(0, 0, 0));
@@ -394,6 +394,9 @@ void SFMLViewer::keyPressEvent(QKeyEvent *e)
     {
     case Qt::Key_S:
         _drawShips = !_drawShips;
+        break;
+    case Qt::Key_P:
+        _drawNames = !_drawNames;
         break;
     }
 }
