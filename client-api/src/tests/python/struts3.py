@@ -123,6 +123,7 @@ def gameRound(session, nearest, distances, maxDistance, averageDistance, planets
         planetsToScan.remove(s)
         session.orderScan(s)
 
+    print 'Scan results :', scanResults
     for s in scanResults:
         alreadyWentOnPlanet = False
         if s in reports:
@@ -255,17 +256,17 @@ def gameRound(session, nearest, distances, maxDistance, averageDistance, planets
                     energy[badPID] = energy[badPID] + shipsToMove * distances[badPID][nearPID]
 
     # Attaques sur les planètes vides trouvées et sur lesquelles nous n'avons pas exploré
-        for pid in knownPlanets:
-            (nbShip, playerID, roundInfo, alreadyWentOnIt) = knownPlanets[pid]
-            if nbShip < 1 and not alreadyWentOnIt:
-                for nearPID in nearest[pid]:
-                    if nearPID in goodPlanets and planetMap[nearPID].shipCount > 1:
-                        session.orderMove(nearPID, pid, 1)
-                        planetMap[nearPID].shipCount = planetMap[nearPID].shipCount - 1
-                        energy[nearPID] = energy[nearPID] - 1 * maxDistance
-                        localEnergy[nearPID] = localEnergy[nearPID] - 1 * maxDistance
-                        knownPlanets[pid] = (nbShip, playerID, roundInfo, True)
-                        break;
+    ep = [p for p in knownPlanets if (not knownPlanets[p][3] and knownPlanets[p][0] < 1)]
+    for pid in ep:
+        for nearPID in nearest[pid]:
+            if nearPID in goodPlanets and planetMap[nearPID].shipCount > 1:
+                print 'Attacking empty planet', pid, 'from', nearPID
+                session.orderMove(nearPID, pid, 1)
+                planetMap[nearPID].shipCount = planetMap[nearPID].shipCount - 1
+                energy[nearPID] = energy[nearPID] - 1 * maxDistance
+                localEnergy[nearPID] = localEnergy[nearPID] - 1 * maxDistance
+                knownPlanets[pid] = knownPlanets[pid][:3] + (True,)
+                break;
 
     # Attaque à partir des planètes dont l'énergie locale est positive
     for goodPID in goodPlanets:
