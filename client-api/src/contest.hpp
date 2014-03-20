@@ -174,9 +174,6 @@ struct Planet
 
     /// Nombre de vaisseaux actuellement présents autour de cette planète
     int shipCount;
-	
-	/// Nombre de tours restants pendant lequel on a le bonus de doublement de vitesse des flottes sur cette planète
-	int doubleSpeedRemainingTurns;
 };
 
 

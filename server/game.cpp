@@ -308,14 +308,7 @@ void Game::iteration()
 				{
 					ShipMovement * move = new ShipMovement();
 					move->move = m;
-					if(planet->doubleSpeed() > 0)
-					{
-						move->remainingRound = planet->distance(planetDest) / 2 + 1;
-					}
-					else
-					{
-						move->remainingRound = planet->distance(planetDest);
-					}
+					move->remainingRound = planet->distance(planetDest);
 					move->player = p->id();
 
 					newMovements.append(move);
@@ -411,13 +404,6 @@ void Game::iteration()
         displayScore();
 	}
 
-	//remove one turn for doublespeed bonus
-	foreach(Planet* p, m_planets)
-	{
-		if(p->doubleSpeed() > 0)
-			p->setDoubleSpeed(p->doubleSpeed() - 1);
-	}
-	
 	sendTurnMessage(reports);
 }
 
@@ -651,7 +637,6 @@ void Game::sendTurnMessage(QMap<int, QVector<FightReport> > reports)
 			ships.maxBuildPerRound = m_gameModel->getMaxBuildByRound(pl->size());
 			ships.resourcePerRound = m_gameModel->getResourcesByRound(pl->size());
 			ships.shipCount = pl->shipCount();
-			ships.doubleSpeedRemainingTurns = pl->doubleSpeed();
 			ourShipsOnPlanets.append(ships);
 		}
 
@@ -851,9 +836,6 @@ QMap<int, QVector<FightReport> > Game::handleBattle(QVector<ShipMovement*> endMo
 				Q_ASSERT(p != nullptr);
 
 				planet->setOwner(p);
-				
-				if(m_currentRound > (m_roundCount * 0.25))
-					m_gameModel->handleBonus(planet, p);
 			}
 			planet->setShipCount(report.aliveShipCount);
 		}

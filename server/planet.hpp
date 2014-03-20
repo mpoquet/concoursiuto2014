@@ -23,12 +23,10 @@ class Planet
 
 		int shipCount();
 		Player * owner();
-		int doubleSpeed();
 		int distance(Planet * dest);
 
 		void setOwner(Player * player);
 		void setShipCount(int shipCount);
-		void setDoubleSpeed(int turns);
 
 		void addDistance(Planet * dest, int distance);
 
@@ -44,7 +42,6 @@ class Planet
 		int m_size;
 		Player * m_owner;
 		int m_shipCount;
-		int m_doubleSpeed;
 		QMap<Planet *, int> m_distance;
 };
 

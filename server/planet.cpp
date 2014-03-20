@@ -16,7 +16,6 @@ Planet::Planet(int id, int idGalaxy, int x, int y, int size, bool isInitial, boo
 
 	m_owner = nullptr;
 	m_shipCount = 0;
-	m_doubleSpeed = 0;
 
 	m_autochtoneNumber = autochtoneNumber;
 }
@@ -71,11 +70,6 @@ int Planet::shipCount()
 	return m_shipCount;
 }
 
-int Planet::doubleSpeed()
-{
-	return m_doubleSpeed;
-}
-
 Player * Planet::owner()
 {
 	return m_owner;
@@ -89,11 +83,6 @@ int Planet::distance(Planet * dest)
 void Planet::setShipCount(int shipCount)
 {
 	m_shipCount = shipCount;
-}
-
-void Planet::setDoubleSpeed(int turns)
-{
-	m_doubleSpeed = turns;
 }
 
 void Planet::addDistance(Planet * dest, int distance)

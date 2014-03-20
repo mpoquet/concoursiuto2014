@@ -161,11 +161,10 @@ RoundState Session::waitRoundStarting()
             for(int i=0 ; i<planetListCount ; ++i)
             {
                 const Planet planet =   {
-                                            toInt(planetList[i*5+1]),
-                                            toInt(planetList[i*5+2]),
-                                            toInt(planetList[i*5+3]),
-                                            toInt(planetList[i*5+4]),
-											toInt(planetList[i*5+5])
+                                            toInt(planetList[i*4+1]),
+                                            toInt(planetList[i*4+2]),
+                                            toInt(planetList[i*4+3]),
+                                            toInt(planetList[i*4+4])
                                         };
                 gameData._planetList[i] = planet;
             }

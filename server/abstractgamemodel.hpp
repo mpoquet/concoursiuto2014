@@ -1,3 +1,4 @@
+
 #ifndef ABSTRACTGAMEMODEL_HPP
 #define ABSTRACTGAMEMODEL_HPP
 
@@ -26,8 +27,6 @@ class AbstractGameModel
 		virtual int getDistance(Planet * p1, Planet * p2) = 0;
 
 		virtual Fleet resolveBattle(QVector<Fleet> fleets) = 0;
-		
-		virtual void handleBonus(Planet* planet, Player* player) = 0;
 };
 
 #endif // ABSTRACTGAMEMODEL_HPP
