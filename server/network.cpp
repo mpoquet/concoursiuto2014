@@ -512,13 +512,24 @@ void Network::onMessageReceived()
 								sendLoginPlayerACK(socket, OK);
 							}
 							else
-								sendLoginPlayerACK(socket, INVALID_NICKNAME);
+                            {
+                                cerr << "Invalid login from a player : invalid nickname (" << content.toStdString() << ")" << endl;
+                                cerr << "A nickname must be in 1-10 in length and can only be composed of lower/uppercase letters, digits, '_' and '-'." << endl;
+                                sendLoginPlayerACK(socket, INVALID_NICKNAME);
+                            }
 						}
 						else
+                        {
+                            cerr << "Invalid login from a player (" << content.toStdString() <<
+                                    " : maximum player count reached (" << _maxPlayerCount << ")" << endl;
 							sendLoginPlayerACK(socket, NO_MORE_ROOM);
+                        }
 					}
 					else
+                    {
+                        cerr << "Invalid login from a player (" << content.toStdString() << ") : already logged..." << endl;
 						sendLoginPlayerACK(socket, ALREADY_LOGGED);
+                    }
 
 				} break;
 
